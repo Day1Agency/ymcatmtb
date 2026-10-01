@@ -8,7 +8,7 @@
 ob_start();
 ?>
 <!-- wp:html -->
-<section data-dc-tpl="50" data-ymc-section="3" style="position: relative; background: rgb(36, 16, 70); overflow: hidden;">
+<section data-dc-tpl="50" id="campaign" data-ymc-section="3" style="position: relative; background: rgb(36, 16, 70); overflow: hidden;">
     
     <div data-dc-tpl="51" style="position: relative; max-width: 1240px; margin: 0px auto; padding: 56px clamp(20px, 4vw, 40px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 28px 56px; align-items: center;">
       <div data-dc-tpl="52">
