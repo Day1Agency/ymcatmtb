@@ -1,0 +1,750 @@
+@font-face {
+	font-family: "Bebas Neue";
+	src: url("../fonts/bebas-neue.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Sora";
+	src: url("../fonts/sora.woff2") format("woff2");
+	font-weight: 300 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+/*
+ * YMC at M&T. One stylesheet for the whole site.
+ *
+ * Sections are drawn by patterns, each with its own block of rules below, in
+ * the order they appear on the page.
+ */
+
+:root {
+	--ymc-purple: #241046;
+	--ymc-purple-deep: #15082b;
+	--ymc-gold: #d4af37;
+	--ymc-gold-bright: #e6c65a;
+	--ymc-ink: #0d0d0d;
+	--ymc-paper: #ffffff;
+	--ymc-muted: rgba(255, 255, 255, 0.72);
+	--ymc-faint: rgba(255, 255, 255, 0.5);
+	--ymc-hairline: rgba(255, 255, 255, 0.14);
+	--ymc-display: "Bebas Neue", Oswald, Impact, sans-serif;
+	--ymc-body: Sora, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+	background: var(--ymc-ink);
+	color: var(--ymc-paper);
+	font-family: var(--ymc-body);
+}
+
+.ymc-main > * {
+	max-width: none;
+}
+
+/* --- Shared pieces --- */
+
+.ymc-eyebrow {
+	margin: 0 0 14px;
+	color: var(--ymc-gold);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+}
+
+.ymc-section__title {
+	margin: 0 0 clamp(20px, 3vw, 34px);
+	font-family: var(--ymc-display);
+	font-size: clamp(42px, 7vw, 86px);
+	font-weight: 400;
+	letter-spacing: 0.01em;
+	line-height: 0.95;
+	text-transform: uppercase;
+}
+
+.ymc-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 14px 30px;
+	border: 1px solid var(--ymc-gold);
+	border-radius: 2px;
+	background: var(--ymc-gold);
+	color: var(--ymc-purple-deep);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-decoration: none;
+	text-transform: uppercase;
+	transition: background 180ms ease, color 180ms ease;
+}
+
+.ymc-button:hover {
+	background: var(--ymc-gold-bright);
+	color: var(--ymc-purple-deep);
+}
+
+.ymc-button--ghost {
+	background: transparent;
+	color: var(--ymc-paper);
+}
+
+.ymc-button--ghost:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--ymc-paper);
+}
+
+.ymc-button--quiet {
+	border-color: var(--ymc-hairline);
+	background: transparent;
+	color: var(--ymc-paper);
+}
+
+/* --- Header --- */
+
+.ymc-header {
+	position: absolute;
+	z-index: 20;
+	width: 100%;
+	padding: 18px clamp(18px, 4vw, 48px);
+}
+
+.ymc-header__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	max-width: 1340px;
+	margin-inline: auto;
+}
+
+.ymc-header__home img {
+	display: block;
+	width: auto;
+	height: clamp(44px, 6vw, 62px);
+}
+
+.ymc-header__actions {
+	display: flex;
+	gap: 10px;
+	margin: 0;
+}
+
+.ymc-header__actions .ymc-button {
+	padding: 11px 22px;
+	font-size: 11px;
+}
+
+/* --- Hero --- */
+
+.ymc-hero {
+	position: relative;
+	display: flex;
+	align-items: flex-end;
+	min-height: min(92vh, 880px);
+	overflow: hidden;
+	background: var(--ymc-purple-deep);
+}
+
+.ymc-hero__media {
+	position: absolute;
+	inset: 0;
+}
+
+.ymc-hero__media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center 40%;
+}
+
+.ymc-hero__media::after {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(rgba(13, 13, 13, 0.35) 0%, rgba(36, 16, 70, 0.55) 45%, rgba(13, 13, 13, 0.97) 100%);
+	content: "";
+}
+
+.ymc-hero__inner {
+	position: relative;
+	z-index: 2;
+	width: 100%;
+	max-width: 1340px;
+	margin-inline: auto;
+	padding: clamp(90px, 14vw, 150px) clamp(18px, 4vw, 48px) clamp(40px, 6vw, 70px);
+}
+
+.ymc-hero__flag {
+	display: inline-block;
+	margin: 0 0 clamp(18px, 3vw, 30px);
+	padding: 7px 16px;
+	border: 1px solid var(--ymc-gold);
+	border-radius: 999px;
+	color: var(--ymc-gold);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.ymc-hero__eyebrow {
+	margin: 0 0 10px;
+	color: var(--ymc-muted);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.24em;
+	text-transform: uppercase;
+}
+
+.ymc-hero__title {
+	margin: 0;
+	font-family: var(--ymc-display);
+	font-size: clamp(72px, 16vw, 200px);
+	font-weight: 400;
+	letter-spacing: 0.01em;
+	line-height: 0.82;
+	text-transform: uppercase;
+}
+
+.ymc-hero__title span {
+	display: block;
+	color: var(--ymc-gold);
+}
+
+.ymc-hero__when {
+	margin: clamp(20px, 3vw, 34px) 0 0;
+	color: var(--ymc-paper);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+}
+
+.ymc-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: clamp(18px, 2.4vw, 26px) 0 0;
+}
+
+.ymc-hero__crest {
+	position: absolute;
+	right: clamp(18px, 4vw, 48px);
+	bottom: clamp(40px, 6vw, 70px);
+	width: clamp(90px, 10vw, 150px);
+	height: auto;
+	opacity: 0.95;
+}
+
+/* --- Annual campaign band --- */
+
+.ymc-band {
+	padding: clamp(36px, 5vw, 60px) clamp(18px, 4vw, 48px);
+	background: var(--ymc-purple);
+}
+
+.ymc-band__inner {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: clamp(20px, 3vw, 40px);
+	max-width: 1140px;
+	margin-inline: auto;
+}
+
+.ymc-band__label {
+	margin: 0 0 8px;
+	color: var(--ymc-gold);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+}
+
+.ymc-band__title {
+	margin: 0;
+	font-family: var(--ymc-display);
+	font-size: clamp(30px, 4vw, 48px);
+	font-weight: 400;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.ymc-band__text {
+	max-width: 46ch;
+	margin: 10px 0 0;
+	color: var(--ymc-muted);
+	font-size: 15px;
+	line-height: 1.6;
+}
+
+.ymc-band__goallabel {
+	margin: 0;
+	color: var(--ymc-faint);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.ymc-band__amount {
+	margin: 4px 0 0;
+	font-family: var(--ymc-display);
+	font-size: clamp(38px, 5vw, 60px);
+	line-height: 1;
+}
+
+.ymc-band__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 16px 0 0;
+}
+
+/* --- Opening statement --- */
+
+.ymc-intro {
+	padding: clamp(60px, 9vw, 120px) clamp(18px, 4vw, 48px) clamp(30px, 4vw, 50px);
+	text-align: center;
+}
+
+.ymc-intro .ymc-eyebrow,
+.ymc-intro__title,
+.ymc-intro__text,
+.ymc-intro__cue {
+	margin-inline: auto;
+}
+
+.ymc-intro__title {
+	margin: 0;
+	font-family: var(--ymc-display);
+	font-size: clamp(44px, 8vw, 104px);
+	font-weight: 400;
+	line-height: 0.92;
+	text-transform: uppercase;
+}
+
+.ymc-intro__text {
+	max-width: 54ch;
+	margin: clamp(18px, 2.6vw, 28px) auto 0;
+	color: var(--ymc-muted);
+	font-size: clamp(16px, 1.8vw, 19px);
+	line-height: 1.65;
+}
+
+.ymc-intro__cue {
+	margin: clamp(18px, 2.4vw, 26px) 0 0;
+	color: var(--ymc-gold);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+/* --- About the event --- */
+
+.ymc-about {
+	padding: clamp(50px, 7vw, 96px) clamp(18px, 4vw, 48px);
+}
+
+.ymc-about__text {
+	max-width: 70ch;
+	margin: 0 0 clamp(30px, 4vw, 48px);
+	color: var(--ymc-muted);
+	font-size: clamp(15px, 1.6vw, 18px);
+	line-height: 1.7;
+}
+
+.ymc-facts {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1px;
+	background: var(--ymc-hairline);
+	border: 1px solid var(--ymc-hairline);
+}
+
+.ymc-fact {
+	padding: clamp(22px, 3vw, 32px);
+	background: var(--ymc-ink);
+}
+
+.ymc-fact__label {
+	margin: 0 0 10px;
+	color: var(--ymc-gold);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.ymc-fact__value {
+	margin: 0 0 10px;
+	font-family: var(--ymc-display);
+	font-size: clamp(24px, 2.6vw, 32px);
+	line-height: 1.05;
+	text-transform: uppercase;
+}
+
+.ymc-fact__note {
+	margin: 0;
+	color: var(--ymc-faint);
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+/* --- Choose your tournament --- */
+
+.ymc-tournaments {
+	padding: clamp(50px, 7vw, 96px) clamp(18px, 4vw, 48px);
+	background: var(--ymc-purple-deep);
+}
+
+.ymc-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+	gap: clamp(18px, 2.4vw, 28px);
+}
+
+.ymc-card {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: clamp(26px, 3.4vw, 40px);
+	border: 1px solid var(--ymc-hairline);
+	background: rgba(255, 255, 255, 0.03);
+}
+
+.ymc-card--adult {
+	border-color: var(--ymc-gold);
+}
+
+.ymc-card__number {
+	margin: 0;
+	color: var(--ymc-gold);
+	font-family: var(--ymc-display);
+	font-size: 28px;
+	line-height: 1;
+}
+
+.ymc-card__meta {
+	margin: 0;
+	color: var(--ymc-faint);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+}
+
+.ymc-card__name {
+	margin: 0;
+	font-family: var(--ymc-display);
+	font-size: clamp(34px, 4vw, 52px);
+	font-weight: 400;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.ymc-card__text {
+	margin: 0;
+	color: var(--ymc-muted);
+	font-size: 15px;
+	line-height: 1.65;
+}
+
+.ymc-card__figures {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 32px;
+	margin: 8px 0 0;
+	padding: 18px 0;
+	border-top: 1px solid var(--ymc-hairline);
+	border-bottom: 1px solid var(--ymc-hairline);
+}
+
+.ymc-card__figure {
+	margin: 0;
+	color: var(--ymc-faint);
+	font-size: 12px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.ymc-card__figure strong {
+	display: block;
+	color: var(--ymc-paper);
+	font-family: var(--ymc-display);
+	font-size: clamp(30px, 3.4vw, 42px);
+	font-weight: 400;
+	letter-spacing: 0;
+	line-height: 1.05;
+}
+
+.ymc-card__note,
+.ymc-card__invite {
+	margin: 0;
+	color: var(--ymc-faint);
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.ymc-card__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: auto 0 0;
+	padding-top: 14px;
+}
+
+/* --- How it works --- */
+
+.ymc-steps {
+	padding: clamp(50px, 7vw, 96px) clamp(18px, 4vw, 48px);
+}
+
+.ymc-steps__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: clamp(18px, 2.4vw, 28px);
+}
+
+.ymc-step {
+	padding: clamp(22px, 3vw, 32px);
+	border-top: 2px solid var(--ymc-gold);
+	background: rgba(255, 255, 255, 0.03);
+}
+
+.ymc-step__number {
+	margin: 0 0 12px;
+	color: var(--ymc-gold);
+	font-family: var(--ymc-display);
+	font-size: 30px;
+	line-height: 1;
+}
+
+.ymc-step__tag {
+	margin: 0 0 6px;
+	color: var(--ymc-faint);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.ymc-step__title {
+	margin: 0 0 10px;
+	font-family: var(--ymc-display);
+	font-size: clamp(24px, 2.6vw, 32px);
+	font-weight: 400;
+	line-height: 1.05;
+	text-transform: uppercase;
+}
+
+.ymc-step__text {
+	margin: 0;
+	color: var(--ymc-muted);
+	font-size: 15px;
+	line-height: 1.65;
+}
+
+/* --- Sponsor the game --- */
+
+.ymc-sponsor {
+	padding: clamp(50px, 7vw, 96px) clamp(18px, 4vw, 48px);
+	background: var(--ymc-purple);
+}
+
+.ymc-sponsor__inner {
+	max-width: 1140px;
+	margin-inline: auto;
+	text-align: center;
+}
+
+.ymc-sponsor__title {
+	margin: 0;
+	font-family: var(--ymc-display);
+	font-size: clamp(40px, 6vw, 76px);
+	font-weight: 400;
+	line-height: 0.95;
+	text-transform: uppercase;
+}
+
+.ymc-sponsor__text {
+	max-width: 54ch;
+	margin: clamp(16px, 2vw, 22px) auto 0;
+	color: var(--ymc-muted);
+	font-size: clamp(15px, 1.7vw, 18px);
+	line-height: 1.65;
+}
+
+.ymc-sponsor__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px;
+	margin: clamp(20px, 2.6vw, 30px) 0 0;
+}
+
+/* --- Good to know --- */
+
+.ymc-faq {
+	padding: clamp(50px, 7vw, 96px) clamp(18px, 4vw, 48px);
+}
+
+.ymc-faq__list {
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid var(--ymc-hairline);
+}
+
+.ymc-question {
+	display: flex;
+	gap: clamp(16px, 3vw, 36px);
+	padding: clamp(20px, 2.8vw, 30px) 0;
+	border-bottom: 1px solid var(--ymc-hairline);
+}
+
+.ymc-question__number {
+	flex: none;
+	margin: 0;
+	color: var(--ymc-gold);
+	font-family: var(--ymc-display);
+	font-size: 24px;
+	line-height: 1.2;
+}
+
+.ymc-question__q {
+	margin: 0 0 8px;
+	font-size: clamp(17px, 2vw, 21px);
+	font-weight: 600;
+}
+
+.ymc-question__a {
+	margin: 0;
+	color: var(--ymc-muted);
+	font-size: 15px;
+	line-height: 1.7;
+}
+
+.ymc-faq__contact {
+	margin: clamp(24px, 3vw, 34px) 0 0;
+	color: var(--ymc-faint);
+	font-size: 14px;
+}
+
+.ymc-faq__contact a {
+	color: var(--ymc-gold);
+}
+
+/* --- Closing call to action --- */
+
+.ymc-closing {
+	padding: clamp(60px, 9vw, 120px) clamp(18px, 4vw, 48px);
+	background:
+		linear-gradient(rgba(21, 8, 43, 0.86), rgba(13, 13, 13, 0.94)),
+		var(--ymc-purple-deep);
+	text-align: center;
+}
+
+.ymc-closing__when {
+	margin: 0 0 14px;
+	color: var(--ymc-gold);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.ymc-closing__title {
+	margin: 0;
+	font-family: var(--ymc-display);
+	font-size: clamp(48px, 9vw, 120px);
+	font-weight: 400;
+	line-height: 0.92;
+	text-transform: uppercase;
+}
+
+.ymc-closing__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px;
+	margin: clamp(22px, 3vw, 34px) 0 0;
+}
+
+/* --- Footer --- */
+
+.ymc-footer {
+	padding: clamp(40px, 6vw, 72px) clamp(18px, 4vw, 48px) clamp(24px, 3vw, 36px);
+	border-top: 1px solid var(--ymc-hairline);
+	background: var(--ymc-purple-deep);
+}
+
+.ymc-footer__inner {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: clamp(24px, 4vw, 56px);
+	max-width: 1140px;
+	margin-inline: auto;
+}
+
+.ymc-footer__brand img {
+	width: auto;
+	height: 54px;
+}
+
+.ymc-footer__name {
+	margin: 12px 0 0;
+	font-family: var(--ymc-display);
+	font-size: 22px;
+	text-transform: uppercase;
+}
+
+.ymc-footer__label {
+	margin: 0 0 10px;
+	color: var(--ymc-gold);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.ymc-footer__col p {
+	margin: 0 0 8px;
+	color: var(--ymc-muted);
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.ymc-footer__col a {
+	color: var(--ymc-muted);
+	text-decoration: none;
+}
+
+.ymc-footer__col a:hover {
+	color: var(--ymc-gold);
+}
+
+.ymc-footer__legal {
+	max-width: 1140px;
+	margin: clamp(28px, 4vw, 48px) auto 0;
+	padding-top: 18px;
+	border-top: 1px solid var(--ymc-hairline);
+	color: var(--ymc-faint);
+	font-size: 12px;
+}
+
+@media (max-width: 781px) {
+
+	.ymc-hero__crest {
+		display: none;
+	}
+
+	.ymc-header__actions .ymc-button {
+		padding: 10px 16px;
+	}
+}

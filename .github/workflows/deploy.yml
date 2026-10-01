@@ -1,0 +1,48 @@
+name: Deploy theme
+
+# Every push to main goes straight to the live site. There is no staging
+# environment for this project, so review happens before the merge.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-live
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Write deploy key
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Upload theme over SFTP
+        run: |
+          lftp -c "
+            set sftp:connect-program 'ssh -a -x -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no';
+            set net:max-retries 3;
+            set net:timeout 30;
+            open -u ${{ secrets.SSH_USERNAME }}, sftp://${{ secrets.SSH_HOST }};
+            mirror -R --delete --verbose --parallel=4 \
+              --exclude-glob .git/ \
+              --exclude-glob .github/ \
+              --exclude-glob .gitignore \
+              --exclude-glob README.md \
+              --exclude-glob node_modules/ \
+              ./ ${{ secrets.THEME_PATH }};
+            bye
+          "
+
+      - name: Remove deploy key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
