@@ -30,7 +30,7 @@ ob_start();
         <div data-dc-tpl="246" style="font-weight: 600; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: rgb(212, 175, 55);">Campaign</div>
         <div data-dc-tpl="247" style="margin-top: 12px; display: grid; gap: 8px; font-size: 14px;">
           <a data-dc-tpl="248" href="#tournaments" class="scpf" style="color: rgb(176, 179, 184);">Register to Play</a>
-          <a data-dc-tpl="249" href="https://givebutter.com/ymc-annual-campaign" target="_blank" rel="noopener" class="scpf" style="color: rgb(176, 179, 184);">Donate</a>
+          <a data-dc-tpl="249" href="https://givebutter.com/ymc-annual-campaign/donate" target="_blank" rel="noopener" class="scpf" style="color: rgb(176, 179, 184);">Donate</a>
           <a data-dc-tpl="250" href="https://givebutter.com/ymc-annual-campaign" class="scpf" style="color: rgb(176, 179, 184);">Annual Campaign</a>
           <a data-dc-tpl="251" href="https://ymc.school/" target="_blank" rel="noopener" class="scpf" style="color: rgb(176, 179, 184);">ymc.school</a>
         </div>
