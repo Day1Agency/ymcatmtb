@@ -1678,6 +1678,12 @@ a:hover { color: rgb(230, 198, 90); }
 .ymc-choice__option:hover .ymc-choice__note, .ymc-choice__option:focus-visible .ymc-choice__note { color:rgba(36,16,70,.78); }
 body.ymc-choice-open { overflow:hidden; }
 
+/* Scroll reveal. The class is added by script, so without JavaScript
+   nothing is ever left hidden. */
+.ymc-reference .ymc-reveal { opacity:0; transform:translateY(26px); transition:opacity 760ms var(--ease-out,cubic-bezier(.22,1,.36,1)), transform 760ms var(--ease-out,cubic-bezier(.22,1,.36,1)); transition-delay:var(--ymc-reveal-delay,0ms); will-change:opacity,transform; }
+.ymc-reference .ymc-reveal.is-visible { opacity:1; transform:none; }
+@media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-reveal { opacity:1; transform:none; transition:none; } }
+
 .wp-site-blocks { padding:0; }
 /* clip, not hidden: hidden would make this a scroll container and the
    sticky header would stop sticking. */

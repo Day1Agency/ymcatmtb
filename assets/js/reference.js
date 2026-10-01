@@ -116,4 +116,40 @@
 			});
 		});
 	}
+	/* Sections arrive as you reach them, rather than sitting there flat. */
+	const SKIP_REVEAL = ['0', '2', '11'];
+	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+		const revealed = [];
+		function collect(el) {
+			/* A row of cards reads better animating card by card. */
+			const display = getComputedStyle(el).display;
+			const children = [...el.children];
+			if ((display === 'grid' || display === 'flex') && children.length > 1 && children.length < 7 && el.clientHeight > 120) return children;
+			return [el];
+		}
+		root.querySelectorAll('[data-ymc-section]').forEach(section => {
+			if (SKIP_REVEAL.indexOf(section.dataset.ymcSection) > -1) return;
+			/* The padded element is the section's content; the rest are backdrops. */
+			const container = [...section.children].find(child => parseFloat(getComputedStyle(child).paddingTop) > 20);
+			if (!container) return;
+			let i = 0;
+			[...container.children].forEach(child => collect(child).forEach(el => {
+				el.classList.add('ymc-reveal');
+				el.style.setProperty('--ymc-reveal-delay', (i++ * 90) + 'ms');
+				revealed.push(el);
+			}));
+		});
+		let observed = false;
+		const watcher = new IntersectionObserver(function (entries) {
+			observed = true;
+			entries.forEach(entry => {
+				if (!entry.isIntersecting) return;
+				entry.target.classList.add('is-visible');
+				watcher.unobserve(entry.target);
+			});
+		}, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+		revealed.forEach(el => watcher.observe(el));
+		/* If the observer never reports, show everything rather than hide it. */
+		setTimeout(() => { if (!observed) revealed.forEach(el => el.classList.add('is-visible')); }, 1500);
+	}
 })();
