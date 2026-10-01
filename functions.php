@@ -182,7 +182,7 @@ add_action( 'wp_enqueue_scripts', 'ymcatmtb_styles' );
  * The same stylesheet inside the editor.
  */
 function ymcatmtb_editor_styles() {
-	add_editor_style( 'assets/css/main.css' );
+	add_editor_style( array( 'assets/css/reference.css', 'assets/css/reference-editor.css' ) );
 }
 add_action( 'after_setup_theme', 'ymcatmtb_editor_styles' );
 
@@ -219,4 +219,86 @@ function ymcatmtb_link( $key ) {
  */
 function ymcatmtb_contact_email() {
 	return apply_filters( 'ymcatmtb_contact_email', 'ykohen@yeshivasmekorchaim.org' );
+}
+
+/**
+ * When the first game starts. Drives the countdown in the hero.
+ *
+ * @return string An ISO 8601 date and time.
+ */
+function ymcatmtb_kickoff() {
+	return apply_filters( 'ymcatmtb_kickoff', '2027-03-28T09:00:00-04:00' );
+}
+
+/**
+ * The countdown script, on the front only.
+ */
+function ymcatmtb_scripts() {
+	$file = get_theme_file_path( 'assets/js/countdown.js' );
+
+	wp_enqueue_script(
+		'ymcatmtb-countdown',
+		get_theme_file_uri( 'assets/js/countdown.js' ),
+		array(),
+		file_exists( $file ) ? (string) filemtime( $file ) : '1.0.0',
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'ymcatmtb_scripts' );
+
+/** Load the supplied registration design without the starter theme's overrides. */
+function ymcatmtb_reference_assets() {
+	if ( ! is_front_page() && ! has_block( 'ymcatmtb/section' ) ) {
+		return;
+	}
+	wp_dequeue_style( 'twentytwentyfive-style' );
+	wp_dequeue_style( 'ymcatmtb' );
+	wp_dequeue_script( 'ymcatmtb-countdown' );
+	foreach ( array( 'css/reference.css', 'js/reference.js' ) as $asset ) {
+		$file = get_theme_file_path( 'assets/' . $asset );
+		if ( ! file_exists( $file ) ) {
+			continue;
+		}
+		if ( substr( $asset, -4 ) === '.css' ) {
+			wp_enqueue_style( 'ymcatmtb-reference', get_theme_file_uri( 'assets/' . $asset ), array(), (string) filemtime( $file ) );
+		} else {
+			wp_enqueue_script( 'ymcatmtb-reference', get_theme_file_uri( 'assets/' . $asset ), array(), (string) filemtime( $file ), true );
+			wp_add_inline_script( 'ymcatmtb-reference', 'window.ymcKickoff = ' . wp_json_encode( ymcatmtb_kickoff() ) . ';', 'before' );
+		}
+	}
+}
+add_action( 'wp_enqueue_scripts', 'ymcatmtb_reference_assets', 30 );
+
+/** Independent visual section blocks used by the theme's unsynced patterns. */
+function ymcatmtb_register_section_block() {
+	wp_register_script( 'ymcatmtb-section-editor', get_theme_file_uri( 'assets/js/section-editor.js' ), array( 'wp-blocks', 'wp-block-editor', 'wp-element', 'wp-components' ), (string) filemtime( get_theme_file_path( 'assets/js/section-editor.js' ) ), true );
+	register_block_type( 'ymcatmtb/section', array(
+		'api_version' => 3,
+		'editor_script' => 'ymcatmtb-section-editor',
+		'attributes' => array(
+			'title' => array( 'type' => 'string', 'default' => 'YMC section' ),
+			'html' => array( 'type' => 'string', 'source' => 'html', 'selector' => '.ymc-section-content', 'default' => '' ),
+		),
+	) );
+}
+add_action( 'init', 'ymcatmtb_register_section_block' );
+
+/** Serialize a standalone block; it carries no reference to a parent pattern. */
+function ymcatmtb_section_markup( $title, $html ) {
+	$html = preg_replace( '/<!--\s*\/?wp:html\s*-->/', '', $html );
+	$document = new DOMDocument();
+	$previous = libxml_use_internal_errors( true );
+	$document->loadHTML( '<?xml encoding="UTF-8"><div id="ymc-section-source">' . trim( $html ) . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+	libxml_clear_errors();
+	libxml_use_internal_errors( $previous );
+	$root = $document->getElementById( 'ymc-section-source' );
+	$index = 0;
+	foreach ( $root->getElementsByTagName( '*' ) as $element ) {
+		$element->setAttribute( 'data-ymc-node', (string) $index++ );
+	}
+	$html = '';
+	foreach ( $root->childNodes as $node ) {
+		$html .= $document->saveHTML( $node );
+	}
+	return '<!-- wp:ymcatmtb/section ' . wp_json_encode( array( 'title' => $title ) ) . ' -->' . "\n" . '<div class="wp-block-ymcatmtb-section ymc-reference"><div class="ymc-section-content">' . $html . '</div></div>' . "\n" . '<!-- /wp:ymcatmtb/section -->';
 }

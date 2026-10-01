@@ -1,36 +1,67 @@
 <?php
 /**
- * Title: Hero
+ * Title: hero
  * Slug: ymcatmtb/hero
- * Categories: banner, featured
- * Description: Stadium photograph, the event name, the date and the two main calls to action.
- *
- * @package WordPress
- * @subpackage YMCatMT
- * @since 1.0.0
+ * Categories: featured
+ * Description: Matches the supplied YMC Event Registration reference.
  */
-
-$ymc_register = function_exists( 'ymcatmtb_link' ) ? ymcatmtb_link( 'teen' ) : '#';
-$ymc_sponsor  = function_exists( 'ymcatmtb_link' ) ? ymcatmtb_link( 'sponsor' ) : '#';
+ob_start();
 ?>
-<!-- wp:group {"align":"full","className":"ymc-hero","layout":{"type":"default"}} -->
-<div class="wp-block-group alignfull ymc-hero">
-	<!-- wp:html -->
-	<div class="ymc-hero__media" aria-hidden="true">
-		<img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/stadium.jpg' ) ); ?>" alt="">
-	</div>
+<!-- wp:html -->
+<section data-dc-tpl="21" data-ymc-section="1" style="position: relative; overflow: hidden; background: rgb(13, 13, 13); min-height: min(92vh, 860px); display: flex; align-items: flex-end;">
+    <div data-dc-tpl="22" style="position: absolute; inset: 0px; background: url(&quot;<?php echo esc_url( get_theme_file_uri( 'assets/reference/8e102645a1acd3f5.jpg' ) ); ?>&quot;) center 35% / cover no-repeat;"></div>
+    <div data-dc-tpl="23" style="position: absolute; inset: 0px; background: linear-gradient(rgba(13, 13, 13, 0.35) 0%, rgba(36, 16, 70, 0.55) 45%, rgba(13, 13, 13, 0.97) 100%);"></div>
+    <div data-dc-tpl="24" style="position: absolute; inset: 0px; background: linear-gradient(90deg, rgba(13, 13, 13, 0.85) 0%, rgba(13, 13, 13, 0.2) 60%, rgba(13, 13, 13, 0) 100%);"></div>
+    <div data-dc-tpl="25" style="position: absolute; inset: 0px; background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0px, rgba(255, 255, 255, 0.05) 1px, transparent 1px, transparent 120px); pointer-events: none;"></div>
+    <div data-dc-tpl="26" style="position: absolute; right: -4vw; bottom: -6vw; font-family: var(--font-display); font-size: clamp(200px, 34vw, 520px); line-height: 0.8; color: transparent; -webkit-text-stroke: 1px rgba(212, 175, 55, 0.22); pointer-events: none; user-select: none;">M&amp;T</div>
 
-	<div class="ymc-hero__inner">
-		<p class="ymc-hero__flag"><?php echo esc_html__( 'Registration open', 'ymcatmtb' ); ?></p>
-		<p class="ymc-hero__eyebrow"><?php echo esc_html__( 'YMC at M&T Bank Stadium', 'ymcatmtb' ); ?></p>
-		<h1 class="ymc-hero__title"><?php echo esc_html__( 'Register', 'ymcatmtb' ); ?><span><?php echo esc_html__( 'to play', 'ymcatmtb' ); ?></span></h1>
-		<p class="ymc-hero__when"><?php echo esc_html__( 'March 28, 2027 · Baltimore, Maryland', 'ymcatmtb' ); ?></p>
-		<p class="ymc-hero__actions">
-			<a class="ymc-button" href="<?php echo esc_url( $ymc_register ); ?>"><?php echo esc_html__( 'Register', 'ymcatmtb' ); ?></a>
-			<a class="ymc-button ymc-button--ghost" href="<?php echo esc_url( $ymc_sponsor ); ?>"><?php echo esc_html__( 'Sponsor', 'ymcatmtb' ); ?></a>
-		</p>
-		<img class="ymc-hero__crest" src="<?php echo esc_url( get_theme_file_uri( 'assets/images/event-crest.png' ) ); ?>" alt="<?php echo esc_attr__( 'YMC at M&T Bank Stadium', 'ymcatmtb' ); ?>">
-	</div>
-	<!-- /wp:html -->
-</div>
-<!-- /wp:group -->
+    <div data-dc-tpl="27" style="position: relative; width: 100%; max-width: 1240px; margin: 0px auto; padding: 120px clamp(20px, 4vw, 40px) 64px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 48px; align-items: end;">
+      <div data-dc-tpl="28">
+        <div data-dc-tpl="29" style="display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border: 1px solid rgba(212, 175, 55, 0.5); border-radius: 2px; background: rgba(13, 13, 13, 0.5);">
+          <span data-dc-tpl="30" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(63, 191, 90); animation: 1.6s ease-in-out 0s infinite normal none running ymcPulse;"></span>
+          <span data-dc-tpl="31" style="font-weight: 600; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: rgb(255, 255, 255);">Registration open</span>
+        </div>
+        <div data-dc-tpl="32" style="margin-top: 22px; font-weight: 600; font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase; color: rgb(212, 175, 55);">YMC at M&amp;T Bank Stadium</div>
+        <h1 data-dc-tpl="33" style="margin: 14px 0px 0px; font-family: var(--font-display); font-weight: 400; font-size: clamp(76px, 13vw, 184px); line-height: 0.84; letter-spacing: 0.005em; text-transform: uppercase; color: rgb(255, 255, 255);">Register<br data-dc-tpl="34"><span data-dc-tpl="35" style="color: transparent; -webkit-text-stroke: 2px rgb(212, 175, 55);">to Play</span></h1>
+        <p data-dc-tpl="36" style="margin: 24px 0px 0px; font-weight: 600; font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; color: rgb(255, 255, 255);">March 28, 2027 · Baltimore, Maryland</p>
+        <div data-dc-tpl="37" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 34px;">
+          <a data-dc-tpl="38" href="#tournaments" class="scp2 scp3" style="display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: 210px; padding: 20px 34px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Register <i data-dc-tpl="39" class="fas fa-arrow-right" style="font-size: 12px;"></i></a>
+          <a data-dc-tpl="40" href="#sponsor" class="scp4 scp3" style="display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: 210px; padding: 19px 33px; border-radius: 4px; border: 1px solid rgb(212, 175, 55); background: rgba(13, 13, 13, 0.4); color: rgb(212, 175, 55); font-weight: 700; font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Sponsor <i data-dc-tpl="41" class="fas fa-arrow-right" style="font-size: 12px;"></i></a>
+        </div>
+      </div>
+
+      <div data-dc-tpl="42" style="justify-self: end; width: 100%; max-width: 440px;">
+        <div data-dc-tpl="43" style="font-weight: 600; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: rgb(212, 175, 55); margin-bottom: 12px;">Kickoff countdown</div>
+        <div data-dc-tpl="44" style="display: grid; grid-template-columns: repeat(4, minmax(0px, 1fr)); gap: 6px; padding: 6px; background: rgba(13, 13, 13, 0.72); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 4px; backdrop-filter: blur(6px);">
+          
+            <div data-dc-tpl="46" style="padding: 16px 6px 12px; text-align: center; background: rgb(36, 16, 70); border-radius: 2px;">
+              <div data-dc-tpl="47" data-ymc-countdown="0" style="font-family: var(--font-condensed); font-weight: 700; font-size: clamp(34px, 4vw, 48px); line-height: 1; font-variant-numeric: tabular-nums; color: rgb(255, 255, 255);"><span class="sc-interp">177</span></div>
+              <div data-dc-tpl="48" style="margin-top: 8px; font-weight: 600; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgb(212, 175, 55);"><span class="sc-interp">Days</span></div>
+            </div>
+          
+            <div data-dc-tpl="46" style="padding: 16px 6px 12px; text-align: center; background: rgb(36, 16, 70); border-radius: 2px;">
+              <div data-dc-tpl="47" data-ymc-countdown="1" style="font-family: var(--font-condensed); font-weight: 700; font-size: clamp(34px, 4vw, 48px); line-height: 1; font-variant-numeric: tabular-nums; color: rgb(255, 255, 255);"><span class="sc-interp">23</span></div>
+              <div data-dc-tpl="48" style="margin-top: 8px; font-weight: 600; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgb(212, 175, 55);"><span class="sc-interp">Hours</span></div>
+            </div>
+          
+            <div data-dc-tpl="46" style="padding: 16px 6px 12px; text-align: center; background: rgb(36, 16, 70); border-radius: 2px;">
+              <div data-dc-tpl="47" data-ymc-countdown="2" style="font-family: var(--font-condensed); font-weight: 700; font-size: clamp(34px, 4vw, 48px); line-height: 1; font-variant-numeric: tabular-nums; color: rgb(255, 255, 255);"><span class="sc-interp">40</span></div>
+              <div data-dc-tpl="48" style="margin-top: 8px; font-weight: 600; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgb(212, 175, 55);"><span class="sc-interp">Min</span></div>
+            </div>
+          
+            <div data-dc-tpl="46" style="padding: 16px 6px 12px; text-align: center; background: rgb(36, 16, 70); border-radius: 2px;">
+              <div data-dc-tpl="47" data-ymc-countdown="3" style="font-family: var(--font-condensed); font-weight: 700; font-size: clamp(34px, 4vw, 48px); line-height: 1; font-variant-numeric: tabular-nums; color: rgb(255, 255, 255);"><span class="sc-interp">48</span></div>
+              <div data-dc-tpl="48" style="margin-top: 8px; font-weight: 600; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgb(212, 175, 55);"><span class="sc-interp">Sec</span></div>
+            </div>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+<div data-dc-tpl="49" data-ymc-section="2" style="background: rgb(212, 175, 55); overflow: hidden; border-top: 1px solid rgb(36, 16, 70); border-bottom: 1px solid rgb(36, 16, 70);">
+    <div style="display: flex; width: max-content; animation: 38s linear 0s infinite normal none running ymcMarquee; padding: 14px 0px; font-family: var(--font-display); font-size: 28px; line-height: 1; letter-spacing: 0.04em; text-transform: uppercase; color: rgb(36, 16, 70); white-space: nowrap;"><div style="display: flex;"><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Take the field</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Support YMC</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Yeshivas Mekor Chaim</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>March 28, 2027</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>M&amp;T Bank Stadium</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Teen Tournament</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Adult Tournament</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Take the field</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Support YMC</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Yeshivas Mekor Chaim</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>March 28, 2027</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>M&amp;T Bank Stadium</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Teen Tournament</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Adult Tournament</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span></div><div style="display: flex;"><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Take the field</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Support YMC</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Yeshivas Mekor Chaim</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>March 28, 2027</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>M&amp;T Bank Stadium</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Teen Tournament</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Adult Tournament</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Take the field</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Support YMC</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Yeshivas Mekor Chaim</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>March 28, 2027</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>M&amp;T Bank Stadium</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Teen Tournament</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span><span style="display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;"><span>Adult Tournament</span><img src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d0d62051fec371ee.png' ) ); ?>" alt="" style="height: 26px; width: auto; display: block;"></span></div></div>
+  </div>
+<!-- /wp:html -->
+
+<?php
+echo ymcatmtb_section_markup('Hero and scrolling banner', ob_get_clean());

@@ -1,0 +1,10 @@
+.editor-styles-wrapper { background:#0d0d0d; padding:0; }
+.editor-styles-wrapper .is-root-container > .wp-block-ymcatmtb-section { max-width:none; width:100%; margin:0; }
+.editor-styles-wrapper .ymc-editable-section { display:block; min-height:0; overflow:visible; }
+.ymc-editable-section .block-editor-rich-text__editable { min-width:0; }
+.ymc-editable-section [data-ymc-section] { margin:0; }
+.ymc-editable-section .ymc-ref-badge { position:relative !important; right:auto !important; bottom:auto !important; margin:16px 24px 16px auto; }
+.ymc-editable-section header { position:relative !important; }
+.ymc-editable-section [hidden] { display:block !important; }
+.ymc-editable-section *, .ymc-editable-section *::before { animation-play-state:paused !important; }
+.ymc-editable-section img { cursor:pointer; }
