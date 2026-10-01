@@ -283,6 +283,12 @@ function ymcatmtb_register_section_block() {
 }
 add_action( 'init', 'ymcatmtb_register_section_block' );
 
+/** Some hosts do not enqueue a block's editor script on their own; make sure of it. */
+function ymcatmtb_section_editor_assets() {
+	wp_enqueue_script( 'ymcatmtb-section-editor' );
+}
+add_action( 'enqueue_block_editor_assets', 'ymcatmtb_section_editor_assets' );
+
 /** Serialize a standalone block; it carries no reference to a parent pattern. */
 function ymcatmtb_section_markup( $title, $html ) {
 	$html = preg_replace( '/<!--\s*\/?wp:html\s*-->/', '', $html );
