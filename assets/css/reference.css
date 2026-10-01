@@ -1652,8 +1652,17 @@ a:hover { color: rgb(230, 198, 90); }
  .ymc-reference [data-dc-tpl="231"] { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:28px 24px !important; }
  .ymc-reference [data-dc-tpl="232"] { grid-column:1 / -1; }
 }
+/* Sticky header that slides out of the way while reading downwards. */
+.ymc-reference .ymc-ref-sticky-header { position:sticky; top:0; transition:transform 320ms var(--ease-out,cubic-bezier(.22,1,.36,1)); will-change:transform; }
+.ymc-reference .ymc-ref-sticky-header.is-hidden { transform:translateY(-100%); }
+.admin-bar .ymc-reference .ymc-ref-sticky-header { top:32px; }
+@media(max-width:782px) { .admin-bar .ymc-reference .ymc-ref-sticky-header { top:46px; } }
+@media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-ref-sticky-header { transition:none; } }
+
 .wp-site-blocks { padding:0; }
-.ymc-reference { min-height:100dvh; background:#0d0d0d; color:#fff; font-family:var(--font-body); font-weight:400; letter-spacing:normal; overflow-x:hidden; }
+/* clip, not hidden: hidden would make this a scroll container and the
+   sticky header would stop sticking. */
+.ymc-reference { min-height:100dvh; background:#0d0d0d; color:#fff; font-family:var(--font-body); font-weight:400; letter-spacing:normal; overflow-x:clip; }
 .ymc-reference > *, .ymc-reference .wp-block-post-content > * { margin-block-start:0; margin-block-end:0; }
 .ymc-reference .wp-block-post-content { display:contents; }
 .ymc-reference h1,.ymc-reference h2,.ymc-reference h3 { text-wrap:pretty; letter-spacing:normal; }

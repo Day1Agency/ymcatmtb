@@ -34,4 +34,23 @@
 		});
 	}));
 	});
+	/* The header follows the reader: it slides away going down, returns going up. */
+	const header = root.querySelector('[data-ymc-section="0"]');
+	if (header) {
+		header.classList.add('ymc-ref-sticky-header');
+		let last = window.scrollY;
+		let pending = false;
+		function onScroll() {
+			const y = Math.max(0, window.scrollY);
+			if (y > last && y > header.offsetHeight * 1.5) header.classList.add('is-hidden');
+			else if (y < last || y <= 0) header.classList.remove('is-hidden');
+			last = y;
+			pending = false;
+		}
+		window.addEventListener('scroll', function () {
+			if (pending) return;
+			pending = true;
+			window.requestAnimationFrame(onScroll);
+		}, { passive: true });
+	}
 })();
