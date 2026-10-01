@@ -1644,6 +1644,11 @@ a:hover { color: rgb(230, 198, 90); }
  .ymc-reference [data-dc-tpl="108"], .ymc-reference [data-dc-tpl="130"] { font-size:62px !important; }
  .ymc-reference [data-dc-tpl="109"], .ymc-reference [data-dc-tpl="131"] { max-width:calc(100% - 70px); }
 }
+/* Footer: two columns on phones, with the logos across the top. */
+@media(max-width:599px) {
+ .ymc-reference [data-dc-tpl="231"] { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:28px 24px !important; }
+ .ymc-reference [data-dc-tpl="232"] { grid-column:1 / -1; }
+}
 .wp-site-blocks { padding:0; }
 .ymc-reference { min-height:100dvh; background:#0d0d0d; color:#fff; font-family:var(--font-body); font-weight:400; letter-spacing:normal; overflow-x:hidden; }
 .ymc-reference > *, .ymc-reference .wp-block-post-content > * { margin-block-start:0; margin-block-end:0; }
