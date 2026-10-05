@@ -16,7 +16,7 @@ ob_start();
           <span data-dc-tpl="54" style="width: 36px; height: 2px; background: rgb(212, 175, 55);"></span>
           <span data-dc-tpl="55" style="font-weight: 600; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: rgb(212, 175, 55);">YMC Annual Campaign</span>
         </div>
-        <h2 data-dc-tpl="56" style="margin: 14px 0px 0px; font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 5vw, 60px); line-height: 0.92; text-transform: uppercase; color: rgb(255, 255, 255);">Take the field. Support YMC.</h2>
+        <h2 data-dc-tpl="56" style="margin: 14px 0px 0px; font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 5vw, 60px); line-height: 0.92; text-transform: uppercase; color: rgb(255, 255, 255);">Take the field.<br>Support YMC.</h2>
         <p data-dc-tpl="57" style="margin: 14px 0px 0px; max-width: 460px; font-size: 15px; line-height: 1.65; color: rgba(255, 255, 255, 0.82);">Every registration and every gift goes toward our $750,000 Annual Campaign goal.</p>
       </div>
       <div data-dc-tpl="58" style="display: flex; align-items: stretch; gap: 0px; flex-wrap: wrap; border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 4px; overflow: hidden; background: rgb(13, 13, 13);">
