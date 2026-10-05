@@ -26,7 +26,7 @@ ob_start();
           <div data-dc-tpl="92" class="scp8" style="padding: 30px 26px; background: rgb(13, 13, 13); transition: background 250ms var(--ease-out);">
             <i data-dc-tpl="93" class="fas fa-calendar-alt" style="font-size: 20px; color: rgb(212, 175, 55);"></i>
             <div data-dc-tpl="94" style="margin-top: 18px; font-weight: 600; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: rgb(176, 179, 184);"><span class="sc-interp">When</span></div>
-            <div data-dc-tpl="95" style="margin-top: 8px; font-family: var(--font-display); font-size: 30px; line-height: 0.95; text-transform: uppercase; color: rgb(255, 255, 255);"><span class="sc-interp">March 28, 2027</span></div>
+            <div data-dc-tpl="95" style="margin-top: 8px; font-family: var(--font-display); font-size: 30px; line-height: 0.95; text-transform: uppercase; color: rgb(255, 255, 255);"><span class="sc-interp">Sunday, March 28, 2027</span></div>
             <p data-dc-tpl="96" style="margin: 10px 0px 0px; font-size: 14px; line-height: 1.6; color: rgba(255, 255, 255, 0.72);"><span class="sc-interp">One day of games. Game-day details are sent to players before the event.</span></p>
           </div>
         
