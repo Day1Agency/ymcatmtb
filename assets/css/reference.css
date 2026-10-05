@@ -1659,9 +1659,27 @@ a:hover { color: rgb(230, 198, 90); }
 @media(max-width:782px) { .admin-bar .ymc-reference .ymc-ref-sticky-header { top:46px; } }
 @media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-ref-sticky-header { transition:none; } }
 
-/* The sponsorship packages read as a comparison, so they keep an even
-   height and only drop to one column when they must. */
-@media(max-width:639px) { .ymc-reference .ymc-ref-packages { grid-template-columns:minmax(0,1fr) !important; } }
+/* On a phone the packages swipe sideways rather than making the reader
+   scroll past seven full-width cards to reach the sponsorship email. */
+@media(max-width:639px) {
+ .ymc-reference .ymc-ref-packages {
+  grid-template-columns:none !important;
+  grid-auto-flow:column;
+  grid-auto-columns:84%;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;
+  margin-inline:calc(clamp(20px, 4vw, 40px) * -1);
+  padding:0 clamp(20px, 4vw, 40px) 10px;
+  scroll-padding-inline-start:clamp(20px, 4vw, 40px);
+  scrollbar-width:thin;
+  scrollbar-color:rgba(212,175,55,.5) transparent;
+ }
+ .ymc-reference .ymc-ref-packages > div { scroll-snap-align:start; }
+ .ymc-reference .ymc-ref-packages::-webkit-scrollbar { height:4px; }
+ .ymc-reference .ymc-ref-packages::-webkit-scrollbar-thumb { background:rgba(212,175,55,.5); border-radius:4px; }
+ .ymc-reference .ymc-ref-packages::-webkit-scrollbar-track { background:transparent; }
+}
 
 /* Scroll reveal. The class is added by script, so without JavaScript
    nothing is ever left hidden. */
