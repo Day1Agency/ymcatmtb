@@ -1714,6 +1714,34 @@ a:hover { color: rgb(230, 198, 90); }
 }
 @media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-ref-packages { scroll-behavior:auto; } }
 
+/* Scroll reveal. The class is added by script, so without JavaScript
+   nothing is ever left hidden. */
+.ymc-reference .ymc-reveal { opacity:0; transform:translateY(26px); transition:opacity 760ms var(--ease-out,cubic-bezier(.22,1,.36,1)), transform 760ms var(--ease-out,cubic-bezier(.22,1,.36,1)); transition-delay:var(--ymc-reveal-delay,0ms); will-change:opacity,transform; }
+.ymc-reference .ymc-reveal.is-visible { opacity:1; transform:none; }
+@media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-reveal { opacity:1; transform:none; transition:none; } }
+
+/* Small phones: the two figures on each tournament card will not sit
+   side by side, and the header runs past the edge of the screen. */
+@media(max-width:479px) {
+ .ymc-reference [data-dc-tpl="116"], .ymc-reference [data-dc-tpl="138"] { grid-template-columns:minmax(0,1fr) !important; gap:20px !important; padding-left:24px !important; padding-right:24px !important; }
+ .ymc-reference [data-dc-tpl="117"], .ymc-reference [data-dc-tpl="139"] { padding-right:0 !important; padding-bottom:20px; border-right:none !important; border-bottom:1px solid rgba(255,255,255,.12); }
+ .ymc-reference [data-dc-tpl="120"], .ymc-reference [data-dc-tpl="142"] { padding-left:0 !important; }
+ .ymc-reference [data-dc-tpl="118"], .ymc-reference [data-dc-tpl="121"],
+ .ymc-reference [data-dc-tpl="140"], .ymc-reference [data-dc-tpl="143"] { font-size:46px !important; }
+
+ .ymc-reference .ymc-ref-header-inner { gap:10px !important; padding:0 14px !important; }
+ .ymc-reference .ymc-ref-header-logo { height:44px !important; }
+ .ymc-reference .ymc-ref-header-inner a { min-height:40px !important; padding:0 12px !important; font-size:11px !important; letter-spacing:.1em !important; }
+ .ymc-reference .ymc-ref-header-inner a.scp1 { padding:0 6px 0 12px !important; gap:6px !important; }
+ .ymc-reference [data-dc-tpl="19"] { width:24px !important; height:24px !important; }
+}
+
+/* The FAQ heading sticks beside the questions in two columns. Once the
+   grid collapses to one, it would sit on top of them instead. */
+@media(max-width:899px) {
+ .ymc-reference [data-dc-tpl="197"] { position:static !important; top:auto !important; margin-bottom:28px; }
+}
+
 .wp-site-blocks { padding:0; }
 /* clip, not hidden: hidden would make this a scroll container and the
    sticky header would stop sticking. */
