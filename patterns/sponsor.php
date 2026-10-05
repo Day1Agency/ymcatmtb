@@ -15,6 +15,7 @@
 $ymcatmtb_packages = array(
 	array(
 		'name'      => 'First Down',
+		'fund'      => '70797',
 		'price'     => '$1,800',
 		'amount'    => '1800',
 		'available' => '16 available',
@@ -27,6 +28,7 @@ $ymcatmtb_packages = array(
 	),
 	array(
 		'name'      => 'Touchdown',
+		'fund'      => '70798',
 		'price'     => '$2,500',
 		'amount'    => '2500',
 		'available' => '15 available',
@@ -39,6 +41,7 @@ $ymcatmtb_packages = array(
 	),
 	array(
 		'name'      => 'Probowl',
+		'fund'      => '70799',
 		'price'     => '$3,600',
 		'amount'    => '3600',
 		'available' => '12 available',
@@ -52,6 +55,7 @@ $ymcatmtb_packages = array(
 	),
 	array(
 		'name'      => 'MVP',
+		'fund'      => '70800',
 		'price'     => '$5,000',
 		'amount'    => '5000',
 		'available' => '15 available',
@@ -66,6 +70,7 @@ $ymcatmtb_packages = array(
 	),
 	array(
 		'name'      => 'Playoffs',
+		'fund'      => '70801',
 		'price'     => '$7,500',
 		'amount'    => '7500',
 		'available' => '3 available',
@@ -80,6 +85,7 @@ $ymcatmtb_packages = array(
 	),
 	array(
 		'name'      => 'Superbowl',
+		'fund'      => '70802',
 		'price'     => '$10,000',
 		'amount'    => '10000',
 		'available' => '2 available',
@@ -94,6 +100,7 @@ $ymcatmtb_packages = array(
 	),
 	array(
 		'name'      => 'Hall of Fame',
+		'fund'      => '70803',
 		'price'     => '$18,000',
 		'amount'    => '18000',
 		'available' => '1 available',
@@ -137,7 +144,7 @@ ob_start();
             <li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.55; color: rgba(255, 255, 255, 0.84);"><span style="flex-shrink: 0; color: rgb(212, 175, 55);">&#9656;</span><span><?php echo esc_html( $ymcatmtb_benefit ); ?></span></li>
 <?php endforeach; ?>
           </ul>
-          <a href="https://givebutter.com/ymc-annual-campaign/donate?amount=<?php echo esc_attr( $ymcatmtb_package['amount'] ); ?>" target="_blank" rel="noopener" class="scpc" style="margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 20px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Choose <?php echo esc_html( $ymcatmtb_package['name'] ); ?> <i class="fas fa-arrow-right" style="font-size: 12px;"></i></a>
+          <a href="https://givebutter.com/ymc-annual-campaign/donate?amount=<?php echo esc_attr( $ymcatmtb_package['amount'] ); ?>&amp;fund=<?php echo esc_attr( $ymcatmtb_package['fund'] ); ?>" target="_blank" rel="noopener" class="scpc" style="margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 20px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Choose <?php echo esc_html( $ymcatmtb_package['name'] ); ?> <i class="fas fa-arrow-right" style="font-size: 12px;"></i></a>
         </div>
 <?php endforeach; ?>
       </div>
