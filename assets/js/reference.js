@@ -89,4 +89,77 @@
 		/* If the observer never reports, show everything rather than hide it. */
 		setTimeout(() => { if (!observed) revealed.forEach(el => el.classList.add('is-visible')); }, 1500);
 	}
+	/* The sponsorship packages advance on their own, stop the moment someone
+	   takes hold of them, and can be opened out into the full list. */
+	const packages = root.querySelector('.ymc-ref-packages');
+	if (packages && packages.children.length > 1) {
+		const wrap = document.createElement('div');
+		wrap.className = 'ymc-ref-carousel';
+		packages.parentNode.insertBefore(wrap, packages);
+		wrap.appendChild(packages);
+
+		const nav = document.createElement('div');
+		nav.className = 'ymc-ref-carousel__nav';
+		nav.innerHTML = '<button type="button" class="ymc-ref-carousel__btn" data-ymc-carousel="prev" aria-label="Previous packages"><i class="fas fa-arrow-left"></i></button>'
+			+ '<button type="button" class="ymc-ref-carousel__btn" data-ymc-carousel="next" aria-label="Next packages"><i class="fas fa-arrow-right"></i></button>'
+			+ '<button type="button" class="ymc-ref-carousel__all" data-ymc-carousel="all" aria-expanded="false">View all 7</button>';
+		wrap.appendChild(nav);
+
+		const prev = nav.querySelector('[data-ymc-carousel="prev"]');
+		const next = nav.querySelector('[data-ymc-carousel="next"]');
+		const all = nav.querySelector('[data-ymc-carousel="all"]');
+
+		let paused = false;
+		let resume = null;
+		/* Taking hold stops the automatic advance for a while. */
+		function hold() {
+			paused = true;
+			clearTimeout(resume);
+			resume = setTimeout(function () { paused = false; }, 9000);
+		}
+
+		const step = function () { return packages.children[0].getBoundingClientRect().width + 16; };
+		const atEnd = function () { return packages.scrollLeft >= packages.scrollWidth - packages.clientWidth - 4; };
+		const expanded = function () { return wrap.classList.contains('is-expanded'); };
+
+		function syncButtons() {
+			prev.disabled = expanded() || packages.scrollLeft <= 4;
+			next.disabled = expanded() || atEnd();
+		}
+		prev.addEventListener('click', function () { packages.scrollBy({ left: -step() }); hold(); });
+		next.addEventListener('click', function () { packages.scrollBy({ left: step() }); hold(); });
+		all.addEventListener('click', function () {
+			const open = wrap.classList.toggle('is-expanded');
+			all.setAttribute('aria-expanded', String(open));
+			all.textContent = open ? 'Show less' : 'View all ' + packages.children.length;
+			if (!open) packages.scrollTo({ left: 0 });
+			syncButtons();
+			hold();
+		});
+		packages.addEventListener('scroll', syncButtons, { passive: true });
+		all.textContent = 'View all ' + packages.children.length;
+		syncButtons();
+
+		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			let timer = null;
+			function advance() {
+				if (paused || expanded() || !packages.offsetParent) return;
+				/* Back to the first package once the last one has been seen. */
+				packages.scrollTo({ left: atEnd() ? 0 : packages.scrollLeft + step() });
+			}
+			function start() { if (!timer) timer = setInterval(advance, 4500); }
+			function stop() { clearInterval(timer); timer = null; }
+			packages.addEventListener('pointerenter', function () { paused = true; });
+			packages.addEventListener('pointerleave', function () { paused = false; });
+			packages.addEventListener('focusin', function () { paused = true; });
+			packages.addEventListener('touchstart', hold, { passive: true });
+			packages.addEventListener('wheel', hold, { passive: true });
+			nav.addEventListener('pointerenter', function () { paused = true; });
+			nav.addEventListener('pointerleave', function () { paused = false; });
+			/* Only run it while the section is actually on screen. */
+			new IntersectionObserver(function (entries) {
+				entries.forEach(function (e) { return e.isIntersecting ? start() : stop(); });
+			}, { threshold: 0.2 }).observe(packages);
+		}
+	}
 })();
