@@ -102,7 +102,7 @@
 		nav.className = 'ymc-ref-carousel__nav';
 		nav.innerHTML = '<button type="button" class="ymc-ref-carousel__btn" data-ymc-carousel="prev" aria-label="Previous packages"><i class="fas fa-arrow-left"></i></button>'
 			+ '<button type="button" class="ymc-ref-carousel__btn" data-ymc-carousel="next" aria-label="Next packages"><i class="fas fa-arrow-right"></i></button>'
-			+ '<button type="button" class="ymc-ref-carousel__all" data-ymc-carousel="all" aria-expanded="false">View all 7</button>';
+			+ '<button type="button" class="ymc-ref-carousel__all" data-ymc-carousel="all" aria-expanded="false">View all (7)</button>';
 		wrap.appendChild(nav);
 
 		const prev = nav.querySelector('[data-ymc-carousel="prev"]');
@@ -131,13 +131,13 @@
 		all.addEventListener('click', function () {
 			const open = wrap.classList.toggle('is-expanded');
 			all.setAttribute('aria-expanded', String(open));
-			all.textContent = open ? 'Show less' : 'View all ' + packages.children.length;
+			all.textContent = open ? 'Show less' : 'View all (' + packages.children.length + ')';
 			if (!open) packages.scrollTo({ left: 0 });
 			syncButtons();
 			hold();
 		});
 		packages.addEventListener('scroll', syncButtons, { passive: true });
-		all.textContent = 'View all ' + packages.children.length;
+		all.textContent = 'View all (' + packages.children.length + ')';
 		syncButtons();
 
 		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
