@@ -1659,24 +1659,9 @@ a:hover { color: rgb(230, 198, 90); }
 @media(max-width:782px) { .admin-bar .ymc-reference .ymc-ref-sticky-header { top:46px; } }
 @media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-ref-sticky-header { transition:none; } }
 
-/* Tournament chooser shown by the sponsorship buttons. */
-.ymc-choice { position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
-.ymc-choice[hidden] { display:none; }
-.ymc-choice__backdrop { position:absolute; inset:0; background:rgba(13,13,13,.82); backdrop-filter:blur(6px); }
-.ymc-choice__panel { position:relative; width:min(100%,520px); max-height:calc(100dvh - 40px); overflow:auto; padding:40px clamp(22px,5vw,40px) 36px; border-radius:8px; border:1px solid rgba(212,175,55,.45); background:#241046; box-shadow:0 30px 80px rgba(0,0,0,.6); text-align:left; }
-.ymc-choice__panel:focus { outline:none; }
-.ymc-choice__close { position:absolute; top:14px; right:16px; width:36px; height:36px; border:0; border-radius:50%; background:rgba(255,255,255,.08); color:#fff; font-size:22px; line-height:1; cursor:pointer; transition:background 200ms var(--ease-out,ease); }
-.ymc-choice__close:hover { background:rgba(212,175,55,.25); }
-.ymc-choice__eyebrow { margin:0; font-weight:600; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:#D4AF37; }
-.ymc-choice__title { margin:10px 0 0; font-family:var(--font-display); font-weight:400; font-size:clamp(40px,7vw,56px); line-height:.9; text-transform:uppercase; color:#fff; }
-.ymc-choice__lede { margin:12px 0 0; font-size:15px; line-height:1.6; color:rgba(255,255,255,.82); }
-.ymc-choice__options { display:grid; gap:12px; margin-top:26px; }
-.ymc-choice__option { display:block; padding:20px 22px; border-radius:4px; border:1px solid rgba(212,175,55,.5); background:#0d0d0d; color:#fff; text-decoration:none; transition:background 200ms var(--ease-out,ease), border-color 200ms var(--ease-out,ease), transform 200ms var(--ease-out,ease); }
-.ymc-choice__option:hover, .ymc-choice__option:focus-visible { background:#D4AF37; border-color:#D4AF37; color:#241046; transform:translateY(-2px); }
-.ymc-choice__name { display:block; font-family:var(--font-display); font-size:30px; line-height:1; text-transform:uppercase; }
-.ymc-choice__note { display:block; margin-top:6px; font-size:13px; line-height:1.5; color:rgba(255,255,255,.7); }
-.ymc-choice__option:hover .ymc-choice__note, .ymc-choice__option:focus-visible .ymc-choice__note { color:rgba(36,16,70,.78); }
-body.ymc-choice-open { overflow:hidden; }
+/* The sponsorship packages read as a comparison, so they keep an even
+   height and only drop to one column when they must. */
+@media(max-width:639px) { .ymc-reference .ymc-ref-packages { grid-template-columns:minmax(0,1fr) !important; } }
 
 /* Scroll reveal. The class is added by script, so without JavaScript
    nothing is ever left hidden. */
