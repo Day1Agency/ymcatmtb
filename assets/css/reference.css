@@ -1684,6 +1684,12 @@ body.ymc-choice-open { overflow:hidden; }
 .ymc-reference .ymc-reveal.is-visible { opacity:1; transform:none; }
 @media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-reveal { opacity:1; transform:none; transition:none; } }
 
+/* The FAQ heading sticks beside the questions in two columns. Once the
+   grid collapses to one, it would sit on top of them instead. */
+@media(max-width:899px) {
+ .ymc-reference [data-dc-tpl="197"] { position:static !important; top:auto !important; margin-bottom:28px; }
+}
+
 .wp-site-blocks { padding:0; }
 /* clip, not hidden: hidden would make this a scroll container and the
    sticky header would stop sticking. */
