@@ -38,7 +38,7 @@ ob_start();
               <span data-dc-tpl="211" style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: rgba(212, 175, 55, 0.14); color: rgb(212, 175, 55);"><i data-dc-tpl="212" class="fas fa-plus" style="font-size: 12px;"></i></span>
             </button>
             
-          <p data-dc-tpl="214" id="ymc-answer-1" style="margin: 0px; padding: 0px 24px 24px 72px; font-size: 15px; line-height: 1.7; color: rgba(255, 255, 255, 0.82);" hidden=""><span class="sc-interp">Adults must start a team as captain or join an existing team through their captain's invitation.</span></p></div>
+          <p data-dc-tpl="214" id="ymc-answer-1" style="margin: 0px; padding: 0px 24px 24px 72px; font-size: 15px; line-height: 1.7; color: rgba(255, 255, 255, 0.82);" hidden=""><span class="sc-interp">Adults play in teams. Start a team as captain, or join your captain&rsquo;s team when you register.</span></p></div>
         
           <div data-dc-tpl="207" style="border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.02); transition: all 250ms var(--ease-out);">
             <button data-dc-tpl="208" data-ymc-faq="2" aria-expanded="false" aria-controls="ymc-answer-2" type="button" style="width: 100%; display: flex; align-items: center; gap: 18px; padding: 24px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; background: transparent; cursor: pointer; text-align: left; font-family: var(--font-body); color: rgb(255, 255, 255);">

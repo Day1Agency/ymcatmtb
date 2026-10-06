@@ -4,7 +4,7 @@
 	if (!document.querySelector('.ymc-reference')) return;
 	const root = document;
 	const counters = root.querySelectorAll('[data-ymc-countdown]');
-	const target = new Date(window.ymcKickoff || '2027-03-28T09:00:00-04:00').getTime();
+	const target = new Date(window.ymcKickoff || '2027-03-28T00:00:00-04:00').getTime();
 	function tick() {
 		let remaining = Math.max(0, target - Date.now());
 		const values = [86400000, 3600000, 60000, 1000].map(unit => {

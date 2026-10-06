@@ -40,7 +40,7 @@ $ymcatmtb_packages = array(
 		),
 	),
 	array(
-		'name'      => 'Probowl',
+		'name'      => 'Pro Bowl',
 		'fund'      => '70799',
 		'price'     => '$3,600',
 		'amount'    => '3600',
@@ -84,7 +84,7 @@ $ymcatmtb_packages = array(
 		),
 	),
 	array(
-		'name'      => 'Superbowl',
+		'name'      => 'Super Bowl',
 		'fund'      => '70802',
 		'price'     => '$10,000',
 		'amount'    => '10000',

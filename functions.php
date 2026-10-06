@@ -227,7 +227,7 @@ function ymcatmtb_contact_email() {
  * @return string An ISO 8601 date and time.
  */
 function ymcatmtb_kickoff() {
-	return apply_filters( 'ymcatmtb_kickoff', '2027-03-28T09:00:00-04:00' );
+	return apply_filters( 'ymcatmtb_kickoff', '2027-03-28T00:00:00-04:00' );
 }
 
 /**
