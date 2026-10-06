@@ -1742,10 +1742,9 @@ a:hover { color: rgb(230, 198, 90); }
  .ymc-reference [data-dc-tpl="197"] { position:static !important; top:auto !important; margin-bottom:28px; }
 }
 
-/* No start time is confirmed, so the countdown shows whole days only
-   rather than counting to a time nobody has agreed. */
-.ymc-reference [data-dc-tpl="44"] { grid-template-columns:none !important; display:inline-flex !important; }
-.ymc-reference [data-dc-tpl="44"] > *:not(:first-child) { display:none; }
+/* The countdown is out until a start time is confirmed. Hidden rather
+   than deleted, so it returns by removing this one rule. */
+.ymc-reference [data-dc-tpl="42"] { display:none !important; }
 
 .wp-site-blocks { padding:0; }
 /* clip, not hidden: hidden would make this a scroll container and the
