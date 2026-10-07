@@ -54,7 +54,7 @@
 		}, { passive: true });
 	}
 	/* Sections arrive as you reach them, rather than sitting there flat. */
-	const SKIP_REVEAL = ['0', '2', '11'];
+	const SKIP_REVEAL = ['0', '2', '8', '11'];
 	if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
 		const revealed = [];
 		function collect(el) {
