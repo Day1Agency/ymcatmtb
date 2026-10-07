@@ -25,8 +25,8 @@ ob_start();
           <div data-dc-tpl="61" style="margin-top: 8px; font-family: var(--font-condensed); font-weight: 700; font-size: clamp(48px, 6vw, 64px); line-height: 1; font-variant-numeric: tabular-nums; color: rgb(212, 175, 55);">$750,000</div>
         </div>
         <div data-dc-tpl="62" style="display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 22px 24px; min-width: 200px;">
-          <a data-dc-tpl="63" href="https://givebutter.com/ymc-annual-campaign/donate" target="_blank" rel="noopener" class="scp5" style="display: flex; align-items: center; justify-content: center; padding: 14px 22px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase;">Give Now</a>
-          <a data-dc-tpl="64" href="https://givebutter.com/ymc-annual-campaign" class="scp6" style="display: flex; align-items: center; justify-content: center; padding: 13px 22px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.3); color: rgb(255, 255, 255); font-weight: 700; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase;">Learn more</a>
+          <a data-dc-tpl="63" href="https://givebutter.com/ymc-annual-campaign/donate" target="_blank" rel="noopener" class="scp5" style="display: flex; align-items: center; justify-content: center; padding: 14px 22px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase;">Donate now</a>
+
         </div>
       </div>
     </div>
