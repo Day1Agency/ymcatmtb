@@ -123,7 +123,7 @@ ob_start();
             <li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.55; color: rgba(255, 255, 255, 0.84);"><span style="flex-shrink: 0; color: rgb(212, 175, 55);">&#9656;</span><span><?php echo esc_html( $ymcatmtb_benefit ); ?></span></li>
 <?php endforeach; ?>
           </ul>
-          <a href="https://givebutter.com/ymc-annual-campaign/donate?amount=<?php echo esc_attr( $ymcatmtb_package['amount'] ); ?>&amp;fund=<?php echo esc_attr( $ymcatmtb_package['fund'] ); ?>" target="_blank" rel="noopener" class="scpc" style="margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 20px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Choose <?php echo esc_html( $ymcatmtb_package['name'] ); ?> <i class="fas fa-arrow-right" style="font-size: 12px;"></i></a>
+          <a href="https://givebutter.com/ymc-annual-campaign/donate?amount=<?php echo esc_attr( $ymcatmtb_package['amount'] ); ?>&amp;fund=<?php echo esc_attr( $ymcatmtb_package['fund'] ); ?>" target="_blank" rel="noopener" class="scpc" style="margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 20px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Choose <?php echo esc_html( $ymcatmtb_package['name'] ); ?> </a>
         </div>
 <?php endforeach; ?>
       </div>

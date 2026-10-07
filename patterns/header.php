@@ -17,7 +17,7 @@ ob_start();
         <a data-dc-tpl="17" href="#campaign" class="scp0" style="display: flex; align-items: center; min-height: 46px; padding: 0px 20px; border-radius: 4px; border: 1px solid rgb(212, 175, 55); color: rgb(212, 175, 55); font-weight: 700; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Donate</a>
         <a data-dc-tpl="18" href="#tournaments" class="scp1" style="display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0px 8px 0px 20px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; transition: all 200ms var(--ease-out);">
           Register
-          <span data-dc-tpl="19" style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 3px; background: rgb(36, 16, 70); color: rgb(212, 175, 55);"><i data-dc-tpl="20" class="fas fa-arrow-right" style="font-size: 11px;"></i></span>
+          
         </a>
       </div>
     </div>
