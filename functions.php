@@ -269,6 +269,21 @@ function ymcatmtb_reference_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'ymcatmtb_reference_assets', 30 );
 
+/** Stadium intro enhancement; inactive when its saved block is absent. */
+function ymcatmtb_stadium_assets() {
+	if ( ! is_front_page() ) { return; }
+	foreach ( array( 'css', 'js' ) as $type ) {
+		$asset = 'assets/' . $type . '/stadium-intro.' . $type;
+		$version = (string) filemtime( get_theme_file_path( $asset ) );
+		if ( 'css' === $type ) {
+			wp_enqueue_style( 'ymcatmtb-stadium', get_theme_file_uri( $asset ), array( 'ymcatmtb-reference' ), $version );
+		} else {
+			wp_enqueue_script( 'ymcatmtb-stadium', get_theme_file_uri( $asset ), array( 'ymcatmtb-reference' ), $version, true );
+		}
+	}
+}
+add_action( 'wp_enqueue_scripts', 'ymcatmtb_stadium_assets', 31 );
+
 /** Independent visual section blocks used by the theme's unsynced patterns. */
 function ymcatmtb_register_section_block() {
 	wp_register_script( 'ymcatmtb-section-editor', get_theme_file_uri( 'assets/js/section-editor.js' ), array( 'wp-blocks', 'wp-block-editor', 'wp-element', 'wp-components' ), (string) filemtime( get_theme_file_path( 'assets/js/section-editor.js' ) ), true );
