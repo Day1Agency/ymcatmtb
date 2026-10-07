@@ -1659,60 +1659,16 @@ a:hover { color: rgb(230, 198, 90); }
 @media(max-width:782px) { .admin-bar .ymc-reference .ymc-ref-sticky-header { top:46px; } }
 @media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-ref-sticky-header { transition:none; } }
 
-/* The packages are a carousel at every width: three in view on a desktop,
-   one at a time on a phone, snapping as it goes. */
+/* Show every sponsorship package without carousel navigation. */
 .ymc-reference .ymc-ref-packages {
- grid-template-columns:none !important;
- grid-auto-flow:column;
- grid-auto-columns:calc((100% - 32px) / 3);
- overflow-x:auto;
- overscroll-behavior-x:contain;
- scroll-snap-type:x mandatory;
- scroll-behavior:smooth;
- scrollbar-width:thin;
- scrollbar-color:rgba(212,175,55,.5) transparent;
- padding-bottom:10px;
+ grid-template-columns:repeat(3,minmax(0,1fr)) !important;
 }
-.ymc-reference .ymc-ref-packages > div { scroll-snap-align:start; }
-.ymc-reference .ymc-ref-packages::-webkit-scrollbar { height:4px; }
-.ymc-reference .ymc-ref-packages::-webkit-scrollbar-thumb { background:rgba(212,175,55,.5); border-radius:4px; }
-.ymc-reference .ymc-ref-packages::-webkit-scrollbar-track { background:transparent; }
-
-/* Arrows, so a mouse can drive it too. */
-.ymc-ref-carousel { position:relative; }
-.ymc-ref-carousel__nav { position:absolute; top:-58px; right:0; display:flex; gap:8px; }
-.ymc-ref-carousel__btn { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:50%; border:1px solid rgba(212,175,55,.5); background:rgb(13,13,13); color:rgb(212,175,55); font-size:15px; cursor:pointer; transition:background 200ms var(--ease-out,ease), color 200ms var(--ease-out,ease), opacity 200ms var(--ease-out,ease); }
-.ymc-ref-carousel__btn:hover { background:rgb(212,175,55); color:rgb(36,16,70); }
-.ymc-ref-carousel__btn[disabled] { opacity:.35; cursor:default; }
-.ymc-ref-carousel__btn[disabled]:hover { background:rgb(13,13,13); color:rgb(212,175,55); }
-
-.ymc-ref-carousel__all { padding:0 18px; height:42px; border-radius:21px; border:1px solid rgba(212,175,55,.5); background:transparent; color:rgb(212,175,55); font-family:var(--font-body); font-weight:700; font-size:11px; letter-spacing:.16em; text-transform:uppercase; cursor:pointer; transition:background 200ms var(--ease-out,ease), color 200ms var(--ease-out,ease); }
-.ymc-ref-carousel__all:hover { background:rgb(212,175,55); color:rgb(36,16,70); }
-
-/* Opened out: the packages go back to a plain grid, all of them at once. */
-.ymc-ref-carousel.is-expanded .ymc-ref-packages {
- grid-auto-flow:row;
- grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)) !important;
- overflow:visible;
- scroll-snap-type:none;
- padding-bottom:0;
+@media(max-width:899px) {
+ .ymc-reference .ymc-ref-packages { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
 }
-.ymc-ref-carousel.is-expanded .ymc-ref-carousel__btn { display:none; }
-
-@media(max-width:899px) { .ymc-reference .ymc-ref-packages { grid-auto-columns:calc((100% - 16px) / 2); } }
 @media(max-width:639px) {
- .ymc-reference .ymc-ref-packages {
-  grid-auto-columns:84%;
-  margin-inline:calc(clamp(20px, 4vw, 40px) * -1);
-  padding:0 clamp(20px, 4vw, 40px) 10px;
-  scroll-padding-inline-start:clamp(20px, 4vw, 40px);
- }
- /* No arrows on a phone, where swiping is the natural move, but keep
-    the way out to the full list. */
- .ymc-ref-carousel__nav { position:static; justify-content:center; margin-top:18px; }
- .ymc-ref-carousel__btn { display:none; }
+ .ymc-reference .ymc-ref-packages { grid-template-columns:minmax(0,1fr) !important; }
 }
-@media(prefers-reduced-motion:reduce) { .ymc-reference .ymc-ref-packages { scroll-behavior:auto; } }
 
 /* Scroll reveal. The class is added by script, so without JavaScript
    nothing is ever left hidden. */
