@@ -19,3 +19,6 @@ body:has(.ymc-stadium-scroll) .ymc-ref-sticky-header{transform:none!important}
 .ymc-stadium-opening h1,.ymc-stadium-reveal h2,.ymc-stadium-reveal-card h3{color:#fff7e7}.ymc-stadium-reveal{z-index:1}.ymc-stadium-world{z-index:2}
 
 .ymc-stadium-active .ymc-ref-badge{visibility:hidden;pointer-events:none}
+
+/* Header button no longer has a separate arrow box. */
+body:has(.ymc-stadium-scroll) [data-ymc-section="0"] a.scp1{padding-right:20px!important}

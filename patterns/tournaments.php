@@ -43,7 +43,7 @@ ob_start();
           </div>
           <div data-dc-tpl="123" style="padding: 0px 34px 34px; display: flex; flex-direction: column; gap: 22px; flex: 1 1 0%;">
             <p data-dc-tpl="124" style="margin: 0px; padding: 14px 16px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); font-size: 14px; line-height: 1.6; color: rgb(176, 179, 184);">Your $100 registration counts toward your goal, leaving $750 to raise.</p>
-            <a data-dc-tpl="125" href="https://givebutter.com/ymc-teen-player-registration/register" target="_blank" rel="noopener" class="scpa" style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Register for the Teen Tournament <i data-dc-tpl="126" class="fas fa-arrow-right" style="font-size: 13px;"></i></a>
+            <a data-dc-tpl="125" href="https://givebutter.com/ymc-teen-player-registration/register" target="_blank" rel="noopener" class="scpa" style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px; border-radius: 4px; background: rgb(212, 175, 55); color: rgb(36, 16, 70); font-weight: 700; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; transition: all 200ms var(--ease-out);">Register for the Teen Tournament </a>
           </div>
         </div>
 
