@@ -26,10 +26,17 @@ body:has(.ymc-stadium-scroll) [data-ymc-section="0"] a.scp1{padding-right:20px!i
 .ymc-stadium-countdown{color:#e7c961;font-size:11px;font-weight:700;letter-spacing:.14em;margin:12px 0;font-variant-numeric:tabular-nums}
 @media(max-height:620px){.ymc-stadium-countdown{font-size:9px;margin:8px 0}}
 
-/* Each picture layer gets its own GPU surface, so the zoom is a texture
-   transform rather than a repaint. */
+/* Keep the clipped pictures in the world's shared transform. Promoting each
+   clipped child separately creates oversized raster surfaces during the 8x
+   zoom, which can leave stale rectangular tiles on rapid scroll reversals. */
 .ymc-stadium-scroll[data-motion=ready] .ymc-stadium-shell,
-.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-aperture{will-change:transform;transform:translateZ(0);backface-visibility:hidden}
+.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-aperture{will-change:auto;transform:none;backface-visibility:visible}
+/* These viewport-sized layers fade independently of the zoomed image. Keep
+   their compositing stable rather than creating/discarding layers mid-scroll.
+   Overflow already clips the stage; extra paint containment is unnecessary. */
+.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-stage{contain:none}
+.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-shade{will-change:opacity}
+.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening{will-change:transform,opacity}
 /* The browser must not nudge the scroll position to keep something in view
    while the intro is resizing itself; that reads as a jump. */
 .ymc-stadium-scroll{overflow-anchor:none}
