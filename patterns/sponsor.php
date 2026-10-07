@@ -7,9 +7,9 @@
  */
 
 /*
- * Prices, quantities and benefits come from the school's sponsorship sheet.
- * "Play in the Ravens Experience" is deliberately absent from the two top
- * packages: the stadium experience is not to be advertised until the school
+ * Prices and benefits come from the school's sponsorship sheet.
+ * "Play in the Ravens Experience" is deliberately absent from the top
+ * package: the stadium experience is not to be advertised until the school
  * has settled its logistics.
  */
 $ymcatmtb_packages = array(
@@ -18,10 +18,10 @@ $ymcatmtb_packages = array(
 		'fund'      => '70797',
 		'price'     => '$1,800',
 		'amount'    => '1800',
-		'available' => '16 available',
 		'benefits'  => array(
-			'6 general admission tickets',
-			'Small logo placement',
+			'4 general admission tickets',
+			'Team sponsorship',
+			'VIP entry not included',
 			'Free parking',
 			'Dedicate one week of Erev Shabbos Chizuk by Rabbi Silber',
 		),
@@ -31,7 +31,6 @@ $ymcatmtb_packages = array(
 		'fund'      => '70798',
 		'price'     => '$2,500',
 		'amount'    => '2500',
-		'available' => '15 available',
 		'benefits'  => array(
 			'2 tickets to the VIP experience',
 			'Small logo placement',
@@ -44,13 +43,12 @@ $ymcatmtb_packages = array(
 		'fund'      => '70799',
 		'price'     => '$3,600',
 		'amount'    => '3600',
-		'available' => '12 available',
 		'benefits'  => array(
 			'4 tickets to the VIP experience',
 			'Small logo placement',
 			'VIP reception signage',
 			'Free parking',
-			'Dedicate one week of mishmar at YMC',
+			'Dedicate one week of learning at YMC',
 		),
 	),
 	array(
@@ -58,24 +56,8 @@ $ymcatmtb_packages = array(
 		'fund'      => '70800',
 		'price'     => '$5,000',
 		'amount'    => '5000',
-		'available' => '15 available',
 		'benefits'  => array(
-			'6 tickets to the VIP experience',
-			'Logo placement on merchandise',
-			'Logo placement on boards',
-			'VIP reception signage',
-			'Free parking',
-			'Dedicate one week of learning at YMC',
-		),
-	),
-	array(
-		'name'      => 'Playoffs',
-		'fund'      => '70801',
-		'price'     => '$7,500',
-		'amount'    => '7500',
-		'available' => '3 available',
-		'benefits'  => array(
-			'8 tickets to the VIP experience',
+			'4 tickets to the VIP experience',
 			'Logo placement on merchandise',
 			'Logo placement on boards',
 			'VIP reception signage',
@@ -84,33 +66,31 @@ $ymcatmtb_packages = array(
 		),
 	),
 	array(
+		'name'      => 'Playoffs',
+		'fund'      => '70801',
+		'price'     => '$7,500',
+		'amount'    => '7500',
+		'benefits'  => array(
+			'6 tickets to the VIP experience',
+			'Logo placement on merchandise',
+			'Logo placement on boards',
+			'VIP reception signage',
+			'Free parking',
+			'Dedicate two months of learning at YMC',
+		),
+	),
+	array(
 		'name'      => 'Super Bowl',
 		'fund'      => '70802',
 		'price'     => '$10,000',
 		'amount'    => '10000',
-		'available' => '2 available',
 		'benefits'  => array(
-			'10 tickets to the VIP experience',
+			'8 tickets to the VIP experience',
 			'Premium advertising placement across event media',
 			'Logo placement on merchandise',
 			'VIP reception signage',
 			'Free parking',
 			'Dedicate three months of learning at YMC',
-		),
-	),
-	array(
-		'name'      => 'Hall of Fame',
-		'fund'      => '70803',
-		'price'     => '$18,000',
-		'amount'    => '18000',
-		'available' => '1 available',
-		'benefits'  => array(
-			'Naming rights to the event',
-			'20 tickets to the VIP experience',
-			'Premium advertising placement across all media and swag',
-			'Dedicated VIP reception signage',
-			'Free parking',
-			'Dedicate one year of learning at YMC',
 		),
 	),
 );
@@ -136,7 +116,6 @@ ob_start();
         <div style="display: flex; flex-direction: column; padding: 28px 26px 26px; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.4); background: rgb(13, 13, 13);">
           <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
             <h3 style="margin: 0px; font-family: var(--font-display); font-weight: 400; font-size: 34px; line-height: 1; text-transform: uppercase; color: rgb(255, 255, 255);"><?php echo esc_html( $ymcatmtb_package['name'] ); ?></h3>
-            <span style="font-weight: 600; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgb(176, 179, 184); white-space: nowrap;"><?php echo esc_html( $ymcatmtb_package['available'] ); ?></span>
           </div>
           <div style="margin-top: 10px; font-family: var(--font-condensed); font-weight: 700; font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; color: rgb(212, 175, 55);"><?php echo esc_html( $ymcatmtb_package['price'] ); ?></div>
           <ul style="margin: 20px 0px 0px; padding: 0px; list-style: none; display: grid; gap: 9px; flex: 1 1 auto;">
