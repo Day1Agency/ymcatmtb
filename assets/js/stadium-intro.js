@@ -1,6 +1,22 @@
 // Adapted from the supplied Farm 1.2.6 controller. Native scroll only.
 (()=>{
 const track=document.querySelector('.ymc-stadium-scroll');if(!track)return;const stage=track.querySelector('.ymc-stadium-stage'),world=track.querySelector('.ymc-stadium-world'),opening=track.querySelector('.ymc-stadium-opening'),shade=track.querySelector('.ymc-stadium-shade'),cue=track.querySelector('.ymc-stadium-cue'),aperture=track.querySelector('.ymc-stadium-aperture'),reveal=track.querySelector('.ymc-stadium-reveal'),cards=[...track.querySelectorAll('.ymc-stadium-reveal-card')],progress=track.querySelector('.ymc-stadium-progress span');
+
+// Count calendar days in Baltimore, never infer an unconfirmed kickoff time.
+const eventCounters = track.querySelectorAll('[data-ymc-event-date]');
+function updateEventDays(now = new Date()) {
+ const today = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+ const part = type => Number(today.find(p => p.type === type).value);
+ const todayUTC = Date.UTC(part('year'), part('month') - 1, part('day'));
+ eventCounters.forEach(el => {
+  const [year,month,day] = el.dataset.ymcEventDate.split('-').map(Number);
+  const days = Math.round((Date.UTC(year,month - 1,day) - todayUTC) / 86400000);
+  el.hidden = days < 0;
+  el.textContent = days === 0 ? 'GAME DAY IS HERE' : `${days} ${days === 1 ? 'DAY' : 'DAYS'} UNTIL GAME DAY`;
+ });
+}
+updateEventDays();
+setInterval(updateEventDays, 60000);
 const motion=matchMedia('(prefers-reduced-motion: reduce)');let geometry,pending=false,previous=-1,interactive=true;
 const clamp=n=>Math.max(0,Math.min(1,n));const ease=n=>{n=clamp(n);return n*n*(3-2*n)};
 function measure(){const headerEl=document.querySelector('[data-ymc-section="0"]');if(headerEl){const admin=document.querySelector('#wpadminbar');track.style.setProperty('--header-height',(headerEl.offsetHeight+(admin?admin.offsetHeight:0))+'px')}const w=stage.clientWidth,h=stage.clientHeight,iw=Math.max(w,h*1.5),ih=iw/1.5;geometry={iw,ih,distance:track.offsetHeight-h,header:parseFloat(getComputedStyle(track).getPropertyValue('--header-height')),zoom:Math.max(w/(iw*.13),h/(ih*.141))*1.12};world.style.width=iw+'px';world.style.height=ih+'px';previous=-1;requestFrame()}

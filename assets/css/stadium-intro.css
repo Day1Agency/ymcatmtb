@@ -22,3 +22,6 @@ body:has(.ymc-stadium-scroll) .ymc-ref-sticky-header{transform:none!important}
 
 /* Header button no longer has a separate arrow box. */
 body:has(.ymc-stadium-scroll) [data-ymc-section="0"] a.scp1{padding-right:20px!important}
+
+.ymc-stadium-countdown{color:#e7c961;font-size:11px;font-weight:700;letter-spacing:.14em;margin:12px 0;font-variant-numeric:tabular-nums}
+@media(max-height:620px){.ymc-stadium-countdown{font-size:9px;margin:8px 0}}
