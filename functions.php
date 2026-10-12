@@ -1,4 +1,13 @@
 <?php
+/** Use the current event crest when no Site Icon has been configured. */
+function ymcatmtb_default_site_icon( $url ) {
+	if ( ! get_option( 'site_icon' ) ) {
+		return get_theme_file_uri( 'assets/images/event-site-icon.png' );
+	}
+	return $url;
+}
+add_filter( 'get_site_icon_url', 'ymcatmtb_default_site_icon' );
+
 /**
  * Twenty Twenty-Five functions and definitions.
  *
