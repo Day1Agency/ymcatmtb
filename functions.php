@@ -8,6 +8,21 @@ function ymcatmtb_default_site_icon( $url ) {
 }
 add_filter( 'get_site_icon_url', 'ymcatmtb_default_site_icon' );
 
+/** Local and host rewrites can treat favicon.ico as a normal page. */
+function ymcatmtb_favicon_request() {
+	$path = wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_PATH );
+	$icon_path = wp_parse_url( home_url( '/favicon.ico' ), PHP_URL_PATH );
+	if ( $path === $icon_path ) {
+		wp_safe_redirect( get_site_icon_url( 32 ), 302 );
+		exit;
+	}
+}
+add_action( 'init', 'ymcatmtb_favicon_request', 1 );
+
+// Announce the icon before the rest of the head's styles and scripts.
+remove_action( 'wp_head', 'wp_site_icon', 99 );
+add_action( 'wp_head', 'wp_site_icon', 1 );
+
 /**
  * Twenty Twenty-Five functions and definitions.
  *
