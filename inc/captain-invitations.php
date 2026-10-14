@@ -16,6 +16,17 @@ function captain_ticket( $title ) {
 	return 1 === preg_match( '/\(Captain Only\)$/iu', trim( (string) $title ) );
 }
 
+function invitation_email( $team_name ) {
+	$name = esc_html( $team_name );
+	$url = esc_url( REGISTRATION );
+	return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#f3f0f7;font-family:Arial,sans-serif;color:#302344">'
+		. '<div style="max-width:600px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden"><div style="padding:28px;background:#281744;color:#fff;border-bottom:4px solid #d8b654"><strong>YMC AT M&amp;T</strong><p style="margin-bottom:0;font-size:13px">ADULT TOURNAMENT · MARCH 28, 2027</p></div>'
+		. '<div style="padding:30px"><h1 style="font-size:26px;margin-top:0">Your team is ready. Invite your players.</h1><p>Thank you for registering as captain of <strong>' . $name . '</strong>.</p><p>Forward this email to your players so they can register for your team.</p>'
+		. '<div style="padding:22px;background:#f5f2f8;border:1px solid #e3daeb;border-radius:8px"><h2 style="margin-top:0;font-size:21px">Join ' . $name . '</h2><ol style="padding-left:22px;line-height:1.8"><li>Open the registration link below.</li><li>Sign in or create your Givebutter account.</li><li>Choose <strong>Join a team</strong> and select <strong>' . $name . '</strong>.</li><li>Choose <strong>Adult Tournament — Player</strong> and complete registration.</li></ol>'
+		. '<p style="margin:24px 0"><a href="' . $url . '" style="display:inline-block;padding:15px 22px;background:#38245f;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold">Register for the tournament →</a></p><p style="font-size:12px;line-height:1.6;overflow-wrap:anywhere">Or open:<br><a href="' . $url . '">' . $url . '</a></p></div>'
+		. '<p style="font-size:13px;line-height:1.7;color:#746780">Please select the team name shown above during registration. The link opens registration; it does not automatically select or reserve a team.</p><p style="font-size:12px;color:#746780">Yeshivas Mekor Chaim · YMC at M&amp;T</p></div></div></body></html>';
+}
+
 /** Only call the documented API host; do not follow pagination URLs or redirects. */
 function api( $path ) {
 	$key = config()['api_key'] ?? '';
@@ -122,6 +133,7 @@ function process( $id ) {
 	// A persistent lock fails closed after a process crash; never risk duplicate emails.
 	$lock = $key . '_lock';
 	if ( ! add_option( $lock, time(), '', false ) ) { return; }
+	$team_lock = null;
 	try {
 		$ticket = api( 'tickets/' . rawurlencode( $id ) )['data'];
 		if ( ! captain_ticket( $ticket['title'] ?? '' ) ) { $job['status'] = 'ignored'; return; }
@@ -132,34 +144,39 @@ function process( $id ) {
 		$match = resolve_captain( $ticket, $transaction, collection( "campaigns/$campaign/members" ), collection( "campaigns/$campaign/teams" ) );
 		$team_id = (string) $match['team']['id'];
 		$invite_key = 'ymc_captain_team_' . hash( 'sha256', $team_id );
+		$team_lock_key = $invite_key . '_lock';
+		if ( ! add_option( $team_lock_key, time(), '', false ) ) { throw new \RuntimeException( 'This team invitation is already being processed. Retrying.' ); }
+		$team_lock = $team_lock_key;
 		$invite = get_option( $invite_key );
 		if ( $invite && $invite['member_id'] !== $match['member_id'] ) {
 			$job['status'] = 'review'; $job['message'] = 'This team already has a different captain invitation.'; return;
 		}
 		if ( ! $invite ) {
 			$invite = array(
-				'code' => strtoupper( bin2hex( random_bytes( 6 ) ) ), 'team_id' => $team_id,
+				'team_id' => $team_id,
 				'campaign_id' => $campaign, 'team_name' => sanitize_text_field( $match['team']['name'] ),
 				'email' => $match['email'], 'member_id' => $match['member_id'], 'status' => 'ready',
 			);
 			// Atomic creation also prevents two tickets claiming the same captain slot.
 			if ( ! add_option( $invite_key, $invite, '', false ) ) { throw new \RuntimeException( 'Another invitation is being prepared for this team. Retrying.' ); }
-			add_option( 'ymc_captain_code_' . hash( 'sha256', $invite['code'] ), $invite_key, '', false );
 		}
 		$job['team'] = $invite['team_name'];
 		$job['invite_key'] = $invite_key;
 		if ( in_array( $invite['status'], array( 'sent', 'sending' ), true ) ) {
 			$job['status'] = $invite['status']; return;
 		}
+		// Refresh unsent details from the verified registration before delivery.
+		$invite['email'] = $match['email'];
+		$invite['team_name'] = sanitize_text_field( $match['team']['name'] );
+		update_option( $invite_key, $invite, false );
 		if ( empty( config()['send_email'] ) ) {
 			$job['status'] = 'ready'; $job['message'] = 'Invitation prepared. Email delivery is disabled.'; return;
 		}
 		$invite['status'] = 'sending';
 		update_option( $invite_key, $invite, false );
 		$job['status'] = 'sending'; update_option( $key, $job, false );
-		$link = add_query_arg( 'ymc_join', $invite['code'], home_url( '/' ) );
-		$message = "Your invitation for {$invite['team_name']} is ready.\n\nShare this link with your players:\n$link\n\nTeam code: {$invite['code']}\nEnter the code at: " . add_query_arg( 'ymc_join', '1', home_url( '/' ) ) . "\n\nYour players will see your team name and a link to paid registration. In Givebutter, choose Join a team, select {$invite['team_name']}, and choose Adult Tournament — Player.\n\nThe invitation does not automatically select the team inside Givebutter.\n\nYMC Adult Tournament";
-		$sent = wp_mail( $invite['email'], 'Invite your players — ' . $invite['team_name'], $message );
+		$message = invitation_email( $invite['team_name'] );
+		$sent = wp_mail( $invite['email'], 'Invite your players — ' . $invite['team_name'], $message, array( 'Content-Type: text/html; charset=UTF-8' ) );
 		$invite['status'] = $sent ? 'sent' : 'ready';
 		update_option( $invite_key, $invite, false );
 		if ( ! $sent ) { $job['status'] = 'pending'; throw new \RuntimeException( 'Email transport rejected the message. Retrying.' ); }
@@ -170,6 +187,7 @@ function process( $id ) {
 		$job['message'] = $error->getMessage();
 		if ( 'pending' === $job['status'] ) { wp_schedule_single_event( time() + 300, HOOK, array( $id ) ); }
 	} finally {
+		if ( $team_lock ) { delete_option( $team_lock ); }
 		$job['updated'] = time(); update_option( $key, $job, false ); delete_option( $lock );
 	}
 }
@@ -226,7 +244,7 @@ function settings_page() {
 		}
 		echo '<div class="notice notice-success"><p>Settings saved.</p></div>';
 	}
-	echo '<div class="wrap"><h1>Captain Invitations</h1><p>Automatically prepare an invitation when a matching captain ticket is purchased. This draft still requires live API verification. It does not preselect or enforce team membership in Givebutter.</p><form method="post">';
+	echo '<div class="wrap"><h1>Captain Invitations</h1><p>After a successful adult ticket purchase labeled (Captain Only), email the matched registered captain their team name, the Givebutter registration link, and instructions to forward to players. No team code is required. Players select their team in Givebutter.</p><form method="post">';
 	wp_nonce_field( 'ymc_captain_settings' );
 	foreach ( array( 'api_key' => 'Givebutter API key', 'signing_secret' => 'Webhook signing secret' ) as $field => $label ) {
 		echo '<p><label>' . esc_html( $label ) . '<br><input class="regular-text" type="password" name="' . esc_attr( $field ) . '" autocomplete="new-password" value=""></label> ' . ( empty( $settings[$field] ) ? 'Not configured' : 'Configured — leave blank to keep' ) . '</p>';

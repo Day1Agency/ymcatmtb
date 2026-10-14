@@ -1,4 +1,4 @@
-# Automatic captain invitations — integration draft
+# Automatic captain registration emails
 
 Live read-only verification on October 15: team detail records contain no creator
 ID or email. The user subsequently confirmed that a completed ticket labeled
@@ -18,12 +18,17 @@ no public homepage links or page 6 content are changed. No live database import 
 3. A background job retrieves the ticket and transaction through the authenticated
    public API, verifies campaign RMSQHT and successful payment, then finds a single
    fundraiser with the ticket holder's email and a URL belonging to a team.
-4. It generates a random team code and website invitation link.
-5. When delivery is enabled, it emails that link/code to the matched registered email.
-   Duplicate notifications do not produce duplicate invitation emails.
+4. It prepares an HTML email with the team name and the direct Givebutter
+   registration URL, plus instructions to forward it to players.
+5. When delivery is enabled, it emails the matched registered captain. Players
+   choose Join a team, select the named team, and buy Adult Tournament — Player.
+   No team code or website lookup is generated or included. The earlier invitation
+   page remains available for local design review only and is not part of this flow.
+   Duplicate notifications do not produce duplicate invitation emails; a team-level
+   lock also serializes different ticket events for the same team.
 
-The team URL relationship is observable on the supplied Test Captain page, but must
-be checked against actual authenticated API responses before deployment. A captain
+The team URL/email relationship was verified against the authenticated API for
+Sample Team Registration (team 146378, ticket 47016767A0004). A captain
 ticket identifies the intended captain; the API does not expose a team creator role.
 The integration does not assume the payer or first team member is the captain.
 Missing or ambiguous data waits/retries, then stops for review instead of guessing.
@@ -32,14 +37,14 @@ Missing or ambiguous data waits/retries, then stops for review instead of guessi
 
 Givebutter does not document a registration URL that preselects a team. Its public
 API exposes read/delete operations for members and teams, not membership assignment.
-The invitation page therefore states the exact team to select in Givebutter.
+The email therefore states the exact team to select in Givebutter.
 Automatic invitation delivery is separate from automatic membership assignment.
-This draft does not fulfill automatic selection/locked rosters or replace registration
-review. Do not present it as a fully automated team-joining integration.
+This implementation automates invitation email delivery, not team selection or
+locked rosters. It does not replace registration review.
 
-The page checks the current team size (10 including the captain) and closes at the
-end of February 1, 2027, America/New_York. It does not reserve seats or enforce
-capacity inside Givebutter. Direct Givebutter registration bypasses these checks.
+Capacity and registration cutoff must be configured in Givebutter. Direct links
+do not enforce website restrictions. Keep the Givebutter limit at 10 including
+the captain, and verify it during registration testing.
 
 ## Setup and acceptance checks
 
@@ -55,8 +60,8 @@ capacity inside Givebutter. Direct Givebutter registration bypasses these checks
 - Test a real authorized captain registration and confirm the correct ticket, team,
   registered email and unique member match. Preview status should become `ready`.
 - Enable delivery only after that check. Existing ready invitations will be scheduled.
-- Verify the actual email inbox, link and code, duplicate event handling, unrelated
-  campaigns, failed/refunded transactions, and a full/deleted team.
+- Verify the actual email inbox, direct registration link, duplicate event handling,
+  unrelated campaigns, failed/refunded transactions, and missing/deleted teams.
 - A completed ticket created before webhook activation is not automatically imported.
   Use Givebutter webhook replay for testing if available; do not bulk-mail old captains.
 - Emails are one per team. A second captain ticket for another member is held for review.
@@ -72,6 +77,13 @@ Run `wp eval-file tests/captain-invitations.php` with the theme active on localh
 The fixture mocks every HTTP request and email, checks webhook authentication,
 matching, rejection paths, preview and enabled delivery, and replay idempotency.
 It removes its own test options/jobs and restores previous configuration afterward.
+
+Twenty automated checks passed after simplifying the flow. A separate local-only
+SMTP test accepted the HTML email at 127.0.0.1:10019, addressed to an .invalid test
+recipient. This is a Local mail catcher test, not proof of external inbox delivery.
+No real captain email has been sent. API key and webhook signing secret must be
+configured separately on the deployed WordPress site; local options are not deployed
+by GitHub. Never restore the entire local database to enable this feature.
 
 ## Sources
 

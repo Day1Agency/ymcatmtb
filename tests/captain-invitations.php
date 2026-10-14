@@ -59,18 +59,21 @@ try {
 	\YMC\CaptainInvitations\process( $ticket['id'] );
 	$invite = get_option( $invite_key );
 	$assert( 'ready' === get_option( $job_key )['status'] && 0 === count( $sent ), 'Preview prepares link without sending email' );
-	$assert( 12 === strlen( $invite['code'] ), 'Generates unique link and code for the team' );
+	$assert( ! isset( $invite['code'] ), 'Simplified flow does not generate a team code' );
 	$settings = \YMC\CaptainInvitations\config(); $settings['send_email'] = true;
 	update_option( \YMC\CaptainInvitations\CONFIG, $settings, false );
 	\YMC\CaptainInvitations\process( $ticket['id'] );
 	$assert( 1 === count( $sent ) && 'captain@example.invalid' === $sent[0]['to'], 'Enabled delivery sends to captain registered email' );
-	$assert( str_contains( $sent[0]['message'], '?ymc_join=' . $invite['code'] ) && str_contains( $sent[0]['message'], 'does not automatically select' ), 'Email includes the team link and accurately explains registration' );
+	$assert( str_contains( $sent[0]['message'], \YMC\CaptainInvitations\REGISTRATION ) && ! str_contains( $sent[0]['message'], 'ymc_join' ) && str_contains( $sent[0]['message'], 'does not automatically select' ), 'Email links directly to Givebutter and explains manual team selection' );
+	$assert( str_contains( $sent[0]['message'], 'Test Team' ) && str_contains( $sent[0]['message'], 'Forward this email' ), 'Invitation includes the team name and forwarding instructions' );
+	$assert( str_contains( \YMC\CaptainInvitations\invitation_email( '<script>alert(1)</script>' ), '&lt;script&gt;' ), 'Team names are escaped in HTML email' );
 	rest_do_request( $request ); \YMC\CaptainInvitations\process( $ticket['id'] );
 	$assert( 1 === count( $sent ), 'Webhook redelivery does not duplicate the invitation email' );
 	WP_CLI::success( "$checks checks passed; all email and API traffic mocked." );
 } finally {
 	$invite = get_option( $invite_key );
-	if ( $invite ) { delete_option( 'ymc_captain_code_' . hash( 'sha256', $invite['code'] ) ); }
+	if ( ! empty( $invite['code'] ) ) { delete_option( 'ymc_captain_code_' . hash( 'sha256', $invite['code'] ) ); }
+	delete_option( $invite_key . '_lock' );
 	delete_option( $invite_key ); delete_option( $job_key ); delete_option( $job_key . '_lock' );
 	wp_clear_scheduled_hook( \YMC\CaptainInvitations\HOOK, array( $ticket['id'] ) );
 	if ( null === $original ) { delete_option( \YMC\CaptainInvitations\CONFIG ); } else { update_option( \YMC\CaptainInvitations\CONFIG, $original, false ); }
