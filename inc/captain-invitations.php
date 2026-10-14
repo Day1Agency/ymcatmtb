@@ -194,22 +194,9 @@ add_action( 'template_redirect', function () {
 	}
 	$closed = time() >= ( new \DateTimeImmutable( '2027-02-02 00:00:00', new \DateTimeZone( 'America/New_York' ) ) )->getTimestamp();
 	nocache_headers(); header( 'X-Robots-Tag: noindex, nofollow', true );
-	get_header();
-	echo '<main style="max-width:640px;margin:60px auto;padding:32px;background:#fff;color:#24194a;border-radius:20px"><h1>Join your team</h1>';
-	if ( $closed ) { echo '<p>Adult registration has closed.</p>'; }
-	elseif ( $error ) { echo '<p role="alert">' . esc_html( $error ) . '</p>'; }
-	elseif ( $invite ) {
-		echo '<h2>' . esc_html( $invite['team_name'] ) . '</h2>';
-		if ( $full ) { echo '<p>This team is full or its availability could not be confirmed. Please contact your captain.</p>'; }
-		else {
-			echo '<p>In Givebutter, choose <strong>Join a team</strong>, select <strong>' . esc_html( $invite['team_name'] ) . '</strong>, then choose <strong>Adult Tournament — Player</strong>.</p><p>Your place is confirmed after registration. Opening this invitation does not reserve a place.</p>';
-			echo '<a class="wp-element-button" href="' . esc_url( REGISTRATION ) . '">Continue to registration</a>';
-		}
-	}
-	if ( ! $closed ) {
-		echo '<form action="' . esc_url( home_url( '/' ) ) . '" method="get" style="margin-top:32px"><label for="ymc-team-code">Team code</label><p><input id="ymc-team-code" name="ymc_join" maxlength="12" required autocomplete="off" pattern="[A-Fa-f0-9]{12}"></p><button type="submit">Find my team</button></form>';
-	}
-	echo '</main>'; get_footer(); exit;
+	wp_enqueue_style( 'ymc-team-invitation', get_theme_file_uri( 'assets/css/team-invitation.css' ), array(), filemtime( get_theme_file_path( 'assets/css/team-invitation.css' ) ) );
+	require __DIR__ . '/team-invitation-view.php';
+	exit;
 } );
 
 add_action( 'admin_menu', function () {
