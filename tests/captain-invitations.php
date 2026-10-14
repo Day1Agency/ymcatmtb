@@ -23,7 +23,8 @@ $http = function ( $pre, $args, $url ) use ( &$ticket, &$transaction, &$member, 
 	elseif ( str_contains( $url, '/members?' ) ) { $data = array( $member ); }
 	elseif ( str_contains( $url, '/teams?' ) ) { $data = array( $team ); }
 	else { return new WP_Error( 'test_blocked', 'All other HTTP requests blocked by test.' ); }
-	return array( 'response' => array( 'code' => 200 ), 'body' => wp_json_encode( array( 'data' => $data, 'links' => array( 'next' => null ) ) ) );
+	$body = isset( $data['id'] ) ? $data : array( 'data' => $data, 'links' => array( 'next' => null ) );
+	return array( 'response' => array( 'code' => 200 ), 'body' => wp_json_encode( $body ) );
 };
 $mail = function ( $pre, $atts ) use ( &$sent ) { $sent[] = $atts; return true; };
 add_filter( 'pre_http_request', $http, 10, 3 );
@@ -31,6 +32,8 @@ add_filter( 'pre_wp_mail', $mail, 10, 2 );
 try {
 	update_option( \YMC\CaptainInvitations\CONFIG, array( 'api_key' => 'test-only', 'signing_secret' => 'test-secret', 'send_email' => false ), false );
 	$assert( \YMC\CaptainInvitations\captain_ticket( $ticket['title'] ), 'Recognizes configured captain tickets' );
+	$assert( \YMC\CaptainInvitations\captain_ticket( 'Adult Tournament Test Ticket (Captain Only)' ), 'Recognizes the real test captain ticket label' );
+	$assert( ! \YMC\CaptainInvitations\captain_ticket( 'Adult Tournament (Captain Only) Guest' ), 'Requires the captain label at the end of the title' );
 	$assert( ! \YMC\CaptainInvitations\captain_ticket( 'Adult Tournament — Player' ), 'Does not invite ordinary player tickets' );
 	$match = \YMC\CaptainInvitations\resolve_captain( $ticket, $transaction, array( $member ), array( $team ) );
 	$assert( 'captain@example.invalid' === $match['email'], 'Uses the registered captain email' );

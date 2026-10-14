@@ -1,5 +1,13 @@
 # Automatic captain invitations — integration draft
 
+Live read-only verification on October 15: team detail records contain no creator
+ID or email. The user subsequently confirmed that a completed ticket labeled
+`(Captain Only)` identifies a captain. The integration now recognizes that suffix,
+including the test ticket, while independently checking the adult campaign and
+matching the ticket email to the fundraiser/team. Keep delivery off until tested.
+The API returns single resources as bare objects and collections under `data`;
+the client and tests now account for both shapes.
+
 This branch adds Settings → Captain Invitations. Nothing is sent by default and
 no public homepage links or page 6 content are changed. No live database import is needed.
 

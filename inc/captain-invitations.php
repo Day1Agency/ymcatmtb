@@ -12,8 +12,8 @@ const REGISTRATION = 'https://givebutter.com/ymc-adult-player-registration/regis
 function config() { return (array) get_option( CONFIG, array() ); }
 function job_key( $id ) { return JOB_PREFIX . hash( 'sha256', (string) $id ); }
 function captain_ticket( $title ) {
-	$colors = 'Blue|Red|Green|Yellow|Orange|Purple|Maroon|Teal|Black|White|Gray|Brown';
-	return 1 === preg_match( '/^Adult Tournament\s*[—–-]\s*(' . $colors . ')\s*\(Captain Only\)$/iu', trim( (string) $title ) );
+	// Campaign is independently verified from the authenticated transaction.
+	return 1 === preg_match( '/\(Captain Only\)$/iu', trim( (string) $title ) );
 }
 
 /** Only call the documented API host; do not follow pagination URLs or redirects. */
@@ -29,6 +29,10 @@ function api( $path ) {
 		throw new \RuntimeException( 'Givebutter API returned HTTP ' . wp_remote_retrieve_response_code( $response ) . '.' );
 	}
 	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+	// Givebutter returns single resources unwrapped, unlike paginated collections.
+	if ( is_array( $data ) && isset( $data['id'] ) && ! isset( $data['data'] ) ) {
+		$data = array( 'data' => $data );
+	}
 	if ( ! is_array( $data ) || ! isset( $data['data'] ) || ! is_array( $data['data'] ) ) {
 		throw new \RuntimeException( 'Givebutter returned an unexpected response.' );
 	}
