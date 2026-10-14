@@ -22,8 +22,9 @@ no public homepage links or page 6 content are changed. No live database import 
    registration URL, plus instructions to forward it to players.
 5. When delivery is enabled, it emails the matched registered captain. Players
    choose Join a team, select the named team, and buy Adult Tournament — Player.
-   No team code or website lookup is generated or included. The earlier invitation
-   page remains available for local design review only and is not part of this flow.
+   No team code or website lookup is generated or included. The earlier team-code
+   invitation page has been removed: nothing issued the codes it asked for, so every
+   lookup would have failed on a deployed site.
    Duplicate notifications do not produce duplicate invitation emails; a team-level
    lock also serializes different ticket events for the same team.
 

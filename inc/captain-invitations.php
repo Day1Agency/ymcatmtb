@@ -192,31 +192,6 @@ function process( $id ) {
 	}
 }
 
-/** Public invitation: show team context honestly; never pretend the GB team is selected. */
-add_action( 'template_redirect', function () {
-	if ( ! isset( $_GET['ymc_join'] ) ) { return; }
-	if ( ! is_string( $_GET['ymc_join'] ) ) { wp_die( 'Invalid team code.', '', array( 'response' => 400 ) ); }
-	$code = strtoupper( sanitize_text_field( wp_unslash( $_GET['ymc_join'] ) ) );
-	$invite = false; $error = ''; $full = false;
-	if ( '1' !== $code ) {
-		$key = preg_match( '/^[A-F0-9]{12}$/', $code ) ? get_option( 'ymc_captain_code_' . hash( 'sha256', $code ) ) : false;
-		$invite = $key ? get_option( $key ) : false;
-		if ( ! $invite ) { $error = 'That team code was not found. Please check the code your captain sent.'; }
-		else {
-			try {
-				$team = api( 'campaigns/' . (int) $invite['campaign_id'] . '/teams/' . rawurlencode( $invite['team_id'] ) )['data'];
-				$invite['team_name'] = sanitize_text_field( $team['name'] );
-				$full = ! isset( $team['members'] ) || (int) $team['members'] >= 10;
-			} catch ( \Throwable $e ) { $error = 'We could not check this team right now. Please try again shortly.'; }
-		}
-	}
-	$closed = time() >= ( new \DateTimeImmutable( '2027-02-02 00:00:00', new \DateTimeZone( 'America/New_York' ) ) )->getTimestamp();
-	nocache_headers(); header( 'X-Robots-Tag: noindex, nofollow', true );
-	wp_enqueue_style( 'ymc-team-invitation', get_theme_file_uri( 'assets/css/team-invitation.css' ), array(), filemtime( get_theme_file_path( 'assets/css/team-invitation.css' ) ) );
-	require __DIR__ . '/team-invitation-view.php';
-	exit;
-} );
-
 add_action( 'admin_menu', function () {
 	add_options_page( 'Captain Invitations', 'Captain Invitations', 'manage_options', 'ymc-captain-invitations', __NAMESPACE__ . '\\settings_page' );
 } );
