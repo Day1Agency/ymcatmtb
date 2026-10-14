@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/inc/captain-invitations.php';
 /** Use the current event crest when no Site Icon has been configured. */
 function ymcatmtb_default_site_icon( $url ) {
 	if ( ! get_option( 'site_icon' ) ) {
