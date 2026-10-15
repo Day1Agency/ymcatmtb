@@ -1723,3 +1723,15 @@ a:hover { color: rgb(230, 198, 90); }
 }
 @media(max-width:559px) { .ymc-ref-facts {grid-template-columns:minmax(0,1fr) !important;} }
 @media(prefers-reduced-motion:reduce) { .ymc-reference *, .ymc-reference *::before {animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;} html {scroll-behavior:auto;} }
+
+/* Keep the school and event identities legible at every screen size. */
+.ymc-reference .ymc-ref-header-inner { height:104px !important; }
+.ymc-reference .ymc-ref-header-logo { height:88px !important; }
+.ymc-reference [data-dc-tpl="234"] { height:84px !important; width:auto; }
+.ymc-reference [data-dc-tpl="235"] { height:96px !important; width:auto; }
+.ymc-reference .ymc-ref-badge { width:136px !important; height:136px !important; }
+@media(max-width:759px) {
+ .ymc-reference .ymc-ref-header-inner { height:84px !important; }
+ .ymc-reference .ymc-ref-header-logo { height:64px !important; }
+ .ymc-reference .ymc-ref-badge { width:104px !important; height:104px !important; }
+}
