@@ -1,0 +1,37 @@
+YMC LIVE HANDOFF | October 15, 2026
+
+LIVE CHANGES
+PR #9 merged and deployed: sponsor labels/dedications and larger event/school logos.
+WordPress Home page ID 6 also updated separately in the database (revision 17).
+The accompanying homepage-wordpress-oct15.html is the saved block-editor content after that update, NOT a full database backup or a file automatically imported by deployment.
+MVP $5,000: two weeks of learning; Super Bowl $7,500: three weeks; Hall of Fame $10,000: one month.
+All existing donation URLs, amounts and fund IDs preserved.
+Givebutter funds 70801 renamed Super Bowl, 70802 renamed Hall of Fame.
+Ticket campaign 725223: removed unconfirmed open-bar promise from story and both VIP descriptions. Event name now YMC at M&T Bank Stadium | Sunday, March 28, 2027. Prices and quantities unchanged.
+
+DEPLOYMENT
+Pull current main before modifying theme. Preserve live database content and settings. Do not import an older database over production.
+Theme deployment does not sync WordPress content. Take a fresh production backup and reconcile any database import separately.
+
+CHECKED
+390px mobile homepage has no horizontal overflow. Sponsor cards are visible in the normal vertical page flow.
+Homepage teen/adult/ticket/donation links point to the intended Givebutter campaigns.
+Teen and adult registration URLs load their sign-in/registration entry screens.
+Ticket checkout advances from $54 GA selection through optional donation to attendee details; no attendee details or payments submitted.
+Captain Invitations: API key and webhook secret configured; automatic sending enabled. Test Team C logged as sent, with explicit note that email transport acceptance is not inbox-delivery confirmation.
+
+REMAINING TECHNICAL WORK
+Adult campaign 729740 Tools still uses a required checkbox titled I accept the liability waiver with description Required to play. YMC will email the full waiver before the event. This is not the approved document/signature implementation. Implement the supplied waiver and media release, preserving exact approved wording and guardian signing for minors; verify both teen and adult paths.
+User confirms media-release approval is complete, and Yossi owns adult registration review.
+Keep manual team selection and captain invitation workflow; user approved launching with manual review. Do not describe it as invite-only or automatically assigning teams.
+Verify captain email arrives in an actual recipient inbox and complete a coordinated test registration. No new account or purchase was created in this check.
+Public ticket campaign still shows Staff, Staff 1 and Staff 2 test fundraiser profiles; coordinate cleanup with Nikka rather than deleting real history blindly.
+Confirm February 1 registration cutoff is configured on both player campaigns, not merely written in copy.
+Mobile floating school badge can cover lower-right card text; evaluate placement with the accessibility widget.
+
+WAITING ON ORGANIZERS
+Final GA/VIP food, drinks/access; fundraising checkpoint dates and shortfall/withdrawal rules; confirmed sponsor assets.
+Ticket page currently says non-refundable/transferable, business casual, and directs transfer requests to seo@day1.agency. Confirm those details before broad promotion.
+
+DOMAIN
+ymc.school remains a separate domain recovery issue. Squarespace case 14776316 replied at 1 PM Oct15: recovery emails sent to undisclosed owner inbox; alternate path is identity verification and bank payment evidence. No domain renewal or recovery completed.
