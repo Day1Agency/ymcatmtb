@@ -40,3 +40,10 @@ body:has(.ymc-stadium-scroll) [data-ymc-section="0"] a.scp1{padding-right:20px!i
 /* The browser must not nudge the scroll position to keep something in view
    while the intro is resizing itself; that reads as a jump. */
 .ymc-stadium-scroll{overflow-anchor:none}
+
+/* Single close-up plate, positioned in stage pixels rather than a scaled GPU layer. */
+.ymc-tunnel-detail{position:absolute;z-index:2;opacity:0;pointer-events:none;mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 8%,#000 92%,transparent);mask-composite:intersect}
+.ymc-tunnel-detail img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
+.ymc-detail-shell{clip-path:polygon(evenodd,0% 0%,100% 0%,100% 100%,0% 100%,0% 0%,19.9% 16.1%,19.9% 83.2%,79.7% 83.2%,79.7% 16.1%,19.9% 16.1%)}
+.ymc-detail-aperture{clip-path:polygon(19.8% 16%,79.8% 16%,79.8% 83.3%,19.8% 83.3%)}
+.ymc-stadium-scroll:not([data-motion]) .ymc-tunnel-detail{display:none}
