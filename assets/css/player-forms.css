@@ -24,6 +24,6 @@ html{scroll-behavior:smooth}
  * it is unsupported the @supports block is skipped and content simply shows.
  */
 /* Reveal on entry, mirroring the front page: 760ms, 90ms stagger. */
-.ymcf-page .ymcf-reveal{opacity:0;transform:translateY(26px);transition:opacity 760ms cubic-bezier(.22,1,.36,1),transform 760ms cubic-bezier(.22,1,.36,1);transition-delay:var(--ymcf-reveal-delay,0ms);will-change:opacity,transform}
+.ymcf-page .ymcf-reveal{opacity:0;transform:translateY(18px);transition:opacity 420ms cubic-bezier(.22,1,.36,1),transform 420ms cubic-bezier(.22,1,.36,1);transition-delay:var(--ymcf-reveal-delay,0ms);will-change:opacity,transform}
 .ymcf-page .ymcf-reveal.is-visible{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.ymcf-page .ymcf-reveal{opacity:1;transform:none;transition:none}}

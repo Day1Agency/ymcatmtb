@@ -5,14 +5,25 @@
 	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 	if (!('IntersectionObserver' in window)) return;
 
-	const TARGETS = '.ymcf-hero > *, .ymcf-section-heading, .ymcf-cards > *, .ymcf-guardian, .ymcf-bundle, .ymcf-contact, .ymcf-footnote';
-	const revealed = [];
-	let i = 0;
+	/* Each group staggers on its own, so later sections do not inherit the
+	   delay of everything above them and arrive long after you get there. */
+	const GROUPS = [
+		'.ymcf-hero > *',
+		'.ymcf-section-heading',
+		'.ymcf-cards > *',
+		'.ymcf-guardian',
+		'.ymcf-bundle',
+		'.ymcf-contact, .ymcf-footnote'
+	];
 
-	page.querySelectorAll(TARGETS).forEach(el => {
-		el.classList.add('ymcf-reveal');
-		el.style.setProperty('--ymcf-reveal-delay', (i++ * 90) + 'ms');
-		revealed.push(el);
+	const revealed = [];
+	GROUPS.forEach(selector => {
+		let i = 0;
+		page.querySelectorAll(selector).forEach(el => {
+			el.classList.add('ymcf-reveal');
+			el.style.setProperty('--ymcf-reveal-delay', (i++ * 60) + 'ms');
+			revealed.push(el);
+		});
 	});
 	if (!revealed.length) return;
 
@@ -20,11 +31,13 @@
 	const watcher = new IntersectionObserver(function (entries) {
 		observed = true;
 		entries.forEach(entry => {
-			if (!entry.isIntersecting) return;
+			/* A fast scroll or anchor jump can skip an element entirely, so
+			   anything now above the viewport is shown rather than left hidden. */
+			if (!entry.isIntersecting && entry.boundingClientRect.bottom > 0) return;
 			entry.target.classList.add('is-visible');
 			watcher.unobserve(entry.target);
 		});
-	}, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+	}, { rootMargin: '0px 0px -4% 0px', threshold: 0.01 });
 
 	/* Anything already scrolled past (an anchor landing) is shown at once. */
 	revealed.forEach(el => {
