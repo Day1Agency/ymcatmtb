@@ -8,6 +8,7 @@ add_action( 'after_setup_theme', function () { add_editor_style( 'assets/css/foo
 add_action( 'wp_enqueue_scripts', function () {
 	if ( is_page( 'player-forms' ) ) {
 		wp_enqueue_style( 'ymc-player-forms', get_theme_file_uri( 'assets/css/player-forms.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/player-forms.css' ) ) );
+		wp_enqueue_script( 'ymc-player-forms', get_theme_file_uri( 'assets/js/player-forms.js' ), array(), (string) filemtime( get_theme_file_path( 'assets/js/player-forms.js' ) ), true );
 	}
 }, 40 );
 add_action( 'after_setup_theme', function () { add_editor_style( 'assets/css/player-forms.css' ); } );

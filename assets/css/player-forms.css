@@ -4,3 +4,26 @@
 .ymcf-page .ymcf-guardian{display:flex;align-items:center;gap:22px;border-radius:10px;background:var(--ymc-paper);border:1px solid rgba(36,16,70,.16);margin-top:24px;padding:23px 28px}.ymcf-page .ymcf-guardian-badge{width:50px;flex-shrink:0;text-align:center;font-size:8px;line-height:1.3;letter-spacing:.1em;color:var(--ymc-purple)}.ymcf-guardian-badge strong{font:400 40px/1.1 'Bebas Neue',Impact,sans-serif;color:var(--ymc-purple)}.ymcf-page .ymcf-guardian h3{font:700 14px/1.5 Montserrat,Arial,sans-serif;color:var(--ymc-purple);margin-bottom:5px}.ymcf-page .ymcf-guardian p:not(.ymcf-guardian-badge){font-size:12px;line-height:1.8;color:rgba(13,13,13,.72);max-width:810px}
 .ymcf-page .ymcf-bundle{display:flex;justify-content:space-between;align-items:center;gap:30px;margin-top:35px;padding:32px 34px;background:var(--ymc-purple);border-radius:12px;position:relative;overflow:hidden}.ymcf-bundle .ymcf-eyebrow{color:var(--ymc-gold)}.ymcf-page .ymcf-bundle h3{font:400 34px/1.1 'Bebas Neue',Impact,sans-serif;color:var(--ymc-paper);margin:8px 0}.ymcf-bundle>div>p:last-child{font-size:11px;line-height:1.8;color:var(--ymc-muted)}.ymcf-bundle .wp-block-buttons{flex-shrink:0;margin:0}.ymcf-page .ymcf-all a{background:var(--ymc-gold);color:var(--ymc-purple);display:flex;gap:25px;align-items:center;justify-content:space-between;border-radius:6px;padding:17px 20px;font:700 12px/1.5 Montserrat,Arial,sans-serif;text-decoration:none;text-transform:none;letter-spacing:0;min-height:52px}.ymcf-page .ymcf-download a:hover{background:var(--ymc-gold);color:var(--ymc-purple);border-color:var(--ymc-gold)}.ymcf-page .ymcf-download a:hover span{color:var(--ymc-purple)}.ymcf-page .ymcf-all a:hover{background:var(--ymc-gold-bright)}.ymcf-page a:focus-visible,.ymcf-nav a:focus-visible{outline:3px solid var(--ymc-gold);outline-offset:5px}.ymcf-page .ymcf-contact{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:28px 0;border-bottom:1px solid rgba(36,16,70,.16);margin-top:10px}.ymcf-contact p{font-size:11px;color:rgba(13,13,13,.72);line-height:1.9}.ymcf-contact strong{color:var(--ymc-purple)}.ymcf-contact a{color:var(--ymc-purple);text-underline-offset:4px;overflow-wrap:anywhere}.ymcf-page .ymcf-footnote{font-size:8px;letter-spacing:.16em;color:rgba(13,13,13,.72);text-align:center;padding:24px 0 2px}
 @media(max-width:650px){.ymcf-page .ymcf-hero{padding:43px 24px 29px}.ymcf-hero:before{background:linear-gradient(90deg,rgba(36,16,70,.94),rgba(36,16,70,.69)),url('../images/stadium.jpg') center/cover}.ymcf-page .ymcf-hero h1{font-size:68px}.ymcf-page .ymcf-intro{font-size:12px}.ymcf-page .ymcf-body{padding:35px 18px 20px}.ymcf-cards{grid-template-columns:1fr;gap:18px}.ymcf-page .ymcf-card{padding:25px}.ymcf-page .ymcf-card h3{font-size:21px}.ymcf-page .ymcf-guardian{padding:20px;gap:14px;align-items:flex-start}.ymcf-page .ymcf-bundle{padding:26px;flex-direction:column;align-items:stretch;gap:22px}.ymcf-bundle .wp-block-buttons,.ymcf-all{width:100%}.ymcf-page .ymcf-contact{flex-direction:column;align-items:flex-start;gap:6px}.ymcf-page .ymcf-sign{font-size:7px}}
+
+/* Hero cue scrolls to the forms; clears the sticky header when it lands. */
+.ymcf-page .ymcf-hero-label{display:block}
+.ymcf-page .ymcf-hero-label a{display:inline-flex;align-items:center;gap:12px;min-height:46px;padding:0 20px;border:1px solid var(--ymc-gold,#d4af37);border-radius:4px;color:var(--ymc-gold,#d4af37);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;transition:background 200ms cubic-bezier(.2,.7,.3,1),color 200ms cubic-bezier(.2,.7,.3,1)}
+.ymcf-page .ymcf-hero-label a:hover{background:var(--ymc-gold,#d4af37);color:var(--ymc-purple,#241046)}
+.ymcf-page .ymcf-hero-label a:focus-visible{outline:3px solid var(--ymc-gold,#d4af37);outline-offset:5px}
+.ymcf-page .ymcf-hero-label a span{font-size:16px;line-height:1;transition:transform 200ms cubic-bezier(.2,.7,.3,1)}
+.ymcf-page .ymcf-hero-label a:hover span{transform:translateY(3px)}
+.ymcf-page .ymcf-body{scroll-margin-top:120px}
+@media(max-width:759px){.ymcf-page .ymcf-body{scroll-margin-top:96px}}
+
+/* Smooth jump from the hero cue; only this page loads this file. */
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/*
+ * Scroll-driven reveal. Uses animation-timeline so no script is needed; where
+ * it is unsupported the @supports block is skipped and content simply shows.
+ */
+/* Reveal on entry, mirroring the front page: 760ms, 90ms stagger. */
+.ymcf-page .ymcf-reveal{opacity:0;transform:translateY(26px);transition:opacity 760ms cubic-bezier(.22,1,.36,1),transform 760ms cubic-bezier(.22,1,.36,1);transition-delay:var(--ymcf-reveal-delay,0ms);will-change:opacity,transform}
+.ymcf-page .ymcf-reveal.is-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.ymcf-page .ymcf-reveal{opacity:1;transform:none;transition:none}}
