@@ -1,4 +1,17 @@
 <?php
+// Shared footer icons are needed on regular pages as well as event sections.
+add_action( 'wp_enqueue_scripts', function () {
+	wp_enqueue_style( 'ymc-footer-icons', get_theme_file_uri( 'assets/css/footer-icons.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/footer-icons.css' ) ) );
+}, 40 );
+add_action( 'after_setup_theme', function () { add_editor_style( 'assets/css/footer-icons.css' ); } );
+// Player Forms styling is shared by the page and the block editor.
+add_action( 'wp_enqueue_scripts', function () {
+	if ( is_page( 'player-forms' ) ) {
+		wp_enqueue_style( 'ymc-player-forms', get_theme_file_uri( 'assets/css/player-forms.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/player-forms.css' ) ) );
+		wp_enqueue_script( 'ymc-player-forms', get_theme_file_uri( 'assets/js/player-forms.js' ), array(), (string) filemtime( get_theme_file_path( 'assets/js/player-forms.js' ) ), true );
+	}
+}, 40 );
+add_action( 'after_setup_theme', function () { add_editor_style( 'assets/css/player-forms.css' ); } );
 require_once __DIR__ . '/inc/captain-invitations.php';
 /** Use the current event crest when no Site Icon has been configured. */
 function ymcatmtb_default_site_icon( $url ) {

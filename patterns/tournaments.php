@@ -79,6 +79,11 @@ ob_start();
           </div>
         </div>
 
+        <div style="grid-column: 1 / -1; margin-top: 22px; padding: 20px 24px; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 6px; background: rgba(13, 13, 13, 0.55); display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;">
+          <p style="flex: 1 1 420px; margin: 0px; font-size: 14px; line-height: 1.6; color: rgb(176, 179, 184);"><i class="fas fa-file-signature" style="margin-right: 10px; color: rgb(212, 175, 55);"></i>All players submit a signed liability waiver and media release, with a parent or legal guardian signing for anyone under 18. Download both in advance so you are ready at registration.</p>
+          <a href="<?php echo esc_url( home_url( '/player-forms/' ) ); ?>" class="scp0" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0px 20px; border-radius: 4px; border: 1px solid rgb(212, 175, 55); color: rgb(212, 175, 55); font-weight: 700; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;">Get the Forms</a>
+        </div>
+
       </div>
     </div>
   </section>
