@@ -1,0 +1,21 @@
+/* Use the same bundled brand icons as the homepage on every shared footer. */
+@font-face {
+	font-family: "Font Awesome 5 Brands";
+	font-style: normal;
+	font-weight: 400;
+	font-display: block;
+	src: url("../reference/8ea8791754915a89.woff2") format("woff2");
+}
+footer .fab {
+	font-family: "Font Awesome 5 Brands";
+	font-style: normal;
+	font-weight: 400;
+	font-variant: normal;
+	text-rendering: auto;
+	line-height: 1;
+	display: inline-block;
+	-webkit-font-smoothing: antialiased;
+}
+footer .fa-instagram::before { content: "\f16d"; }
+footer .fa-facebook-f::before { content: "\f39e"; }
+footer .fa-youtube::before { content: "\f167"; }
