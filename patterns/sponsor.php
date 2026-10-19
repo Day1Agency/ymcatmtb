@@ -57,7 +57,7 @@ $ymcatmtb_packages = array(
 		'price'     => '$5,000',
 		'amount'    => '5000',
 		'benefits'  => array(
-			'4 tickets to the VIP experience',
+			'5 tickets to the VIP experience',
 			'Logo placement on merchandise',
 			'Logo placement on boards',
 			'VIP reception signage',
