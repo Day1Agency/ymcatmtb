@@ -1,4 +1,11 @@
 <?php
+// Player Forms styling is shared by the page and the block editor.
+add_action( 'wp_enqueue_scripts', function () {
+	if ( is_page( 'player-forms' ) ) {
+		wp_enqueue_style( 'ymc-player-forms', get_theme_file_uri( 'assets/css/player-forms.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/player-forms.css' ) ) );
+	}
+}, 40 );
+add_action( 'after_setup_theme', function () { add_editor_style( 'assets/css/player-forms.css' ); } );
 require_once __DIR__ . '/inc/captain-invitations.php';
 /** Use the current event crest when no Site Icon has been configured. */
 function ymcatmtb_default_site_icon( $url ) {
