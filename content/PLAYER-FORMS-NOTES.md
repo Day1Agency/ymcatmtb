@@ -2,7 +2,7 @@
 
 Local page 31 (`player-forms`) remains a draft. Its body uses editable native
 WordPress blocks from `content/player-forms.html`. Styling is loaded in both the
-frontend and block editor; the slug-specific template adds the event header.
+frontend and block editor; the page uses the existing shared theme header and footer.
 
 To sync after reviewing this branch, update only the destination Player Forms
 page content from that HTML file and preserve the `player-forms` slug. Confirm
