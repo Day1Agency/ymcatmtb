@@ -50,7 +50,11 @@ body:has(.ymc-stadium-scroll) [data-ymc-section="0"] a.scp1{padding-right:20px!i
 
 /* Countdown occupies the former location line without shifting the scroll cue. */
 .ymc-stadium-deck .ymc-stadium-countdown{margin:0;line-height:inherit}
-.ymc-stadium-deck .ymc-stadium-countdown:not([hidden]){display:inline}
+.ymc-stadium-deck .ymc-stadium-countdown:not([hidden]){display:inline-flex;align-items:baseline;justify-content:center;gap:14px;white-space:nowrap}
+.ymc-timer-unit{display:inline-flex;align-items:baseline;gap:4px}
+.ymc-timer-unit b{font-size:16px;letter-spacing:.02em;font-weight:700;font-variant-numeric:tabular-nums}
+.ymc-timer-unit small{font-size:8px;letter-spacing:.09em;text-transform:uppercase}
+@media(max-width:380px){.ymc-stadium-deck .ymc-stadium-countdown:not([hidden]){gap:9px}.ymc-timer-unit{gap:3px}}
 .ymc-stadium-cue::after{content:"";display:block;width:12px;height:16px;margin:9px auto 0;background:currentColor;clip-path:polygon(40% 0,60% 0,60% 64%,86% 44%,100% 59%,50% 100%,0 59%,14% 44%,40% 64%)}
 /* Compensate for the desktop header growing from 84px to 104px. */
 @media(min-width:641px) and (min-height:621px){.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening{top:calc(6% - 20px)}}
