@@ -2,6 +2,14 @@
 (()=>{
 const track=document.querySelector('.ymc-stadium-scroll');if(!track)return;const stage=track.querySelector('.ymc-stadium-stage'),world=track.querySelector('.ymc-stadium-world'),opening=track.querySelector('.ymc-stadium-opening'),shade=track.querySelector('.ymc-stadium-shade'),cue=track.querySelector('.ymc-stadium-cue'),aperture=track.querySelector('.ymc-stadium-aperture'),reveal=track.querySelector('.ymc-stadium-reveal'),cards=[...track.querySelectorAll('.ymc-stadium-reveal-card')],progress=track.querySelector('.ymc-stadium-progress span');
 
+// Normalize the saved WordPress hero as well as the theme pattern.
+const deck=opening.querySelector('.ymc-stadium-deck'),counter=opening.querySelector('.ymc-stadium-countdown');
+if(deck && counter && deck.textContent.includes('Baltimore, Maryland')){
+ const dateText=deck.textContent.split('Baltimore, Maryland')[0].trim();
+ const inlineCounter=document.createElement('span');
+ inlineCounter.className=counter.className;inlineCounter.dataset.ymcEventDate=counter.dataset.ymcEventDate;inlineCounter.hidden=true;
+ deck.replaceChildren(document.createTextNode(dateText),document.createElement('br'),inlineCounter);counter.remove();
+}
 // Count calendar days in Baltimore, never infer an unconfirmed kickoff time.
 const eventCounters = track.querySelectorAll('[data-ymc-event-date]');
 function updateEventDays(now = new Date()) {
