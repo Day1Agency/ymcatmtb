@@ -50,3 +50,5 @@ body:has(.ymc-stadium-scroll) [data-ymc-section="0"] a.scp1{padding-right:20px!i
 
 /* Keep the original headline/date/cue composition above the tunnel opening. */
 .ymc-stadium-opening .ymc-stadium-countdown{display:none}
+/* Compensate for the desktop header growing from 84px to 104px. */
+@media(min-width:641px) and (min-height:621px){.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening{top:calc(6% - 20px)}}
