@@ -10,6 +10,9 @@ if(deck && counter && deck.textContent.includes('Baltimore, Maryland')){
  inlineCounter.className=counter.className;inlineCounter.dataset.ymcEventDate=counter.dataset.ymcEventDate;inlineCounter.hidden=true;
  deck.replaceChildren(document.createTextNode(dateText),document.createElement('br'),inlineCounter);counter.remove();
 }
+// Keep only the timer in the opening; the date already appears in the field reveal.
+const heroTimer=opening.querySelector('.ymc-stadium-countdown');
+if(deck && heroTimer) deck.replaceChildren(heroTimer);
 // Count down to the start of event day in Baltimore, not an unconfirmed kickoff.
 // March 28, 2027 is in EDT (UTC-04:00). A confirmed start can override this attribute.
 const eventCounters = [...track.querySelectorAll('[data-ymc-event-date]')].map(el => {
