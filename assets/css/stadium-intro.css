@@ -58,3 +58,6 @@ body:has(.ymc-stadium-scroll) [data-ymc-section="0"] a.scp1{padding-right:20px!i
 .ymc-stadium-cue::after{content:"";display:block;width:12px;height:16px;margin:9px auto 0;background:currentColor;clip-path:polygon(40% 0,60% 0,60% 64%,86% 44%,100% 59%,50% 100%,0 59%,14% 44%,40% 64%)}
 /* Compensate for the desktop header growing from 84px to 104px. */
 @media(min-width:641px) and (min-height:621px){.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening{top:calc(6% - 20px)}}
+
+/* Preserve the tunnel-aligned cue when the date moves to the field reveal. */
+.ymc-stadium-opening .ymc-stadium-deck{padding-top:1.65em}
