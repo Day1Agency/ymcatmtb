@@ -10,21 +10,35 @@ if(deck && counter && deck.textContent.includes('Baltimore, Maryland')){
  inlineCounter.className=counter.className;inlineCounter.dataset.ymcEventDate=counter.dataset.ymcEventDate;inlineCounter.hidden=true;
  deck.replaceChildren(document.createTextNode(dateText),document.createElement('br'),inlineCounter);counter.remove();
 }
-// Count calendar days in Baltimore, never infer an unconfirmed kickoff time.
-const eventCounters = track.querySelectorAll('[data-ymc-event-date]');
-function updateEventDays(now = new Date()) {
- const today = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
- const part = type => Number(today.find(p => p.type === type).value);
- const todayUTC = Date.UTC(part('year'), part('month') - 1, part('day'));
- eventCounters.forEach(el => {
-  const [year,month,day] = el.dataset.ymcEventDate.split('-').map(Number);
-  const days = Math.round((Date.UTC(year,month - 1,day) - todayUTC) / 86400000);
-  el.hidden = days < 0;
-  el.textContent = days === 0 ? 'GAME DAY IS HERE' : `${days} ${days === 1 ? 'DAY' : 'DAYS'} UNTIL GAME DAY`;
+// Count down to the start of event day in Baltimore, not an unconfirmed kickoff.
+// March 28, 2027 is in EDT (UTC-04:00). A confirmed start can override this attribute.
+const eventCounters = [...track.querySelectorAll('[data-ymc-event-date]')].map(el => {
+ const target = Date.parse(el.dataset.ymcEventStart || `${el.dataset.ymcEventDate}T00:00:00-04:00`);
+ el.setAttribute('role','timer');el.setAttribute('aria-live','off');
+ el.title='Until March 28, 2027 at midnight, Baltimore time';
+ const units=['days','hours','minutes','seconds'].map(label => {
+  const unit=document.createElement('span');unit.className='ymc-timer-unit';
+  const value=document.createElement('b');value.textContent='00';
+  const caption=document.createElement('small');caption.textContent=label;
+  unit.append(value,caption);return {unit,value};
+ });
+ el.replaceChildren(...units.map(item=>item.unit));
+ return {el,target,units};
+});
+function countdownParts(target, now) {
+ const seconds=Math.max(0,Math.floor((target-now)/1000));
+ return [Math.floor(seconds/86400),Math.floor(seconds/3600)%24,Math.floor(seconds/60)%60,seconds%60];
+}
+function updateEventTimer(now = Date.now()) {
+ eventCounters.forEach(({el,target,units}) => {
+  if(!Number.isFinite(target)){el.hidden=true;return;}
+  el.hidden=false;
+  if(now>=target){el.textContent='GAME DAY IS HERE';return;}
+  countdownParts(target,now).forEach((value,i)=>{units[i].value.textContent=String(value).padStart(2,'0');});
  });
 }
-updateEventDays();
-setInterval(updateEventDays, 60000);
+updateEventTimer();
+setInterval(updateEventTimer, 1000);
 const motion=matchMedia('(prefers-reduced-motion: reduce)');let geometry,pending=false,previous=-1,interactive=true,onScreen=null,shown=null,openShown=null,lastWidth=innerWidth,lastHeight=innerHeight,resizeTimer=0;
 const clamp=n=>Math.max(0,Math.min(1,n));const ease=n=>{n=clamp(n);return n*n*(3-2*n)};
 // One detailed close-up, drawn at its visible size to avoid compositor upscaling.
