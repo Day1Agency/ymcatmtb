@@ -47,3 +47,6 @@ body:has(.ymc-stadium-scroll) [data-ymc-section="0"] a.scp1{padding-right:20px!i
 .ymc-detail-shell{clip-path:polygon(evenodd,0% 0%,100% 0%,100% 100%,0% 100%,0% 0%,19.9% 16.1%,19.9% 83.2%,79.7% 83.2%,79.7% 16.1%,19.9% 16.1%)}
 .ymc-detail-aperture{clip-path:polygon(19.8% 16%,79.8% 16%,79.8% 83.3%,19.8% 83.3%)}
 .ymc-stadium-scroll:not([data-motion]) .ymc-tunnel-detail{display:none}
+
+/* Keep the original headline/date/cue composition above the tunnel opening. */
+.ymc-stadium-opening .ymc-stadium-countdown{display:none}
