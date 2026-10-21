@@ -121,6 +121,17 @@ function webhook( $request ) {
 	}
 	if ( ! $job || 'pending' === ( $job['status'] ?? '' ) ) {
 		if ( ! wp_next_scheduled( HOOK, array( $id ) ) ) { wp_schedule_single_event( time() + 60, HOOK, array( $id ) ); }
+		/*
+		 * The scheduled run stays as the safety net, but waiting for it costs a captain a
+		 * minute or two before they can invite anyone. Givebutter has normally finished
+		 * writing the ticket, transaction and team by the time this response is flushed,
+		 * so the work is attempted once the connection closes. If the records are not there
+		 * yet the attempt fails harmlessly and the retry ladder takes over.
+		 */
+		add_action( 'shutdown', function () use ( $id ) {
+			if ( function_exists( 'fastcgi_finish_request' ) ) { fastcgi_finish_request(); }
+			process( $id );
+		}, 20 );
 	}
 	return new \WP_REST_Response( array( 'status' => 'accepted' ), 202 );
 }
@@ -185,7 +196,12 @@ function process( $id ) {
 		$job['attempts'] = ( $job['attempts'] ?? 0 ) + 1;
 		$job['status'] = $job['attempts'] >= 24 ? 'review' : 'pending';
 		$job['message'] = $error->getMessage();
-		if ( 'pending' === $job['status'] ) { wp_schedule_single_event( time() + 300, HOOK, array( $id ) ); }
+		if ( 'pending' === $job['status'] ) {
+			// Early attempts are usually just Givebutter catching up, so retry soon before backing off.
+			$attempts = (int) ( $job['attempts'] ?? 0 );
+			$delay    = $attempts <= 3 ? 30 : ( $attempts <= 6 ? 60 : 300 );
+			wp_schedule_single_event( time() + $delay, HOOK, array( $id ) );
+		}
 	} finally {
 		if ( $team_lock ) { delete_option( $team_lock ); }
 		$job['updated'] = time(); update_option( $key, $job, false ); delete_option( $lock );
