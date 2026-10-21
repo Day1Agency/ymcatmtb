@@ -30,6 +30,8 @@ body.page .ymc-main:has(.ymct-page){margin-block-start:0}
 .ymct-button span{font-size:20px;line-height:1}
 .ymct-page .ymct-button:hover{background:var(--ymc-gold);color:var(--ymc-purple)}
 .ymct-button:focus-visible{outline:3px solid var(--ymc-gold);outline-offset:4px}
+/* The submit button carries no arrow, so the split layout would strand its label on the left. */
+.ymct-page button.ymct-button{justify-content:center;text-align:center;text-transform:uppercase;letter-spacing:.18em}
 .ymct-page .ymct-alert{padding:14px 16px;border-left:3px solid var(--ymc-gold);background:var(--ymc-purple);color:var(--ymc-paper);font-size:13px;margin-bottom:24px}
 .ymct-success>p:not(.ymct-eyebrow):not(.ymct-note){font-size:14px;margin:18px 0 24px}
 .ymct-check{display:grid;place-items:center;width:56px;height:56px;border:1px solid var(--ymc-gold);border-radius:50%;color:var(--ymc-purple);font-size:26px;margin-bottom:24px}
