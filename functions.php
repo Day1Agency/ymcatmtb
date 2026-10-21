@@ -15,7 +15,7 @@ add_action( 'wp_enqueue_scripts', function () {
  * Both filters are skipped when a message supplies its own From header.
  */
 add_filter( 'wp_mail_from', function ( $from ) {
-	return 0 === strpos( $from, 'wordpress@' ) ? 'info@ymcatmtb.com' : $from;
+	return 0 === strpos( $from, 'wordpress@' ) ? 'event@ymcatmtb.com' : $from;
 } );
 add_filter( 'wp_mail_from_name', function ( $name ) {
 	return 'WordPress' === $name ? 'YMC at M&T' : $name;
