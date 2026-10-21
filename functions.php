@@ -1,4 +1,9 @@
 <?php
+add_action( 'wp_enqueue_scripts', function () {
+	if ( is_page( 'need-a-team' ) || has_shortcode( get_post()->post_content ?? '', 'ymc_team_request' ) ) {
+		wp_enqueue_style( 'ymc-team-request', get_theme_file_uri( 'assets/css/team-request.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/team-request.css' ) ) );
+	}
+}, 40 );
 // Shared footer icons are needed on regular pages as well as event sections.
 add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style( 'ymc-footer-icons', get_theme_file_uri( 'assets/css/footer-icons.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/footer-icons.css' ) ) );
@@ -223,6 +228,26 @@ function ymcatmtb_editor_styles() {
 	add_editor_style( array( 'assets/css/reference.css', 'assets/css/reference-editor.css' ) );
 }
 add_action( 'after_setup_theme', 'ymcatmtb_editor_styles' );
+
+/**
+ * Keeps the dark page styling out of the classic editor.
+ *
+ * add_editor_style() applies to every editor screen. The block editor scopes those rules to
+ * its own wrapper, but the classic editor loads them into a bare iframe, so reference.css
+ * painted the body black on unrelated admin screens.
+ */
+function ymcatmtb_classic_editor_css( $css ) {
+	$reference = get_theme_file_uri( 'assets/css/reference' );
+	$keep      = array_filter(
+		array_map( 'trim', explode( ',', $css ) ),
+		function ( $url ) use ( $reference ) {
+			return '' !== $url && 0 !== strpos( $url, $reference );
+		}
+	);
+
+	return implode( ',', $keep );
+}
+add_filter( 'mce_css', 'ymcatmtb_classic_editor_css' );
 
 /**
  * Where each button sends people.
