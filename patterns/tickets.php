@@ -32,6 +32,7 @@ ob_start();
 
         <div data-dc-tpl="312" style="display: flex; flex-direction: column; padding: 32px 30px 30px; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.45); background: rgb(36, 16, 70);">
           <h3 data-dc-tpl="313" style="margin: 0px; font-family: var(--font-display); font-weight: 400; font-size: 40px; line-height: 0.95; text-transform: uppercase; color: rgb(255, 255, 255);">General<br data-dc-tpl="314">Admission</h3>
+<p style="margin:18px 0 0;color:#fff;font-size:18px;font-weight:600;">Includes a pre-boxed dinner.</p>
 
           <ul data-dc-tpl="316" style="margin: 24px 0px 0px; padding: 0px; list-style: none; display: grid; gap: 1px; background: rgba(255, 255, 255, 0.12); border-radius: 4px; overflow: hidden; flex: 1 1 auto;">
             <li data-dc-tpl="317" style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 15px 18px; background: rgb(13, 13, 13);"><span data-dc-tpl="318" style="font-size: 15px; color: rgba(255, 255, 255, 0.84);">One ticket</span><span data-dc-tpl="319" style="font-family: var(--font-condensed); font-weight: 700; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; color: rgb(212, 175, 55);">$54</span></li>
@@ -44,6 +45,7 @@ ob_start();
 
         <div data-dc-tpl="331" style="display: flex; flex-direction: column; padding: 32px 30px 30px; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.45); background: rgb(13, 13, 13);">
           <h3 data-dc-tpl="332" style="margin: 0px; font-family: var(--font-display); font-weight: 400; font-size: 40px; line-height: 0.95; text-transform: uppercase; color: rgb(255, 255, 255);">VIP<br data-dc-tpl="333"><span data-dc-tpl="334" style="color: transparent; -webkit-text-stroke: 1.5px rgb(212, 175, 55);">Experience</span></h3>
+<p style="margin:18px 0 0;color:#fff;font-size:18px;font-weight:600;">Includes an upscale VIP buffet.</p>
 
           <ul data-dc-tpl="336" style="margin: 24px 0px 0px; padding: 0px; list-style: none; display: grid; gap: 1px; background: rgba(255, 255, 255, 0.12); border-radius: 4px; overflow: hidden; flex: 1 1 auto;">
             <li data-dc-tpl="337" style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 15px 18px; background: rgb(36, 16, 70);"><span data-dc-tpl="338" style="font-size: 15px; color: rgba(255, 255, 255, 0.84);">One VIP ticket</span><span data-dc-tpl="339" style="font-family: var(--font-condensed); font-weight: 700; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; color: rgb(212, 175, 55);">$1,000</span></li>
