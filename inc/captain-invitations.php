@@ -191,7 +191,7 @@ function process( $id ) {
 		$invite['status'] = $sent ? 'sent' : 'ready';
 		update_option( $invite_key, $invite, false );
 		if ( ! $sent ) { $job['status'] = 'pending'; throw new \RuntimeException( 'Email transport rejected the message. Retrying.' ); }
-		$job['status'] = 'sent'; $job['message'] = 'Invitation accepted by the email transport; inbox delivery is not confirmed.';
+		$job['status'] = 'sent'; $job['message'] = 'Invitation emailed to the captain. Whether it reached their inbox is not tracked.';
 	} catch ( \Throwable $error ) {
 		$job['attempts'] = ( $job['attempts'] ?? 0 ) + 1;
 		$job['status'] = $job['attempts'] >= 24 ? 'review' : 'pending';
