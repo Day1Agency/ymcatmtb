@@ -17,7 +17,13 @@ add_action('init', function () {
 add_action('admin_menu', function () {
  add_submenu_page('edit.php?post_type=ymc_team_request','Team Request Settings','Settings','manage_options','ymc-team-requests', function () {
   if (!current_user_can('manage_options')) return;
-  echo '<div class="wrap"><h1>Team Request Settings</h1><form action="options.php" method="post">';
+  /* A custom screen does not get the core "Settings saved." notice on its own. */
+  if (isset($_GET['settings-updated'])) add_settings_error('ymc_team_request','ymc_saved','Settings saved.','success');
+  echo '<div class="wrap"><h1>Team Request Settings</h1>';
+  settings_errors('ymc_team_request');
+  printf('<p>Requests are currently emailed to <strong>%s</strong>%s.</p>', esc_html(ymc_team_request_recipient()),
+   is_email((string) get_option('ymc_team_request_recipient','')) ? '' : ' (the built-in default, because no address is set)');
+  echo '<form action="options.php" method="post">';
   settings_fields('ymc_team_request');
   do_settings_sections('ymc-team-requests');
   submit_button();
