@@ -1,4 +1,9 @@
 <?php
+add_action( 'wp_enqueue_scripts', function () {
+	if ( is_page( 'need-a-team' ) || has_shortcode( get_post()->post_content ?? '', 'ymc_team_request' ) ) {
+		wp_enqueue_style( 'ymc-team-request', get_theme_file_uri( 'assets/css/team-request.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/team-request.css' ) ) );
+	}
+}, 40 );
 // Shared footer icons are needed on regular pages as well as event sections.
 add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style( 'ymc-footer-icons', get_theme_file_uri( 'assets/css/footer-icons.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/footer-icons.css' ) ) );

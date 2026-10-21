@@ -77,22 +77,35 @@ function ymc_team_request_message($reason) {
 }
 add_shortcode('ymc_team_request', function () {
  $status = isset($_GET['team_request']) ? sanitize_key($_GET['team_request']) : '';
- if ($status === 'received') return '<p role="status">Your request has been received. YMC will contact you about team placement. This is not a registration or a guaranteed place.</p>';
  ob_start(); ?>
- <section style="max-width:640px;margin:40px auto;padding:24px">
- <h1>Need a team?</h1><p>Interested in the Adult Tournament but don&rsquo;t have a team? Send your details to Yossi and the YMC team for help with placement. Please wait for placement instructions before registering.</p>
- <?php if ($status === 'error') echo '<p role="alert">'.esc_html(ymc_team_request_message(isset($_GET['reason']) ? sanitize_key($_GET['reason']) : '')).'</p>'; ?>
+ <section class="ymct-page" aria-labelledby="ymct-title">
+ <div class="ymct-shell">
+ <div class="ymct-intro">
+ <p class="ymct-eyebrow">YMC AT M&amp;T &middot; ADULT TOURNAMENT</p>
+ <h1 id="ymct-title">Your game.<br>Your future team.</h1>
+ <p class="ymct-lead">Want to play but don&rsquo;t have a team? Let&rsquo;s help you find one.</p>
+ <p>Send your details to the YMC team for help with placement.</p>
+ <ol class="ymct-steps"><li><strong>Tell us about yourself</strong><span>Share your name and contact details.</span></li><li><strong>Hear from the YMC team</strong><span>We&rsquo;ll contact you about team placement.</span></li><li><strong>Register after placement</strong><span>Wait for placement instructions before registering.</span></li></ol>
+ </div>
+ <div class="ymct-card">
+ <?php if ($status === 'received') : ?>
+ <div class="ymct-success" role="status"><span class="ymct-check" aria-hidden="true">&#10003;</span><p class="ymct-eyebrow">REQUEST RECEIVED</p><h2>You&rsquo;re on our radar.</h2><p>Your request has been received. YMC will contact you about team placement.</p><p class="ymct-note">This is not a registration or a guaranteed place. Please wait for placement instructions before registering.</p><a class="ymct-button" href="<?php echo esc_url(home_url('/')); ?>">Back to the event <span aria-hidden="true">&rarr;</span></a></div>
+ <?php else : ?>
+ <p class="ymct-eyebrow">LET&rsquo;S GET STARTED</p><h2>Need a team?</h2><p class="ymct-card-intro">Leave your details below and we&rsquo;ll be in touch.</p>
+ <?php if ($status === 'error') echo '<p class="ymct-alert" role="alert">'.esc_html(ymc_team_request_message(isset($_GET['reason']) ? sanitize_key($_GET['reason']) : '')).'</p>'; ?>
  <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
  <input type="hidden" name="action" value="ymc_team_request">
  <?php wp_nonce_field('ymc_team_request','ymc_nonce'); ?>
  <?php /* Named so browser autofill leaves it alone: a filled honeypot silently rejects a real person. */ ?>
  <p style="position:absolute;left:-10000px" aria-hidden="true"><label>Leave empty<input name="ymc_hp" tabindex="-1" autocomplete="off"></label></p>
- <p><label for="ymc-name">Full name *</label><br><input id="ymc-name" name="full_name" required maxlength="120" autocomplete="name" style="width:100%;padding:12px"></p>
- <p><label for="ymc-email">Email *</label><br><input id="ymc-email" name="email" type="email" required maxlength="254" autocomplete="email" style="width:100%;padding:12px"></p>
- <p><label for="ymc-phone">Phone (optional)</label><br><input id="ymc-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" style="width:100%;padding:12px"></p>
- <p>We&rsquo;ll use these details to contact you about team placement. Submitting this request does not register you or reserve a place.</p>
- <button type="submit" style="padding:14px 24px;background:#241046;color:#fff;border:0;border-radius:4px">Request help finding a team</button>
- </form></section>
+ <p class="ymct-field"><label for="ymc-name">Full name <span>(required)</span></label><input id="ymc-name" name="full_name" required maxlength="120" autocomplete="name" placeholder="Your full name"></p>
+ <p class="ymct-field"><label for="ymc-email">Email address <span>(required)</span></label><input id="ymc-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.com"></p>
+ <p class="ymct-field"><label for="ymc-phone">Phone number <span>(optional)</span></label><input id="ymc-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="Your phone number"></p>
+ <p class="ymct-note" id="ymct-privacy">We&rsquo;ll use these details to contact you about team placement. Submitting this request does not register you or reserve a place.</p>
+ <button class="ymct-button" type="submit" aria-describedby="ymct-privacy">Request help finding a team <span aria-hidden="true">&rarr;</span></button>
+ </form>
+ <?php endif; ?>
+ </div></div></section>
  <?php return ob_get_clean();
 });
 function ymc_handle_team_request() {

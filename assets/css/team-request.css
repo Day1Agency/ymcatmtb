@@ -1,0 +1,37 @@
+/* Team placement uses the existing YMC palette and shared page chrome. */
+body.page .ymc-main:has(.ymct-page){margin-block-start:0}
+.ymct-page{background:var(--ymc-purple);color:var(--ymc-paper);font-family:var(--ymc-ui);padding:72px 24px 80px;position:relative;isolation:isolate}
+.ymct-page:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(36,16,70,.98),rgba(36,16,70,.88)),url('../images/stadium.jpg') center/cover}
+.ymct-page *{box-sizing:border-box}
+.ymct-shell{max-width:1120px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.ymct-page p{margin:0;line-height:1.8}
+.ymct-page .ymct-eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;line-height:1.7;color:var(--ymc-gold)}
+.ymct-intro h1{font:400 clamp(54px,5.3vw,78px)/1 'Bebas Neue',Impact,sans-serif;margin:24px 0;color:var(--ymc-paper)}
+.ymct-page .ymct-lead{font-size:19px;font-weight:500;line-height:1.6;max-width:420px;margin-bottom:16px}
+.ymct-intro>p:not(.ymct-eyebrow):not(.ymct-lead){font-size:14px;color:var(--ymc-muted);max-width:410px}
+.ymct-steps{list-style:none;counter-reset:steps;margin:32px 0 0;padding:28px 0 0;border-top:1px solid var(--ymc-line)}
+.ymct-steps li{counter-increment:steps;position:relative;padding-left:52px;margin:0 0 23px}
+.ymct-steps li:last-child{margin-bottom:0}
+.ymct-steps li:before{content:counter(steps,decimal-leading-zero);position:absolute;left:0;top:1px;color:var(--ymc-gold);font:500 24px/1.2 Oswald,sans-serif}
+.ymct-steps strong{display:block;font-size:13px;line-height:1.6;margin-bottom:3px}
+.ymct-steps span{display:block;font-size:12px;line-height:1.7;color:var(--ymc-muted)}
+.ymct-card{background:var(--ymc-paper);color:var(--ymc-ink);border-top:4px solid var(--ymc-gold);border-radius:12px;padding:36px;box-shadow:0 20px 60px rgba(13,13,13,.2);min-width:0}
+.ymct-card .ymct-eyebrow{color:var(--ymc-purple)}
+.ymct-card h2{font:400 46px/1.1 'Bebas Neue',Impact,sans-serif;color:var(--ymc-purple);margin:12px 0}
+.ymct-page .ymct-card-intro{font-size:13px;color:rgba(13,13,13,.72);margin-bottom:28px}
+.ymct-page .ymct-field{margin-bottom:20px}
+.ymct-field label{display:block;font-size:12px;font-weight:700;line-height:1.6;margin-bottom:8px;color:var(--ymc-purple)}
+.ymct-field label span{font-weight:400;color:rgba(13,13,13,.65);font-size:11px}
+.ymct-field input{width:100%;min-height:50px;border:1px solid rgba(36,16,70,.25);border-radius:5px;background:var(--ymc-paper);color:var(--ymc-ink);padding:13px 14px;font:400 16px/1.5 var(--ymc-ui)}
+.ymct-field input::placeholder{color:rgba(13,13,13,.5);font-size:13px}
+.ymct-field input:focus-visible{outline:2px solid var(--ymc-purple);outline-offset:2px}
+.ymct-page .ymct-note{font-size:11px;line-height:1.8;color:rgba(13,13,13,.7);border-top:1px solid rgba(36,16,70,.15);padding-top:18px;margin:4px 0 22px}
+.ymct-page .ymct-button{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:16px 18px;min-height:54px;border:0;border-radius:5px;background:var(--ymc-purple);color:var(--ymc-paper);font:700 12px/1.5 var(--ymc-ui);text-decoration:none;cursor:pointer;transition:background .2s,color .2s;text-align:left}
+.ymct-button span{font-size:20px;line-height:1}
+.ymct-page .ymct-button:hover{background:var(--ymc-gold);color:var(--ymc-purple)}
+.ymct-button:focus-visible{outline:3px solid var(--ymc-gold);outline-offset:4px}
+.ymct-page .ymct-alert{padding:14px 16px;border-left:3px solid var(--ymc-gold);background:var(--ymc-purple);color:var(--ymc-paper);font-size:13px;margin-bottom:24px}
+.ymct-success>p:not(.ymct-eyebrow):not(.ymct-note){font-size:14px;margin:18px 0 24px}
+.ymct-check{display:grid;place-items:center;width:56px;height:56px;border:1px solid var(--ymc-gold);border-radius:50%;color:var(--ymc-purple);font-size:26px;margin-bottom:24px}
+@media(max-width:800px){.ymct-page{padding:40px 20px 48px}.ymct-shell{grid-template-columns:1fr;gap:32px;max-width:560px}.ymct-intro h1{font-size:60px}.ymct-page .ymct-lead{font-size:17px}.ymct-steps{margin-top:24px;padding-top:24px}.ymct-card{padding:28px 24px}.ymct-card h2{font-size:40px}}
+@media(prefers-reduced-motion:reduce){.ymct-page .ymct-button{transition:none}}
