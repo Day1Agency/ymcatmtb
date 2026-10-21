@@ -102,7 +102,7 @@ add_shortcode('ymc_team_request', function () {
  <p class="ymct-field"><label for="ymc-email">Email address <span>(required)</span></label><input id="ymc-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.com"></p>
  <p class="ymct-field"><label for="ymc-phone">Phone number <span>(optional)</span></label><input id="ymc-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="Your phone number"></p>
  <p class="ymct-note" id="ymct-privacy">We&rsquo;ll use these details to contact you about team placement. Submitting this request does not register you or reserve a place.</p>
- <button class="ymct-button" type="submit" aria-describedby="ymct-privacy">Request help finding a team</button>
+ <button class="ymct-button" type="submit" aria-describedby="ymct-privacy">Request team placement</button>
  </form>
  <?php endif; ?>
  </div></div></section>
