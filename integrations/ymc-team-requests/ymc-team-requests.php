@@ -14,12 +14,23 @@ function ymc_team_request_recipient() {
 add_action('init', function () {
  register_post_type('ymc_team_request', ['label'=>'Team Requests','public'=>false,'show_ui'=>true,'supports'=>['title','editor'],'capabilities'=>['create_posts'=>'do_not_allow'],'map_meta_cap'=>true]);
 });
+add_action('admin_menu', function () {
+ add_submenu_page('edit.php?post_type=ymc_team_request','Team Request Settings','Settings','manage_options','ymc-team-requests', function () {
+  if (!current_user_can('manage_options')) return;
+  echo '<div class="wrap"><h1>Team Request Settings</h1><form action="options.php" method="post">';
+  settings_fields('ymc_team_request');
+  do_settings_sections('ymc-team-requests');
+  submit_button();
+  echo '</form></div>';
+ });
+});
 add_action('admin_init', function () {
- register_setting('general','ymc_team_request_recipient',['type'=>'string','sanitize_callback'=>'sanitize_email','default'=>'']);
- add_settings_field('ymc_team_request_recipient','Team placement notifications', function () {
+ register_setting('ymc_team_request','ymc_team_request_recipient',['type'=>'string','sanitize_callback'=>'sanitize_email','default'=>'']);
+ add_settings_section('ymc_team_request_main','','__return_false','ymc-team-requests');
+ add_settings_field('ymc_team_request_recipient','Notification email', function () {
   printf('<input type="email" id="ymc_team_request_recipient" name="ymc_team_request_recipient" value="%s" class="regular-text" placeholder="%s"><p class="description">Where team placement requests are emailed. Leave empty to use %s.</p>',
    esc_attr((string) get_option('ymc_team_request_recipient','')), esc_attr(YMC_TEAM_REQUEST_FALLBACK), esc_html(YMC_TEAM_REQUEST_FALLBACK));
- },'general');
+ },'ymc-team-requests','ymc_team_request_main');
 });
 /* A failed send is otherwise invisible: requests would pile up privately with nobody notified. */
 add_filter('manage_ymc_team_request_posts_columns', function ($cols) {
