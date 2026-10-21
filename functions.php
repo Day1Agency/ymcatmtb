@@ -4,6 +4,23 @@ add_action( 'wp_enqueue_scripts', function () {
 		wp_enqueue_style( 'ymc-team-request', get_theme_file_uri( 'assets/css/team-request.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/team-request.css' ) ) );
 	}
 }, 40 );
+/**
+ * Names the site as the sender of every email it sends.
+ *
+ * WordPress defaults to "WordPress" <wordpress@domain>, which reads as a misdirected system
+ * notice. The address stays on ymcatmtb.com because that is the domain this server is
+ * authorised to send for; a yeshivasmekorchaim.org From would fail SPF and land in spam.
+ * No mailbox is required to send, and each message sets its own Reply-To.
+ *
+ * Both filters are skipped when a message supplies its own From header.
+ */
+add_filter( 'wp_mail_from', function ( $from ) {
+	return 0 === strpos( $from, 'wordpress@' ) ? 'info@ymcatmtb.com' : $from;
+} );
+add_filter( 'wp_mail_from_name', function ( $name ) {
+	return 'WordPress' === $name ? 'YMC at M&T' : $name;
+} );
+
 // Shared footer icons are needed on regular pages as well as event sections.
 add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style( 'ymc-footer-icons', get_theme_file_uri( 'assets/css/footer-icons.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/footer-icons.css' ) ) );

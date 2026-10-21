@@ -11,6 +11,31 @@ function ymc_team_request_recipient() {
  $email = sanitize_email((string) get_option('ymc_team_request_recipient',''));
  return is_email($email) ? $email : YMC_TEAM_REQUEST_FALLBACK;
 }
+/**
+ * Wraps message content in the event's colours.
+ *
+ * Tables with inline styles: Gmail and Outlook strip stylesheets and understand little else.
+ */
+function ymc_team_request_email($heading, $intro, $content, $footnote = '') {
+ $purple = '#241046'; $gold = '#d4af37'; $ink = '#1c1c1c'; $muted = '#5c5c5c';
+ return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>'
+  .'<body style="margin:0;padding:0;background:#f4f4f6">'
+  .'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f6;padding:24px 12px">'
+  .'<tr><td align="center">'
+  .'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:6px;overflow:hidden">'
+  .'<tr><td style="background:'.$purple.';padding:24px 28px">'
+  .'<p style="margin:0;font:700 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:'.$gold.'">YMC at M&amp;T Bank Stadium</p>'
+  .'<p style="margin:8px 0 0;font:700 21px/1.3 Arial,Helvetica,sans-serif;color:#ffffff">'.esc_html($heading).'</p>'
+  .'</td></tr>'
+  .'<tr><td style="padding:28px">'
+  .'<p style="margin:0 0 18px;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:'.$ink.'">'.$intro.'</p>'
+  .$content
+  .($footnote ? '<p style="margin:22px 0 0;padding-top:18px;border-top:1px solid #e6e6e9;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:'.$muted.'">'.$footnote.'</p>' : '')
+  .'</td></tr>'
+  .'<tr><td style="background:#faf9fb;padding:16px 28px;border-top:1px solid #e6e6e9">'
+  .'<p style="margin:0;font:400 12px/1.6 Arial,Helvetica,sans-serif;color:'.$muted.'">Yeshivas Mekor Chaim &middot; 7401 Park Heights Ave, Baltimore, MD 21208</p>'
+  .'</td></tr></table></td></tr></table></body></html>';
+}
 /* Records are written by the form and only read in the admin. Nothing here should be retyped by
    hand, so the post type carries no editor: the details show as a read-only panel instead. */
 add_action('init', function () {
@@ -130,12 +155,20 @@ function ymc_handle_team_request() {
  if (is_wp_error($id) || !$id) $fail();
  if ($throttled) set_transient($key,1,60);
  $recipient = ymc_team_request_recipient();
- $sent = wp_mail($recipient,'YMC: Adult team placement request',$body,['Reply-To: '.$email]);
+ $rows = '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">';
+ foreach (['Name'=>$name,'Email'=>$email,'Phone'=>($phone ?: 'Not given')] as $label=>$value) {
+  $rows .= '<tr><td style="padding:9px 0;width:84px;font:700 13px/1.5 Arial,Helvetica,sans-serif;color:#5c5c5c;vertical-align:top">'.esc_html($label).'</td>'
+   .'<td style="padding:9px 0;font:400 15px/1.5 Arial,Helvetica,sans-serif;color:#1c1c1c">'.esc_html($value).'</td></tr>';
+ }
+ $rows .= '</table>';
+ $html = ymc_team_request_email('Adult team placement request','Someone has asked for help joining a team.',$rows,'Please contact this person about placement before they register. Replying to this email reaches them directly.');
+ $sent = wp_mail($recipient,'YMC: Adult team placement request',$html,['Content-Type: text/html; charset=UTF-8','Reply-To: '.$email]);
  update_post_meta($id,'ymc_notification_sent',$sent ? 'yes':'no');
  update_post_meta($id,'ymc_notification_recipient',$recipient);
  /* The sender otherwise has no proof the request went through. */
- $receipt = "Hi $name,\n\nThanks for asking about team placement for the Adult Tournament at YMC at M&T Bank Stadium.\n\nYMC will be in touch about finding you a team. Please wait for placement instructions before registering.\n\nThis message confirms your request only. It is not a registration and does not reserve a place.\n\nYMC at M&T";
- $confirmed = wp_mail($email,'YMC: We received your team placement request',$receipt,['Reply-To: '.$recipient]);
+ $steps = '<p style="margin:0;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#1c1c1c">The YMC team will be in touch about finding you a team. <strong>Please wait for placement instructions before registering.</strong></p>';
+ $receipt = ymc_team_request_email('We have your request','Hi '.esc_html($name).', thanks for asking about team placement for the Adult Tournament.',$steps,'This message confirms your request only. It is not a registration and does not reserve a place.');
+ $confirmed = wp_mail($email,'YMC: We received your team placement request',$receipt,['Content-Type: text/html; charset=UTF-8','Reply-To: '.$recipient]);
  update_post_meta($id,'ymc_confirmation_sent',$confirmed ? 'yes':'no');
  wp_safe_redirect(add_query_arg('team_request','received',$redirect)); exit;
 }
