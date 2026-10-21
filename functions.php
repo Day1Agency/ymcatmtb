@@ -225,6 +225,26 @@ function ymcatmtb_editor_styles() {
 add_action( 'after_setup_theme', 'ymcatmtb_editor_styles' );
 
 /**
+ * Keeps the dark page styling out of the classic editor.
+ *
+ * add_editor_style() applies to every editor screen. The block editor scopes those rules to
+ * its own wrapper, but the classic editor loads them into a bare iframe, so reference.css
+ * painted the body black on unrelated admin screens.
+ */
+function ymcatmtb_classic_editor_css( $css ) {
+	$reference = get_theme_file_uri( 'assets/css/reference' );
+	$keep      = array_filter(
+		array_map( 'trim', explode( ',', $css ) ),
+		function ( $url ) use ( $reference ) {
+			return '' !== $url && 0 !== strpos( $url, $reference );
+		}
+	);
+
+	return implode( ',', $keep );
+}
+add_filter( 'mce_css', 'ymcatmtb_classic_editor_css' );
+
+/**
  * Where each button sends people.
  *
  * Registration, tickets and sponsorship are taken on Givebutter, so the
