@@ -1,0 +1,29 @@
+.ymc-missing-main{margin:0!important}
+.ymce-404{background:var(--ymc-paper);color:var(--ymc-purple);font-family:var(--ymc-ui)}
+.ymce-404 *{box-sizing:border-box}
+.ymce-404__hero{display:grid;grid-template-columns:1.2fr 1fr;gap:50px;align-items:center;padding:64px max(24px,calc((100% - 1120px)/2));background:var(--ymc-purple);color:var(--ymc-paper);position:relative;isolation:isolate;overflow:hidden}
+.ymce-404__hero:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(36,16,70,.96),rgba(36,16,70,.8)),url('../images/stadium.jpg') center/cover}
+.ymce-404 .ymce-404__eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;line-height:1.7;margin:0 0 20px;color:var(--ymc-gold)}
+.ymce-404 h1{font:400 clamp(54px,6vw,84px)/.98 var(--ymc-display);letter-spacing:.005em;color:var(--ymc-paper);margin:0 0 24px}
+.ymce-404__intro{max-width:430px;font-size:14px;line-height:1.9;color:var(--ymc-muted);margin:0 0 28px}
+.ymce-404__home{display:inline-flex;align-items:center;justify-content:center;padding:17px 25px;background:var(--ymc-gold);color:var(--ymc-purple);border-radius:4px;font-size:12px;font-weight:700;text-decoration:none}
+.ymce-404__home:hover{background:var(--ymc-paper);color:var(--ymc-purple)}
+.ymce-404__number{font:400 clamp(150px,19vw,270px)/1 var(--ymc-display);text-align:center;color:transparent;-webkit-text-stroke:1px var(--ymc-gold);border-left:1px solid var(--ymc-line);padding:16px 0 16px 36px}
+.ymce-404__number span{display:block;font:600 10px/1.5 var(--ymc-ui);letter-spacing:.2em;color:var(--ymc-gold);-webkit-text-stroke:0;margin-top:20px}
+.ymce-404__body{max-width:1168px;margin:auto;padding:44px 24px 48px}
+.ymce-404__body .ymce-404__eyebrow{color:var(--ymc-purple);margin-bottom:8px}
+.ymce-404 h2{font:400 38px/1.1 var(--ymc-display);margin:0 0 26px;color:var(--ymc-purple)}
+.ymce-404__links{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.ymce-404__links>a{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:24px;border:1px solid rgba(36,16,70,.16);border-top:3px solid var(--ymc-gold);border-radius:8px;color:var(--ymc-purple);text-decoration:none}
+.ymce-404__index{font:500 22px/1 Oswald,sans-serif}
+.ymce-404__links strong{font-size:15px;font-weight:700;line-height:1.5}
+.ymce-404__description{font-size:12px;line-height:1.8;color:rgba(13,13,13,.7)}
+.ymce-404__arrow{font-size:24px;margin-top:auto;padding-top:4px}
+.ymce-404__links>a:hover{background:var(--ymc-purple);color:var(--ymc-paper)}
+.ymce-404__links>a:hover .ymce-404__description{color:var(--ymc-muted)}
+.ymce-404__links>a:hover .ymce-404__arrow{color:var(--ymc-gold)}
+.ymce-404__help{text-align:center;font-size:12px;line-height:1.8;margin:30px 0 0;color:rgba(13,13,13,.7)}
+.ymce-404__help a{color:var(--ymc-purple);font-weight:600;text-underline-offset:4px}
+.ymce-404 a:focus-visible{outline:3px solid var(--ymc-gold);outline-offset:4px}
+@media(max-width:850px){.ymce-404__hero{gap:24px;padding:44px 24px}.ymce-404__links{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:550px){.ymce-404__hero{grid-template-columns:1fr;padding:38px 24px}.ymce-404__number{display:none}.ymce-404 h1{font-size:58px}.ymce-404__body{padding:32px 20px 36px}.ymce-404__links{gap:12px}.ymce-404__links>a{padding:18px 15px}.ymce-404 h2{font-size:32px}}

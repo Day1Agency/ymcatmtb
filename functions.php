@@ -1,5 +1,10 @@
 <?php
 add_action( 'wp_enqueue_scripts', function () {
+	if ( is_404() ) {
+		wp_enqueue_style( 'ymc-notfound', get_theme_file_uri( 'assets/css/notfound.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/notfound.css' ) ) );
+	}
+}, 40 );
+add_action( 'wp_enqueue_scripts', function () {
 	if ( is_page( 'need-a-team' ) || has_shortcode( get_post()->post_content ?? '', 'ymc_team_request' ) ) {
 		wp_enqueue_style( 'ymc-team-request', get_theme_file_uri( 'assets/css/team-request.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/team-request.css' ) ) );
 	}
