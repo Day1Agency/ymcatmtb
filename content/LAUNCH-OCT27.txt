@@ -1,8 +1,10 @@
 Live WordPress page 6 updated October 27, 2026.
 
-Changes: opening PLAY FOR YMC without periods; purpose copy immediately beneath title; Come watch links added to introduction, closing section and footer; East Insurance Group, The Farm Digital, Camp Yedidim logos above six sponsorship cards with equal prominence (tiers pending Yossi).
+Changes: opening PLAY FOR YMC without periods; purpose copy immediately beneath title; Come watch links added to introduction, closing section and footer; East Insurance Group, The Farm Digital, Camp Yedidim logos above six sponsorship cards grouped by confirmed tier: East and Camp under Pro Bowl — $3,600; Farm and Gabe & Ruben’s Jewelry under Additional Sponsors.
 
 Verified: WordPress Page updated, cache purged, all three logos loaded, desktop visual check and 390x844 mobile check with no horizontal overflow. Ticket links point to https://givebutter.com/ymc-at-mtb-tickets.
 
 These files preserve saved WordPress content. Theme deployment does NOT apply this page content. Preserve live page 6 when syncing databases.
 Rollback: replace page 6 code editor content with homepage-before-oct27.html, save and purge SG cache.
+
+Later October 27 sponsor revision: separate recognition panel from package choices. Gabe & Ruben’s has a text listing linked to the supplied Instagram; official logo not yet supplied. Backup immediately before this revision: homepage-before-sponsor-tiers-oct27.html. Desktop visual and 390px mobile overflow checks passed.
