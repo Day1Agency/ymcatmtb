@@ -8,3 +8,5 @@ These files preserve saved WordPress content. Theme deployment does NOT apply th
 Rollback: replace page 6 code editor content with homepage-before-oct27.html, save and purge SG cache.
 
 Later October 27 sponsor revision: separate recognition panel from package choices. Gabe & Ruben’s has a text listing linked to the supplied Instagram; official logo not yet supplied. Backup immediately before this revision: homepage-before-sponsor-tiers-oct27.html. Desktop visual and 390px mobile overflow checks passed.
+
+MVP revision: Gastro Center of Maryland confirmed by Yomi as MVP ($5,000); supplied logo uploaded and displayed above Pro Bowl, with larger image. Additional sponsors now use smaller cards/logos on desktop and mobile. Pre-change rollback: homepage-before-mvp-oct27.html. Saved live page verified and 390px mobile checked without horizontal overflow.
