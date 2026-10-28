@@ -1,3 +1,5 @@
+DEACTIVATED on production October 28 at user request. Do not reactivate: the intermediate pages add duplicate choices. Homepage uses direct Givebutter registration links. Pre-created teams and disabled public team creation remain.
+
 # Registration entry, 2026-10-28
 
 Standalone WordPress plugin; adult captain/player and teen entry routes. Homepage links rewritten without editing saved homepage.
