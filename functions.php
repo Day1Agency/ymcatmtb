@@ -5,8 +5,9 @@ add_action( 'wp_enqueue_scripts', function () {
 	}
 }, 40 );
 add_action( 'wp_enqueue_scripts', function () {
-	if ( is_page( 'need-a-team' ) || has_shortcode( get_post()->post_content ?? '', 'ymc_team_request' ) ) {
+	if ( is_page( array( 'need-a-team', 'register-a-team' ) ) || has_shortcode( get_post()->post_content ?? '', 'ymc_team_request' ) || has_shortcode( get_post()->post_content ?? '', 'ymc_captain_request' ) ) {
 		wp_enqueue_style( 'ymc-team-request', get_theme_file_uri( 'assets/css/team-request.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/team-request.css' ) ) );
+		wp_enqueue_script( 'ymc-captain-steps', get_theme_file_uri( 'assets/js/captain-steps.js' ), array(), (string) filemtime( get_theme_file_path( 'assets/js/captain-steps.js' ) ), true );
 	}
 }, 40 );
 /**
