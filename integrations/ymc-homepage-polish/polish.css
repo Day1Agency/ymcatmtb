@@ -114,3 +114,15 @@
 .ymc-feed-link{background:none!important;color:#bdb0cf!important;font:400 12px/1.5 Montserrat,Arial,sans-serif!important;padding:0!important;margin-top:22px;text-decoration:none;border-bottom:1px solid #756481;border-radius:0!important}
 .ymc-feed-link span{margin-left:10px}
 @media(max-width:600px){.ymc-clean-campaign{padding:55px 22px}.ymc-campaign-brand{margin-bottom:30px}.ymc-clean-campaign h2{font-size:clamp(72px,20vw,110px)!important}.ymc-goal-caption{font-size:15px}.ymc-donor-row{grid-template-columns:34px minmax(0,1fr) auto;gap:10px;padding:20px 0}.ymc-donor-avatar{width:34px;height:34px;font-size:12px}.ymc-donor-name{font-size:13px}.ymc-donor-amount{font-size:15px}.ymc-donor-panel .ymc-donor-message{font-size:13px}#ymc-donor-feed{height:325px}}
+/* Give the opening copy a clearer vertical rhythm down to the field entrance. */
+.ymc-stadium-opening h1{margin-bottom:30px!important}
+.ymc-stadium-opening .ymc-stadium-deck{margin:30px 0!important}
+.ymc-stadium-opening .ymc-stadium-cue{margin-top:clamp(42px,8.2svh,78px)!important}
+@media(max-width:640px){.ymc-stadium-opening h1{margin-bottom:24px!important}.ymc-stadium-opening .ymc-stadium-deck{margin:26px 0!important}.ymc-stadium-opening .ymc-stadium-cue{margin-top:clamp(36px,6svh,56px)!important}}
+@media(max-height:620px){.ymc-stadium-opening h1{margin-bottom:18px!important}.ymc-stadium-opening .ymc-stadium-deck{margin:18px 0!important}.ymc-stadium-opening .ymc-stadium-cue{margin-top:28px!important}}
+@media(max-width:640px){
+ .ymc-stadium-opening h1{margin-bottom:18px!important}
+ .ymc-stadium-opening .ymc-stadium-purpose{font-size:13px!important;line-height:1.6!important;max-width:350px}
+ .ymc-stadium-opening .ymc-stadium-deck{margin:18px 0!important}
+ .ymc-stadium-opening .ymc-stadium-cue{margin-top:18px!important}
+}
