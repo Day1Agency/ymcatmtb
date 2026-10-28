@@ -1,0 +1,116 @@
+/* Only affects the event homepage. Deactivate plugin to restore saved content. */
+.ymc-stadium-opening h1 {white-space:nowrap;font-size:clamp(58px,8vw,120px)!important;line-height:1!important;margin:14px 0 18px!important}
+.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening {top:calc(50% - max(4vw, 4svh) - clamp(58px,8vw,120px) - 54px)!important}
+.ymc-stadium-opening .ymc-stadium-purpose {max-width:540px;margin:0 auto 16px!important;font-size:15px!important;line-height:1.6!important}
+.ymc-stadium-opening .ymc-stadium-deck {padding-top:0!important;margin:16px 0!important}
+.ymc-stadium-reveal-cards {grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:1060px!important;width:100%;gap:20px!important;margin:30px auto 0!important}
+.ymc-stadium-reveal-card {display:flex!important;align-items:center;justify-content:center;text-align:center!important;min-height:180px;padding:24px 16px!important;transition:border-color .2s,background .2s}
+.ymc-stadium-reveal-card h3 {font-size:clamp(30px,3.2vw,48px)!important;line-height:1.05!important;margin:0!important}
+.ymc-stadium-reveal-card:hover {border-color:#f0ce62;background:#322047}
+.ymc-clean-campaign {background:#241046;color:#fff;text-align:center;padding:80px 24px}
+.ymc-clean-campaign-inner {max-width:900px;margin:auto}
+.ymc-clean-campaign h2 {font:400 clamp(84px,15vw,200px)/1 'Bebas Neue',Impact,sans-serif!important;letter-spacing:-.02em;margin:0 0 28px!important;color:#d4af37!important}
+.ymc-clean-campaign [data-dc-tpl="59"] {padding:0!important;margin:0 auto 32px!important;width:100%}
+.ymc-clean-campaign .ymc-progress > :not(progress) {display:none!important}
+.ymc-clean-campaign .ymc-progress progress {height:22px!important;border-radius:999px!important;background:#49355f!important}
+.ymc-clean-campaign progress::-webkit-progress-bar {background:#49355f!important;border-radius:999px}
+.ymc-clean-campaign progress::-webkit-progress-value {background:#d4af37!important;border-radius:999px}
+.ymc-clean-campaign progress::-moz-progress-bar {background:#d4af37!important;border-radius:999px}
+.ymc-clean-donate {display:inline-flex;align-items:center;justify-content:center;padding:18px 42px;border-radius:4px;background:#d4af37;color:#241046!important;text-decoration:none;font:700 13px/1.3 Montserrat,Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase}
+.ymc-clean-donate:hover {background:#efd16a}
+.ymc-clean-donate:focus-visible {outline:3px solid white;outline-offset:6px}
+.ymc-sr-only {position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:640px){
+ .ymc-stadium-opening h1 {font-size:clamp(54px,16vw,88px)!important}
+ .ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening {top:calc(50% - 4svh - clamp(54px,16vw,88px) - 54px)!important}
+ .ymc-stadium-opening .ymc-stadium-purpose {max-width:350px;font-size:15px!important}
+ .ymc-stadium-reveal {padding:24px 20px 40px!important}
+ .ymc-stadium-reveal-cards {grid-template-columns:1fr!important;gap:10px!important;margin-top:20px!important;max-width:440px!important}
+ .ymc-stadium-reveal-card {min-height:76px;padding:14px!important}
+ .ymc-stadium-reveal-card h3 {font-size:28px!important}
+ .ymc-stadium-reveal-card h3 br {display:none}
+ .ymc-clean-campaign {padding:55px 24px}
+}
+@media(max-height:620px) and (min-width:641px){.ymc-stadium-reveal-card{min-height:110px}.ymc-stadium-opening .ymc-stadium-purpose{font-size:12px!important}.ymc-stadium-opening h1{font-size:64px!important}.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening{top:8px!important}}
+
+/* Compact text-only menu identity; full event artwork remains elsewhere. */
+.ymc-menu-wordmark {display:flex;flex-direction:column;align-items:center;width:94px;color:#fff;line-height:.83;text-align:center;padding:7px 0}
+.ymc-menu-wordmark strong {font:900 29px/.83 Georgia,serif;letter-spacing:-1px;text-shadow:1px 1px #a98626}
+.ymc-menu-wordmark small {font:700 7px/1.2 Georgia,serif;color:#d4af37;margin:2px 0}
+.ymc-menu-wordmark em {font:700 7px/1.2 Georgia,serif;letter-spacing:.6px;margin-top:5px;font-style:normal}
+@media(max-width:640px){
+ .ymc-stadium-opening .ymc-stadium-eyebrow {font-size:11px!important;letter-spacing:.12em!important}
+ .ymc-stadium-opening .ymc-timer-unit b {font-size:30px!important;line-height:1!important}
+ .ymc-stadium-opening .ymc-timer-unit small {font-size:10px!important;letter-spacing:.08em!important}
+ .ymc-stadium-opening .ymc-stadium-cue {font-size:12px!important;letter-spacing:.12em!important}
+ .ymc-stadium-opening .ymc-stadium-countdown {gap:16px!important}
+ .ymc-ref-header-inner {gap:10px!important}
+ .ymc-ref-header-inner [data-dc-tpl="16"] {gap:8px!important}
+}
+
+@media(max-width:640px){
+ .ymc-stadium-opening .ymc-stadium-countdown {display:flex!important;justify-content:center;gap:20px!important;max-width:100%}
+ .ymc-stadium-opening .ymc-timer-unit {display:flex!important;flex-direction:column;align-items:center;gap:6px!important;min-width:48px}
+}
+
+/* Actual supplied logo artwork, never a font approximation. */
+.ymc-menu-artwork {display:block;width:82px!important;height:auto!important;max-height:72px;object-fit:contain}
+.ymc-campaign-eyebrow {font:700 12px/1.4 Montserrat,Arial,sans-serif;letter-spacing:.22em;color:#e6d5a1;margin:0 0 12px}
+.ymc-clean-campaign h2 {font-size:clamp(76px,10vw,136px)!important;margin-bottom:20px!important}
+.ymc-clean-campaign .ymc-progress > .ymc-progress-label {display:block!important;color:#eee!important;font-size:14px!important;margin:0 0 5px!important}
+.ymc-clean-campaign .ymc-progress > .ymc-progress-total {display:block!important;font:400 clamp(48px,7vw,80px)/1 'Bebas Neue',Impact,sans-serif!important;color:#fff!important;margin:0 0 20px!important}
+.ymc-intro-actions {display:flex!important;flex-wrap:wrap!important;gap:12px!important;border:0!important;margin-top:28px!important;padding:0!important}
+.ymc-intro-actions a {display:flex!important;align-items:center;justify-content:center;padding:16px 20px!important;background:#d4af37!important;color:#241046!important;border:1px solid #d4af37!important;border-radius:4px!important;text-decoration:none!important;font:700 12px/1.4 Montserrat,Arial,sans-serif!important;letter-spacing:.06em!important;text-transform:uppercase}
+.ymc-intro-actions a:hover {background:#efd16a!important}
+.ymc-intro-actions a:focus-visible {outline:3px solid #fff;outline-offset:4px}
+@media(max-width:640px){.ymc-intro-actions a{flex:1 1 100%;min-height:50px}.ymc-clean-campaign{padding:50px 24px}}
+
+/* Place the title above the upper stadium beam, which acts as its underline. */
+.ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening {top:calc(50% - max(4vw, 4svh) - clamp(58px,8vw,120px) - 108px)!important}
+.ymc-menu-artwork {width:56px!important;max-height:48px!important}
+.ymc-donor-panel {margin:48px auto 0;padding-top:32px;border-top:1px solid #d4af3744}
+.ymc-donor-panel h3 {font:400 36px/1.1 'Bebas Neue',Impact,sans-serif;margin:0 0 10px;color:#fff}
+.ymc-donor-panel p {font:400 13px/1.6 Montserrat,Arial,sans-serif;color:#ddd;max-width:650px;margin:0 auto 22px}
+.ymc-donor-panel iframe {display:block;width:100%;height:540px;border:1px solid #d4af3744;border-radius:8px;background:#160c2a}
+.ymc-feed-link {display:inline-block;margin-top:14px;color:#e7c961;font-size:12px;text-decoration:underline}
+@media(max-width:640px){
+ .ymc-stadium-scroll[data-motion=ready] .ymc-stadium-opening {top:calc(50% - 4svh - clamp(54px,16vw,88px) - 106px)!important}
+ .ymc-menu-artwork {width:52px!important;max-height:44px!important}
+ .ymc-donor-panel iframe {height:620px}
+}
+
+.ymc-clean-campaign-inner{max-width:1100px}
+.ymc-donor-panel iframe{height:650px}
+@media(max-width:1023px){.ymc-donor-panel iframe{display:none}.ymc-feed-link{padding:16px 22px;background:#d4af37;color:#241046;border-radius:4px;font-weight:700;text-decoration:none}}
+#ymc-donor-feed{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;text-align:left;margin-top:24px}
+.ymc-donor-card{background:#fff;border:1px solid #e5e1ed;border-radius:12px;padding:24px;color:#211b2e;box-shadow:0 4px 16px #0002}
+.ymc-donor-panel .ymc-donor-heading{font:400 16px/1.5 Montserrat,Arial,sans-serif;color:#211b2e;margin:0 0 10px}
+.ymc-donor-time{font:400 12px/1.5 Montserrat,Arial,sans-serif;color:#736b7c}
+.ymc-donor-panel .ymc-donor-message{font:400 16px/1.6 Montserrat,Arial,sans-serif;color:#332b40;margin:20px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:900px){#ymc-donor-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#ymc-donor-feed{grid-template-columns:1fr}.ymc-donor-card{padding:22px}}
+/* Unified fundraising section: amount first, quiet activity underneath. */
+.ymc-clean-campaign{background:radial-gradient(ellipse at 50% 20%,#26183b 0,transparent 65%),linear-gradient(160deg,#100c1b,#1b102c);padding:80px 24px;color:#f8f4e8}
+.ymc-clean-campaign-inner{max-width:780px}
+.ymc-campaign-brand{font:700 12px/1.5 Montserrat,Arial,sans-serif;letter-spacing:.28em;margin:0 0 40px;color:#f7f3e9}
+.ymc-campaign-brand:after{content:'';display:block;width:60px;height:2px;background:#d4af37;margin:16px auto 0}
+.ymc-clean-campaign h2{font:400 clamp(88px,12vw,170px)/1 'Bebas Neue',Impact,sans-serif!important;color:#faf6e8!important;margin:0!important;letter-spacing:.005em}
+.ymc-goal-caption{font:500 clamp(17px,2.5vw,27px)/1.5 Montserrat,Arial,sans-serif;color:#b5a8c8;margin:12px 0 28px}
+#ymc-goal-progress{display:block;width:100%;height:10px;border:0;border-radius:20px;overflow:hidden;background:#362745}
+.ymc-clean-campaign progress::-webkit-progress-bar{background:#362745}
+#ymc-goal-percent{text-align:right;font:500 13px/1.5 Montserrat,Arial,sans-serif;color:#b5a8c8;margin:8px 0 22px}
+.ymc-clean-donate{min-width:250px;padding:20px 36px;background:linear-gradient(115deg,#dbb346,#e1be59);font-size:14px;color:#160d25!important}
+.ymc-donor-panel{margin-top:38px;padding-top:8px;border-top:1px solid #ffffff21}
+.ymc-feed-controls{display:flex;justify-content:flex-end;margin:0 0 4px}
+#ymc-feed-pause{border:0;background:transparent;color:#b5a8c8;font:400 11px/1.6 Montserrat,Arial,sans-serif;cursor:pointer;padding:6px}
+#ymc-feed-pause:focus-visible,#ymc-donor-feed:focus-visible{outline:2px solid #e1be59;outline-offset:3px}
+#ymc-donor-feed{display:block;height:340px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#65516c transparent;margin:0;text-align:left;scroll-behavior:auto}
+.ymc-donor-row{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:16px;align-items:start;padding:22px 4px;border-bottom:1px solid #ffffff21}
+.ymc-donor-avatar{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:#34263f;color:#bcadcd;font:500 16px/1 Montserrat,Arial,sans-serif}
+.ymc-donor-name{display:block;color:#f6f1fa;font:700 15px/1.5 Montserrat,Arial,sans-serif;overflow-wrap:anywhere}
+.ymc-donor-time{display:block;color:#b3a6c5;font-size:12px;line-height:1.6;margin-top:2px}
+.ymc-donor-panel .ymc-donor-message{font:400 14px/1.6 Montserrat,Arial,sans-serif;color:#c1b3d0;margin:12px 0 0;max-width:none;white-space:pre-wrap;overflow-wrap:anywhere}
+.ymc-donor-amount{color:#e3b944;font:600 19px/1.5 Montserrat,Arial,sans-serif;white-space:nowrap}
+.ymc-feed-link{background:none!important;color:#bdb0cf!important;font:400 12px/1.5 Montserrat,Arial,sans-serif!important;padding:0!important;margin-top:22px;text-decoration:none;border-bottom:1px solid #756481;border-radius:0!important}
+.ymc-feed-link span{margin-left:10px}
+@media(max-width:600px){.ymc-clean-campaign{padding:55px 22px}.ymc-campaign-brand{margin-bottom:30px}.ymc-clean-campaign h2{font-size:clamp(72px,20vw,110px)!important}.ymc-goal-caption{font-size:15px}.ymc-donor-row{grid-template-columns:34px minmax(0,1fr) auto;gap:10px;padding:20px 0}.ymc-donor-avatar{width:34px;height:34px;font-size:12px}.ymc-donor-name{font-size:13px}.ymc-donor-amount{font-size:15px}.ymc-donor-panel .ymc-donor-message{font-size:13px}#ymc-donor-feed{height:325px}}
