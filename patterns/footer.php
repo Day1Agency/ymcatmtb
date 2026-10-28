@@ -30,7 +30,9 @@ ob_start();
         <div data-dc-tpl="246" style="font-weight: 600; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: rgb(212, 175, 55);">Campaign</div>
         <div data-dc-tpl="247" style="margin-top: 12px; display: grid; gap: 8px; font-size: 14px;">
           <a data-dc-tpl="248" href="<?php echo esc_url( home_url( '/#tournaments' ) ); ?>" class="scpf" style="color: rgb(176, 179, 184);">Register to Play</a>
+          <a href="https://givebutter.com/ymc-at-mtb-tickets" class="scpf" style="color: rgb(176, 179, 184);">Come watch / Tickets</a>
           <a href="<?php echo esc_url( home_url( '/player-forms/' ) ); ?>" class="scpf" style="color: rgb(176, 179, 184);">Player Forms</a>
+          <a href="<?php echo esc_url( home_url( '/register-a-team/' ) ); ?>" class="scpf" style="color: rgb(176, 179, 184);">Register a Team</a>
           <a href="<?php echo esc_url( home_url( '/need-a-team/' ) ); ?>" class="scpf" style="color: rgb(176, 179, 184);">Need a Team</a>
           <a data-dc-tpl="249" href="https://givebutter.com/ymc-annual-campaign/donate" target="_blank" rel="noopener" class="scpf" style="color: rgb(176, 179, 184);">Donate</a>
           <a data-dc-tpl="250" href="https://givebutter.com/ymc-annual-campaign" class="scpf" style="color: rgb(176, 179, 184);">Annual Campaign</a>
