@@ -10,3 +10,5 @@ Rollback: replace page 6 code editor content with homepage-before-oct27.html, sa
 Later October 27 sponsor revision: separate recognition panel from package choices. Gabe & Ruben’s has a text listing linked to the supplied Instagram; official logo not yet supplied. Backup immediately before this revision: homepage-before-sponsor-tiers-oct27.html. Desktop visual and 390px mobile overflow checks passed.
 
 MVP revision: Gastro Center of Maryland confirmed by Yomi as MVP ($5,000); supplied logo uploaded and displayed above Pro Bowl, with larger image. Additional sponsors now use smaller cards/logos on desktop and mobile. Pre-change rollback: homepage-before-mvp-oct27.html. Saved live page verified and 390px mobile checked without horizontal overflow.
+
+Evening Oct 27: Sponsor recognition now centered with transparent backgrounds, Gastro/East transparent PNGs, and white Farm mark. Confirmed tier labels: Gastro MVP; East + Camp Pro Bowl; Farm Touchdown; Gabe & Ruben First Down. Mobile checked at 390px, no horizontal overflow. Rollback: homepage-before-transparent-oct27.html. Latest live page 6 remains authoritative; sync this snapshot before any deployment.
