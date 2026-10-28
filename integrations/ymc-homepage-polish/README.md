@@ -15,3 +15,6 @@ Registration cleanup was performed separately in Givebutter: archived Signed lia
 Rollback: deactivate YMC Homepage Polish and purge SiteGround cache from a normal admin GET page. Saved homepage content remains unchanged. Preserve this plugin during theme deployments.
 
 Menu asset: generated transparent cutout based on original logo artwork, with white lettering, thin gold edges and Bank Stadium ribbon; no background, outer shield or glow.
+
+## 1.1.0 — approved fundraising redesign
+Large live combined amount raised, goal caption, slim progress bar, Donate button and dark compact donor rows. No duplicate section headings. Donation viewport scrolls slowly (18px/second), reverses after an end pause, pauses on hover/focus/touch/manual interaction, and has an explicit pause control. Reduced-motion preference disables initial animation. API refreshes every 120 seconds; unchanged records do not rebuild the list. Live amount $30,999, 12 donor rows, scrolling advancement and stable paused scroll position verified. PHP/JS syntax checked. Previous 1.0.10 package retained at /tmp/ymc-homepage-polish-v110.zip for rollback.

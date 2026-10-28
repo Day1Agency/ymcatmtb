@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Homepage Polish
  * Description: Reversible October 28 homepage presentation changes. No registration or payment changes.
- * Version: 1.0.10
+ * Version: 1.1.0
  */
 namespace YMC\HomepagePolish;
 defined('ABSPATH') || exit;
@@ -16,7 +16,7 @@ add_filter('the_content', function ($content) {
     $cards = '<div class="ymc-stadium-reveal-cards"><a href="#tournaments" class="ymc-stadium-reveal-card"><h3>Register<br> to play</h3></a><a href="#tickets" class="ymc-stadium-reveal-card"><h3>Come<br> watch</h3></a><a href="#sponsor" class="ymc-stadium-reveal-card"><h3>Sponsor<br> the event</h3></a></div>';
     $content = preg_replace('~<div class="ymc-stadium-reveal-cards">.*?</div>~s', $cards, $content, 1);
     $content = preg_replace('~<nav class="ymc-stadium-dock[^\"]*"[^>]*>.*?</nav>~s', '', $content, 1);
-    $campaign = '<section id="campaign" class="ymc-clean-campaign" aria-label="YMC annual fundraising campaign"><div class="ymc-clean-campaign-inner"><p class="ymc-campaign-eyebrow">OUR ANNUAL GOAL</p><h2>$750,000<span class="ymc-sr-only"> fundraising goal</span></h2><div data-dc-tpl="59"><p class="ymc-sr-only">Fundraising progress is loading.</p></div><a href="https://givebutter.com/ymc-annual-campaign/donate" class="ymc-clean-donate">Donate now</a><div class="ymc-donor-panel"><h3>OUR SUPPORTERS</h3><div id="ymc-donor-feed" aria-live="polite"></div><a class="ymc-feed-link" href="https://givebutter.com/ymc-annual-campaign" target="_blank" rel="noopener">View all donations</a></div></div></section>';
+    $campaign = '<section id="campaign" class="ymc-clean-campaign" aria-label="YMC fundraising"><div class="ymc-clean-campaign-inner"><p class="ymc-campaign-brand">YMC AT M&amp;T</p><h2 id="ymc-raised">—</h2><p class="ymc-goal-caption">raised toward our $750,000 goal</p><progress id="ymc-goal-progress" max="750000" value="0" aria-label="Fundraising progress"></progress><p id="ymc-goal-percent"></p><a href="https://givebutter.com/ymc-annual-campaign/donate" class="ymc-clean-donate">Donate now</a><div class="ymc-donor-panel"><div class="ymc-feed-controls"><button type="button" id="ymc-feed-pause" aria-pressed="false">Pause scrolling</button></div><div id="ymc-donor-feed" tabindex="0" role="region" aria-label="Recent public donations. Scroll to read more."></div><a class="ymc-feed-link" href="https://givebutter.com/ymc-annual-campaign" target="_blank" rel="noopener">View all donations <span aria-hidden="true">→</span></a></div></div></section>';
     $content = preg_replace_callback('~<section id="campaign"[^>]*>.*?</section>~s', function () use ($campaign) { return $campaign; }, $content, 1);
     $content = preg_replace('~(<h2[^>]*data-dc-tpl="73"[^>]*>).*?</h2>~s', '$1MORE THAN<br><span style="color:#d4af37">A GAME</span></h2>', $content, 1);
     $content = preg_replace('~(<p[^>]*data-dc-tpl="76"[^>]*>).*?</p>~s', '$1Every player, fan and sponsor helps support the learning and growth of YMC’s talmidim. Be part of their next chapter.</p>', $content, 1);
@@ -25,7 +25,7 @@ add_filter('the_content', function ($content) {
     return $content;
 }, 99);
 add_action('wp_enqueue_scripts', function () {
-    if (is_front_page()) wp_enqueue_style('ymc-homepage-polish', plugins_url('polish.css', __FILE__), array(), '1.0.10');
+    if (is_front_page()) wp_enqueue_style('ymc-homepage-polish', plugins_url('polish.css', __FILE__), array(), '1.1.0');
 }, 99);
 
 // Only public giving-space values are exposed; never fall back to billing names or amounts.
@@ -48,4 +48,4 @@ function donors(){
  $out=donor_rows($d['data']);set_transient('ymc_public_donors_v1',$out,120);return $out;
 }
 add_action('rest_api_init',function(){register_rest_route('ymc/v1','/public-donors',array('methods'=>'GET','permission_callback'=>'__return_true','callback'=>__NAMESPACE__.'\\donors'));});
-add_action('wp_enqueue_scripts',function(){if(!is_front_page())return;wp_enqueue_script('ymc-public-donors',plugins_url('donors.js',__FILE__),array(),'1.0.10',true);wp_add_inline_script('ymc-public-donors','window.ymcDonorEndpoint='.wp_json_encode(rest_url('ymc/v1/public-donors')).';','before');});
+add_action('wp_enqueue_scripts',function(){if(!is_front_page())return;wp_enqueue_script('ymc-public-donors',plugins_url('donors.js',__FILE__),array(),'1.1.0',true);wp_add_inline_script('ymc-public-donors','window.ymcDonorEndpoint='.wp_json_encode(rest_url('ymc/v1/public-donors')).';','before');});
