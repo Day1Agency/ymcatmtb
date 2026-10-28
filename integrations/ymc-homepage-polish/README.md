@@ -1,25 +1,17 @@
-# Homepage presentation, October 28
+# YMC Homepage Polish — October 28
 
-Version 1.0.4 is deployed as a separate WordPress plugin on ymcatmtb.com.
-It filters the front-page stadium content without editing the saved homepage or theme.
+Version 1.0.10 is deployed as a separate WordPress plugin on ymcatmtb.com. It filters front-page content without changing the saved homepage or theme.
 
-- One-line PLAY FOR YMC above the tunnel entrance.
-- Three post-scroll action cards: register, watch, Sponsor the event.
-- Removes opening CTA dock and redundant reveal tagline.
-- Campaign presentation: $750,000 goal, combined progress bar, Donate now.
+- One-line PLAY FOR YMC above the tunnel beam; compact transparent menu wordmark.
+- Post-scroll register/watch/sponsor cards and gold photo-section actions.
+- $750,000 annual goal and live combined progress, provided by the existing Combined Campaign Progress plugin.
+- Removes Get the Forms banner and footer Player Forms link.
+- Replaces the Live Display iframe with responsive donor cards, refreshed every two minutes. Cards show the latest 12 public giving-space records from Annual Campaign 733202 among the most recent 100 account transactions. Public giving-space names, amounts, messages and dates only; no billing/contact fallback. Zero/hidden public amounts remain hidden, and anonymous names remain anonymous. API credential remains server-side in the existing captain-invitations configuration.
 
-Depends on the existing Combined Campaign Progress plugin for live totals; preserves its data-dc-tpl hook. The deployed bar was verified at 30,999 / 750,000. PHP syntax parsed; public mobile hero/cards/campaign checked. No payment submitted.
+Validation: PHP and JavaScript syntax passed; live public donor cards matched the source feed, including an anonymous donation with hidden amount. Donor content uses textContent. Desktop rendering verified. No registration or payment submitted.
 
-Rollback: deactivate YMC Homepage Polish, then purge SiteGround cache from a normal admin GET page. Saved homepage content is unchanged. Preserve this separate plugin during theme deployments.
+Registration cleanup was performed separately in Givebutter: archived Signed liability waiver and Signed media release ticket fields for teen campaign 749484. Agreement fields retained. Archived status confirmed after reopening the saved ticket.
 
-Registration is outside this plugin. User selected staff-created teams; Nikka has the implementation handoff. Public team creation remains enabled until the replacement captain request/setup flow is ready and tested.
+Rollback: deactivate YMC Homepage Polish and purge SiteGround cache from a normal admin GET page. Saved homepage content remains unchanged. Preserve this plugin during theme deployments.
 
-Mobile refinement: larger headline, description, timer and scroll cue, with stacked countdown labels to avoid overflow. Header uses a compact HTML text wordmark instead of the shield. Verified public 390px mobile view and post-scroll cards.
-
-Latest revision restores the live raised total, uses the user-supplied exact logo crop, and replaces repeated photo-section copy with More than a game and solid gold actions. Public donor feed is not embedded; Givebutter standard widgets do not embed the full campaign page/feed.
-
-## October 28 follow-up (1.0.6)
-- Lift headline above stadium beam on desktop and mobile; reduce actual-artwork menu logo to 56px / 52px.
-- Add official Givebutter Live Display for main annual campaign on desktop. This display respects public/anonymous settings and has its own main-campaign total, distinct from the combined total above.
-- Under 1024px use a donor-page link because Live Display enforces a 900x600 minimum. A native mobile donor list remains a separate integration.
-- Verified live desktop and 390x844 mobile. Roll back by deactivating this plugin and purging SG cache.
+Menu asset: generated transparent cutout based on original logo artwork, with white lettering, thin gold edges and Bank Stadium ribbon; no background, outer shield or glow.
