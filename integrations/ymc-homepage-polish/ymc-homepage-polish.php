@@ -2,13 +2,16 @@
 /**
  * Plugin Name: YMC Homepage Polish
  * Description: Reversible October 28 homepage presentation changes. No registration or payment changes.
- * Version: 1.1.2
+ * Version: 1.1.3
  */
 namespace YMC\HomepagePolish;
 defined('ABSPATH') || exit;
 add_filter('the_content', function ($content) {
     if (!is_front_page() || strpos($content, 'ymc-stadium-scroll') === false) return $content;
     $content = str_ireplace('Become a corporate sponsor', 'Sponsor the event', $content);
+    foreach (array('adult','teen') as $division) {
+        $content = str_replace('https://givebutter.com/ymc-'.$division.'-player-registration/register', 'https://givebutter.com/ymc-'.$division.'-player-registration', $content);
+    }
     $wordmark = '<img class="ymc-menu-artwork" src="' . esc_url(plugins_url('menu-transparent.png', __FILE__)) . '" alt="YMC at M&amp;T Bank Stadium" width="269" height="225">';
     $content = preg_replace_callback('~<img[^>]*class="ymc-ref-header-logo"[^>]*>~s', function () use ($wordmark) { return $wordmark; }, $content, 1);
     $content = str_replace('PLAY<br><span>FOR YMC</span>', 'PLAY <span>FOR YMC</span>', $content);
@@ -25,7 +28,7 @@ add_filter('the_content', function ($content) {
     return $content;
 }, 99);
 add_action('wp_enqueue_scripts', function () {
-    if (is_front_page()) wp_enqueue_style('ymc-homepage-polish', plugins_url('polish.css', __FILE__), array(), '1.1.2');
+    if (is_front_page()) wp_enqueue_style('ymc-homepage-polish', plugins_url('polish.css', __FILE__), array(), '1.1.3');
 }, 99);
 
 // Only public giving-space values are exposed; never fall back to billing names or amounts.
@@ -48,4 +51,4 @@ function donors(){
  $out=donor_rows($d['data']);set_transient('ymc_public_donors_v1',$out,120);return $out;
 }
 add_action('rest_api_init',function(){register_rest_route('ymc/v1','/public-donors',array('methods'=>'GET','permission_callback'=>'__return_true','callback'=>__NAMESPACE__.'\\donors'));});
-add_action('wp_enqueue_scripts',function(){if(!is_front_page())return;wp_enqueue_script('ymc-public-donors',plugins_url('donors.js',__FILE__),array(),'1.1.2',true);wp_add_inline_script('ymc-public-donors','window.ymcDonorEndpoint='.wp_json_encode(rest_url('ymc/v1/public-donors')).';','before');});
+add_action('wp_enqueue_scripts',function(){if(!is_front_page())return;wp_enqueue_script('ymc-public-donors',plugins_url('donors.js',__FILE__),array(),'1.1.3',true);wp_add_inline_script('ymc-public-donors','window.ymcDonorEndpoint='.wp_json_encode(rest_url('ymc/v1/public-donors')).';','before');});
