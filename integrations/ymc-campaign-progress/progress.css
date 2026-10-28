@@ -1,0 +1,8 @@
+.ymc-progress { color:#fff;min-width:0; }
+.ymc-progress-label {font-weight:600;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#b0b3b8}
+.ymc-progress-total {margin-top:8px;font-family:var(--font-condensed),sans-serif;font-weight:700;font-size:clamp(42px,6vw,64px);line-height:1.1;font-variant-numeric:tabular-nums;color:#d4af37;overflow-wrap:anywhere}
+.ymc-progress-goal {font-size:14px;margin:8px 0 16px;color:#fff}
+.ymc-progress progress {display:block;width:100%;height:7px;border:0;border-radius:5px;overflow:hidden;background:#39323e;accent-color:#d4af37}
+.ymc-progress progress::-webkit-progress-bar {background:#39323e}.ymc-progress progress::-webkit-progress-value{background:#d4af37}.ymc-progress progress::-moz-progress-bar{background:#d4af37}
+.ymc-progress-note {font-size:12px;line-height:1.5;color:#c8c2ce;margin:12px 0 0}
+.ymc-progress details {font-size:12px;line-height:1.5;margin-top:14px;color:#ddd6e4}.ymc-progress summary {cursor:pointer;color:#e2c46d}.ymc-progress ul {padding-left:18px;margin:10px 0 0}.ymc-progress li {margin:6px 0}
