@@ -212,10 +212,62 @@ add_action( 'admin_menu', function () {
 	add_options_page( 'Captain Invitations', 'Captain Invitations', 'manage_options', 'ymc-captain-invitations', __NAMESPACE__ . '\\settings_page' );
 } );
 
+/**
+ * Run one invitation again on demand, from the Captain Invitations screen.
+ *
+ * process() refuses to act on a job that is already sent, ignored or in review,
+ * and the per-team record refuses a second email on top of that, so a retry has
+ * to release both or it reports success while sending nothing. Locks are only
+ * cleared once they are old enough that no run could still be holding them -
+ * that is the stale-lock recovery a crashed run otherwise leaves behind.
+ */
+function retry_invitation( $id ) {
+	$key = job_key( $id );
+	$job = get_option( $key );
+	if ( ! is_array( $job ) ) {
+		return '<div class="notice notice-error"><p>That ticket is no longer on file.</p></div>';
+	}
+	$held = get_option( $key . '_lock' );
+	if ( $held && time() - (int) $held < 300 ) {
+		return '<div class="notice notice-warning"><p>This invitation is being processed right now. Try again in a few minutes.</p></div>';
+	}
+	delete_option( $key . '_lock' );
+	if ( ! empty( $job['invite_key'] ) ) {
+		$invite = get_option( $job['invite_key'] );
+		if ( is_array( $invite ) ) {
+			$team_lock = $job['invite_key'] . '_lock';
+			$team_held = get_option( $team_lock );
+			if ( $team_held && time() - (int) $team_held < 300 ) {
+				return '<div class="notice notice-warning"><p>This team is being processed right now. Try again in a few minutes.</p></div>';
+			}
+			delete_option( $team_lock );
+			$invite['status'] = 'ready';
+			update_option( $job['invite_key'], $invite, false );
+		}
+	}
+	$job['status'] = 'pending';
+	$job['attempts'] = 0;
+	$job['message'] = 'Retry requested from this screen.';
+	$job['updated'] = time();
+	update_option( $key, $job, false );
+	process( $id );
+	$job = (array) get_option( $key );
+	$class = 'sent' === ( $job['status'] ?? '' ) ? 'notice-success' : 'notice-warning';
+	return '<div class="notice ' . $class . '"><p>' . esc_html(
+		'Status: ' . ( $job['status'] ?? 'unknown' ) . '. ' . ( $job['message'] ?? '' )
+	) . '</p></div>';
+}
+
 function settings_page() {
 	if ( ! current_user_can( 'manage_options' ) ) { return; }
 	$settings = config();
-	if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+	if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) && isset( $_POST['ymc_retry_ticket'] ) ) {
+		check_admin_referer( 'ymc_captain_retry' );
+		$ticket = trim( sanitize_text_field( wp_unslash( $_POST['ymc_retry_ticket'] ) ) );
+		echo wp_kses_post( preg_match( '/^[a-zA-Z0-9_-]{1,100}$/', $ticket )
+			? retry_invitation( $ticket )
+			: '<div class="notice notice-error"><p>That ticket ID is not valid.</p></div>' );
+	} elseif ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
 		check_admin_referer( 'ymc_captain_settings' );
 		foreach ( array( 'api_key', 'signing_secret' ) as $field ) {
 			$value = trim( sanitize_text_field( wp_unslash( $_POST[$field] ?? '' ) ) );
@@ -244,11 +296,16 @@ function settings_page() {
 	submit_button(); echo '</form><h2>Givebutter webhook setup</h2><p>Create a webhook for <code>ticket.created</code> at this URL, then save its signing secret above:</p><code>' . esc_html( rest_url( 'ymc/v1/captain-invitations' ) ) . '</code><p>The local URL cannot receive public Givebutter webhooks. A deployed HTTPS site and working scheduled tasks/email delivery are required.</p><h2>Recent captain tickets</h2>';
 	global $wpdb;
 	$rows = $wpdb->get_col( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name NOT LIKE %s ORDER BY option_id DESC LIMIT 30", $wpdb->esc_like( JOB_PREFIX ) . '%', '%' . $wpdb->esc_like( '_lock' ) ) );
-	echo '<table class="widefat"><thead><tr><th>Ticket</th><th>Team</th><th>Status</th><th>Details</th></tr></thead><tbody>';
+	echo '<table class="widefat"><thead><tr><th>Ticket</th><th>Team</th><th>Status</th><th>Details</th><th>Action</th></tr></thead><tbody>';
 	foreach ( $rows as $value ) {
 		$job = maybe_unserialize( $value );
 		if ( ! is_array( $job ) ) { continue; }
-		echo '<tr><td>' . esc_html( $job['ticket_id'] ) . '</td><td>' . esc_html( $job['team'] ?? 'Pending match' ) . '</td><td>' . esc_html( $job['status'] ) . '</td><td>' . esc_html( $job['message'] ?? '' ) . '</td></tr>';
+		echo '<tr><td>' . esc_html( $job['ticket_id'] ) . '</td><td>' . esc_html( $job['team'] ?? 'Pending match' ) . '</td><td>' . esc_html( $job['status'] ) . '</td><td>' . esc_html( $job['message'] ?? '' ) . '</td><td>'
+			. '<form method="post" style="margin:0">'
+			. wp_nonce_field( 'ymc_captain_retry', '_wpnonce', true, false )
+			. '<input type="hidden" name="ymc_retry_ticket" value="' . esc_attr( $job['ticket_id'] ) . '">'
+			. get_submit_button( 'sent' === $job['status'] ? 'Resend' : 'Retry now', 'secondary small', 'submit', false )
+			. '</form></td></tr>';
 	}
 	echo '</tbody></table></div>';
 }
