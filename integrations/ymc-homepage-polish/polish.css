@@ -126,3 +126,7 @@
  .ymc-stadium-opening .ymc-stadium-deck{margin:18px 0!important}
  .ymc-stadium-opening .ymc-stadium-cue{margin-top:18px!important}
 }
+
+/* Keep both intro lines on the solid entrance beam without moving the countdown. */
+.ymc-stadium-opening .ymc-stadium-purpose{position:relative;top:-24px}
+@media(max-width:640px){.ymc-stadium-opening .ymc-stadium-purpose{top:-12px}}
