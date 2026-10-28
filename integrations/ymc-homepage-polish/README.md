@@ -1,10 +1,10 @@
 # Homepage presentation, October 28
 
-Version 1.0.1 is deployed as a separate WordPress plugin on ymcatmtb.com.
+Version 1.0.3 is deployed as a separate WordPress plugin on ymcatmtb.com.
 It filters the front-page stadium content without editing the saved homepage or theme.
 
 - One-line PLAY FOR YMC above the tunnel entrance.
-- Three post-scroll action cards: register, watch, corporate sponsor.
+- Three post-scroll action cards: register, watch, Sponsor the event.
 - Removes opening CTA dock and redundant reveal tagline.
 - Campaign presentation: $750,000 goal, combined progress bar, Donate now.
 
@@ -13,3 +13,5 @@ Depends on the existing Combined Campaign Progress plugin for live totals; prese
 Rollback: deactivate YMC Homepage Polish, then purge SiteGround cache from a normal admin GET page. Saved homepage content is unchanged. Preserve this separate plugin during theme deployments.
 
 Registration is outside this plugin. User selected staff-created teams; Nikka has the implementation handoff. Public team creation remains enabled until the replacement captain request/setup flow is ready and tested.
+
+Mobile refinement: larger headline, description, timer and scroll cue, with stacked countdown labels to avoid overflow. Header uses a compact HTML text wordmark instead of the shield. Verified public 390px mobile view and post-scroll cards.
