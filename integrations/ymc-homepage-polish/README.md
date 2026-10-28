@@ -1,6 +1,6 @@
 # Homepage presentation, October 28
 
-Version 1.0.3 is deployed as a separate WordPress plugin on ymcatmtb.com.
+Version 1.0.4 is deployed as a separate WordPress plugin on ymcatmtb.com.
 It filters the front-page stadium content without editing the saved homepage or theme.
 
 - One-line PLAY FOR YMC above the tunnel entrance.
@@ -15,3 +15,5 @@ Rollback: deactivate YMC Homepage Polish, then purge SiteGround cache from a nor
 Registration is outside this plugin. User selected staff-created teams; Nikka has the implementation handoff. Public team creation remains enabled until the replacement captain request/setup flow is ready and tested.
 
 Mobile refinement: larger headline, description, timer and scroll cue, with stacked countdown labels to avoid overflow. Header uses a compact HTML text wordmark instead of the shield. Verified public 390px mobile view and post-scroll cards.
+
+Latest revision restores the live raised total, uses the user-supplied exact logo crop, and replaces repeated photo-section copy with More than a game and solid gold actions. Public donor feed is not embedded; Givebutter standard widgets do not embed the full campaign page/feed.
