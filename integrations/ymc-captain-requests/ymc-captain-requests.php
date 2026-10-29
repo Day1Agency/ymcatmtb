@@ -11,6 +11,44 @@ const YMC_CAPTAIN_REQUEST_FALLBACK = 'ykohen@yeshivasmekorchaim.org';
 /** Adult Tournament, by numeric id. Its campaign code RMSQHT 404s on sub-resources. */
 const YMC_CAPTAIN_CAMPAIGN_ID = '729740';
 
+/** The list shipped with the plugin, used until staff edit it. */
+function ymc_captain_default_colours() {
+ return [
+  'Blue'=>'#2563c9','Brown'=>'#7b4a25','Gray'=>'#8a8f98','Green'=>'#2f8f4e',
+  'Maroon'=>'#7d2340','Orange'=>'#e07b26','Purple'=>'#6b3fa0','Red'=>'#c62f32',
+  'Teal'=>'#1c8f8f','White'=>'#f2f2f2','Yellow'=>'#e8c53c','Black'=>'#1a1a1a',
+ ];
+}
+
+/**
+ * The colours on offer, as name => swatch, read from the settings screen.
+ *
+ * Editable rather than hard-coded because the set of teams is YMC's decision
+ * and changes without a developer: a colour is dropped by deleting its line.
+ * Removing a colour only stops it being offered; any request already holding
+ * it keeps its record, so nobody loses a team because of an edit here.
+ */
+function ymc_captain_colour_map() {
+ $raw = trim((string) get_option('ymc_captain_colour_list', ''));
+ if ('' === $raw) { return ymc_captain_default_colours(); }
+ $map = [];
+ foreach (preg_split('/
+|
+|
+/', $raw) as $line) {
+  $line = trim($line);
+  if ('' === $line) { continue; }
+  /* "Teal #1c8f8f", or just "Teal" to fall back to a known or neutral swatch. */
+  if (preg_match('/^(.*?)\s+(#[0-9a-f]{3,6})$/i', $line, $m)) {
+   $name = trim($m[1]); $hex = $m[2];
+  } else {
+   $name = $line; $hex = ymc_captain_default_colours()[$line] ?? '#999999';
+  }
+  if ('' !== $name) { $map[$name] = $hex; }
+ }
+ return $map ?: ymc_captain_default_colours();
+}
+
 /**
  * Team colors, in the order they are offered.
  *
@@ -19,7 +57,7 @@ const YMC_CAPTAIN_CAMPAIGN_ID = '729740';
  * full set and never the available set.
  */
 function ymc_captain_colours() {
- return ['Blue','Brown','Gray','Green','Maroon','Orange','Purple','Red','Teal','White','Yellow','Black'];
+ return array_keys(ymc_captain_colour_map());
 }
 
 /**
@@ -30,11 +68,7 @@ function ymc_captain_colours() {
  * name stays as the label, because a dot alone fails for colour-blind readers.
  */
 function ymc_captain_colour_hex($colour) {
- $map = [
-  'Blue'=>'#2563c9','Brown'=>'#7b4a25','Gray'=>'#8a8f98','Green'=>'#2f8f4e',
-  'Maroon'=>'#7d2340','Orange'=>'#e07b26','Purple'=>'#6b3fa0','Red'=>'#c62f32',
-  'Teal'=>'#1c8f8f','White'=>'#f2f2f2','Yellow'=>'#e8c53c','Black'=>'#1a1a1a',
- ];
+ $map = ymc_captain_colour_map();
  return $map[$colour] ?? '#999999';
 }
 
@@ -232,7 +266,7 @@ add_action('untrashed_post', function ($id) {
  * one fires earlier, when staff have built the team, and tells the captain to
  * go and register themselves under it.
  */
-function ymc_captain_link_email($name, $team, $url) {
+function ymc_captain_link_email($name, $team, $url, $colour = '') {
  /* The button points at registration, not at the team page. Team URLs carry a
     generated slug (blue-27, red-25) that changes when YMC renames the team to a
     sponsor, which would break every link already emailed. The registration
@@ -245,12 +279,22 @@ function ymc_captain_link_email($name, $team, $url) {
   .'<li>Open the registration link below.</li>'
   .'<li>Choose <strong>Join a team</strong>.</li>'
   .'<li>Select <strong>'.esc_html($team).'</strong>.</li>'
-  .'<li>Choose <strong>Adult Tournament &mdash; Player</strong> and complete payment.</li></ol>'
+  .'<li>Choose <strong>Adult Tournament &mdash; '.esc_html($colour ?: $team).' (Captain Only)</strong> and complete payment.</li></ol>'
   .'<p style="margin:0"><a href="'.esc_url($register).'" style="display:inline-block;padding:15px 24px;background:#241046;color:#ffffff;text-decoration:none;border-radius:4px;font:700 13px/1.3 Arial,Helvetica,sans-serif;letter-spacing:.08em;text-transform:uppercase">Register under my team</a></p>'
   .'<p style="margin:16px 0 0;font:400 12px/1.6 Arial,Helvetica,sans-serif;color:#5c5c5c;overflow-wrap:anywhere">Or open: <a href="'.esc_url($register).'">'.esc_html($register).'</a></p>'
-  .($url ? '<p style="margin:14px 0 0;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#5c5c5c;overflow-wrap:anywhere">Your team page: <a href="'.esc_url($url).'">'.esc_html($url).'</a></p>' : '');
+  .($url ? '<p style="margin:14px 0 0;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#5c5c5c;overflow-wrap:anywhere">Your team page: <a href="'.esc_url($url).'">'.esc_html($url).'</a></p>' : '')
+  /* The captain is the one who briefs their players, so the players' steps go
+     here rather than relying on each of them reading the website. Their ticket
+     differs from the captain's, which is the mistake worth preventing. */
+  .'<div style="margin:26px 0 0;padding:18px 20px;background:#faf8fc;border:1px solid #e6e0ee;border-radius:6px">'
+  .'<p style="margin:0 0 10px;font:700 13px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#241046">For your players</p>'
+  .'<p style="margin:0 0 10px;font:400 14px/1.6 Arial,Helvetica,sans-serif;color:#1c1c1c">Send them these steps. Their ticket is not the same as yours.</p>'
+  .'<ol style="margin:0;padding-left:20px;font:400 14px/1.7 Arial,Helvetica,sans-serif;color:#1c1c1c">'
+  .'<li>Open the same registration link.</li>'
+  .'<li>Choose <strong>Join a team</strong> and select <strong>'.esc_html($team).'</strong>.</li>'
+  .'<li>Choose <strong>Adult Tournament &mdash; Player</strong> and complete payment.</li></ol></div>';
  return ymc_captain_email('Your team is ready','Hi '.esc_html($name).', your team has been set up.',$steps,
-  'Share these steps with your players so they join the same team. YMC may add sponsor branding to the team later; that does not affect your registration.');
+  'YMC may add sponsor branding to the team later; that does not affect your registration or theirs.');
 }
 
 /** Sends the link, records the outcome, and never sends twice for one request. */
@@ -259,7 +303,7 @@ function ymc_captain_send_link($id, $team, $url, $team_id = '') {
  $email = (string) get_post_meta($id,'ymc_email',true);
  $name  = (string) get_post_meta($id,'ymc_name',true);
  if (!is_email($email)) return false;
- $sent = wp_mail($email,'YMC: Your team is ready — register now',ymc_captain_link_email($name,$team,$url),
+ $sent = wp_mail($email,'YMC: Your team is ready — register now',ymc_captain_link_email($name,$team,$url,(string) get_post_meta($id,'ymc_colour',true)),
   ['Content-Type: text/html; charset=UTF-8','Reply-To: '.ymc_captain_request_recipient()]);
  update_post_meta($id,'ymc_link_sent',$sent ? 'yes':'no');
  update_post_meta($id,'ymc_team_name',$team);
@@ -553,7 +597,37 @@ add_action('admin_init', function () {
   printf('<input type="email" id="ymc_captain_request_recipient" name="ymc_captain_request_recipient" value="%s" class="regular-text" placeholder="%s"><p class="description">Where captain team requests are emailed. Leave empty to use %s.</p>',
    esc_attr((string) get_option('ymc_captain_request_recipient','')), esc_attr(YMC_CAPTAIN_REQUEST_FALLBACK), esc_html(YMC_CAPTAIN_REQUEST_FALLBACK));
  },'ymc-captain-requests','ymc_captain_request_main');
+
+ /* Stored as text rather than a repeater: adding or dropping a colour is a
+    rare, deliberate edit, and a line per colour is obvious to anyone. */
+ register_setting('ymc_captain_request','ymc_captain_colour_list',['type'=>'string','sanitize_callback'=>'ymc_captain_sanitize_colour_list','default'=>'']);
+ add_settings_field('ymc_captain_colour_list','Team colors', function () {
+  $value = (string) get_option('ymc_captain_colour_list','');
+  if ('' === $value) {
+   $lines = [];
+   foreach (ymc_captain_default_colours() as $name => $hex) { $lines[] = $name.' '.$hex; }
+   $value = implode("\n", $lines);
+  }
+  printf('<textarea id="ymc_captain_colour_list" name="ymc_captain_colour_list" rows="13" class="large-text code">%s</textarea>', esc_textarea($value));
+  echo '<p class="description">One color per line, as <code>Name #hex</code>. Delete a line to stop offering that color; the hex sets the dot shown beside the name. '
+   . 'A color only appears on the form if a matching team also exists in Givebutter. Removing a line never affects a request that already holds that color.</p>';
+ },'ymc-captain-requests','ymc_captain_request_main');
 });
+
+/** Keeps the stored list to one clean "Name #hex" per line. */
+function ymc_captain_sanitize_colour_list($value) {
+ $out = [];
+ foreach (preg_split('/\r\n|\r|\n/', (string) $value) as $line) {
+  $line = trim(sanitize_text_field($line));
+  if ('' === $line) { continue; }
+  if (preg_match('/^(.*?)\s+(#[0-9a-fA-F]{3,6})$/', $line, $m)) {
+   $out[] = trim($m[1]).' '.strtolower($m[2]);
+  } else {
+   $out[] = $line;
+  }
+ }
+ return implode("\n", $out);
+}
 
 /* A failed send is otherwise invisible: requests would pile up privately with nobody notified. */
 add_filter('manage_ymc_captain_request_posts_columns', function ($cols) {
@@ -624,7 +698,10 @@ add_shortcode('ymc_captain_request', function () {
  <ol class="ymct-steps-compact">
   <li>Sign in to Givebutter or create your account.</li>
   <li>Choose <strong>Join a team</strong> and select <strong><?php echo $held ? esc_html($held) : 'your color'; ?></strong>.</li>
-  <li>Pick <strong>Adult Tournament &mdash; Player</strong> and complete your $180 registration.</li>
+  <?php /* Captains buy the ticket named after their colour, not the Player
+           ticket. It is what identifies their colour if they ever register
+           without joining the team. */ ?>
+  <li>Pick <strong>Adult Tournament &mdash; <?php echo $held ? esc_html($held) : 'your color'; ?> (Captain Only)</strong> and complete your $180 registration.</li>
  </ol>
  <p class="ymct-note">We have emailed these steps to you as well, so you can finish later if you prefer.</p>
  <div class="ymct-actions">
