@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.0.1
+ * Version: 1.0.2
  */
 if (!defined('ABSPATH')) exit;
 
@@ -138,10 +138,15 @@ function ymc_captain_colour_states() {
  $live = ymc_captain_live_team_colours();
  $states = [];
  foreach (ymc_captain_colours() as $colour) {
+  /* The claim is checked first on purpose. The Givebutter test below exists to
+     stop anyone picking a colour we cannot fulfil, and a claimed colour cannot
+     be picked anyway - so a reserved colour with no team yet, like Black, still
+     belongs on the page as taken rather than disappearing from it. */
+  if ('' !== ymc_captain_colour_holder($colour)) { $states[$colour] = true; continue; }
   /* Unknown means Givebutter could not be read; fall back to offering the lot
      rather than showing an empty form. */
   if (null !== $live && !in_array($colour, $live, true)) continue;
-  $states[$colour] = '' !== ymc_captain_colour_holder($colour);
+  $states[$colour] = false;
  }
  return $states;
 }
