@@ -125,15 +125,30 @@ function ymc_captain_live_team_colours() {
  return $found;
 }
 
-/** Colours still on offer: unclaimed here, and backed by a team in Givebutter. */
-function ymc_captain_available_colours() {
+/**
+ * Every colour the form should list, as colour => taken.
+ *
+ * A claimed colour stays on the page, greyed out: seeing that Blue is gone is
+ * clearer than Blue silently not being there, and it stops a captain wondering
+ * whether they missed it. A colour with no team in Givebutter is a different
+ * case and is left out entirely - it is not taken, it does not exist yet, and
+ * offering it would strand whoever picked it.
+ */
+function ymc_captain_colour_states() {
  $live = ymc_captain_live_team_colours();
- return array_values(array_filter(ymc_captain_colours(), function ($colour) use ($live) {
-  if ('' !== ymc_captain_colour_holder($colour)) return false;
+ $states = [];
+ foreach (ymc_captain_colours() as $colour) {
   /* Unknown means Givebutter could not be read; fall back to offering the lot
      rather than showing an empty form. */
-  return null === $live ? true : in_array($colour, $live, true);
- }));
+  if (null !== $live && !in_array($colour, $live, true)) continue;
+  $states[$colour] = '' !== ymc_captain_colour_holder($colour);
+ }
+ return $states;
+}
+
+/** Colours still on offer: unclaimed here, and backed by a team in Givebutter. */
+function ymc_captain_available_colours() {
+ return array_keys(array_filter(ymc_captain_colour_states(), function ($taken) { return !$taken; }));
 }
 
 /**
@@ -665,7 +680,8 @@ function ymc_captain_request_message($reason) {
 
 add_shortcode('ymc_captain_request', function () {
  $status = isset($_GET['captain_request']) ? sanitize_key($_GET['captain_request']) : '';
- $available = ymc_captain_available_colours();
+ $states    = ymc_captain_colour_states();
+ $available = array_keys(array_filter($states, function ($taken) { return !$taken; }));
  ob_start(); ?>
  <section class="ymct-page" aria-labelledby="ymcc-title">
  <div class="ymct-shell">
@@ -726,15 +742,22 @@ add_shortcode('ymc_captain_request', function () {
           quicker to scan than opening a list. */ ?>
  <fieldset class="ymct-field ymcc-colours"><legend>Team color <span>(required)</span></legend>
  <div class="ymcc-swatches">
- <?php foreach ($available as $i => $colour) : ?>
-  <label class="ymcc-swatch">
-   <input type="radio" name="colour" value="<?php echo esc_attr($colour); ?>"<?php echo 0 === $i ? ' required' : ''; ?>>
+ <?php $first = true; foreach ($states as $colour => $taken) : ?>
+  <?php /* Disabled rather than hidden, so a taken colour reads as gone rather
+           than as never having been there. The server re-checks on submit, so
+           re-enabling it in the browser gains nothing. */ ?>
+  <label class="ymcc-swatch<?php echo $taken ? ' is-taken' : ''; ?>">
+   <input type="radio" name="colour" value="<?php echo esc_attr($colour); ?>"<?php
+    if ($taken) { echo ' disabled'; }
+    /* required belongs on the first colour that can actually be chosen. */
+    elseif ($first) { echo ' required'; $first = false; } ?>>
    <span class="ymcc-dot" style="background:<?php echo esc_attr(ymc_captain_colour_hex($colour)); ?>" aria-hidden="true"></span>
    <span class="ymcc-name"><?php echo esc_html($colour); ?></span>
+   <?php if ($taken) : ?><span class="ymcc-taken">Taken</span><?php endif; ?>
   </label>
  <?php endforeach; ?>
  </div>
- <span class="ymct-note">Only colors still available are shown.</span></fieldset>
+ <span class="ymct-note">Colors marked <em>Taken</em> already have a captain.</span></fieldset>
  <p class="ymct-field"><label for="ymcc-play">How competitive would your team like to play? <span>(required)</span></label>
  <select id="ymcc-play" name="competitiveness" required>
  <option value="">Select an option</option>

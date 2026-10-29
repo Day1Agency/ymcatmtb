@@ -30,10 +30,14 @@
   submit.before(actions); actions.append(back, next, submit);
   let step = 0;
   const group = i => fields.slice(i === 0 ? 0 : 3, i === 0 ? 3 : 6);
+  /* A disabled control is barred from constraint validation and always reports
+     valid, so a taken first colour would let the step pass with nothing picked.
+     Validate the first control that can actually be filled in. */
+  const control = field => field.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])');
   const validate = i => {
     for (const field of group(i)) {
-      const input = field.querySelector('input, select, textarea');
-      if (!input.checkValidity()) { input.reportValidity(); return false; }
+      const input = control(field);
+      if (input && !input.checkValidity()) { input.reportValidity(); return false; }
     }
     return true;
   };
@@ -49,7 +53,7 @@
       review.replaceChildren();
       const names = ['Full name', 'Email address', 'Phone number', 'Team color', 'Play style', 'Team story'];
       fields.forEach((field, n) => {
-        const input = field.querySelector('input, select, textarea');
+        const input = control(field) || field.querySelector('input, select, textarea');
         /* A radio group's first input holds its own value, not the chosen one,
            so the review would always show the first colour. */
         const picked = input.type === 'radio'
@@ -67,7 +71,7 @@
   form.addEventListener('submit', event => {
     if (step < 2) { event.preventDefault(); if (validate(step)) show(step + 1); return; }
     for (let i = 0; i < 2; i++) {
-      if (group(i).some(f => !f.querySelector('input, select, textarea').checkValidity())) { event.preventDefault(); show(i); validate(i); return; }
+      if (group(i).some(f => { const c = control(f); return c && !c.checkValidity(); })) { event.preventDefault(); show(i); validate(i); return; }
     }
   });
   form.noValidate = true;
