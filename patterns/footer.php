@@ -25,7 +25,7 @@ ob_start();
       <div data-dc-tpl="232">
         <div data-dc-tpl="233" style="display: flex; align-items: center; gap: 14px;">
           <img data-dc-tpl="234" src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/3deee3107dd7b6f3.png' ) ); ?>" alt="Yeshivas Mekor Chaim" style="height: 56px; width: auto;">
-          <img data-dc-tpl="235" src="<?php echo esc_url( get_theme_file_uri( 'assets/reference/d3ac31484267fd2f.png' ) ); ?>" alt="YMC at M&amp;T" style="height: 64px; width: auto;">
+          <img data-dc-tpl="235" src="<?php echo esc_url( get_theme_file_uri( 'assets/images/ymc-footer-event-logo.png' ) ); ?>" alt="YMC at M&amp;T" style="height: 64px; width: auto;">
         </div>
         <p data-dc-tpl="236" style="margin: 16px 0px 0px; font-family: var(--font-school); font-weight: 600; font-size: 15px; color: rgb(255, 255, 255);">Yeshivas Mekor Chaim</p>
         <p data-dc-tpl="237" style="margin: 4px 0px 0px; font-size: 15px; color: rgb(212, 175, 55); direction: rtl; text-align: left;">ישיבת מקור חיים</p>
