@@ -126,3 +126,23 @@
  .ymc-stadium-opening .ymc-stadium-deck{margin:18px 0!important}
  .ymc-stadium-opening .ymc-stadium-cue{margin-top:18px!important}
 }
+
+/* Annual campaign artwork with a compact live-impact panel. */
+#how{border-top:1px solid rgba(212,175,55,.3)}
+.ymc-clean-campaign{padding:64px 24px;background:#180e2b;border-block:1px solid rgba(212,175,55,.3)}
+.ymc-clean-campaign .ymc-clean-campaign-inner{max-width:1240px;margin:auto;text-align:left}
+.ymc-campaign-feature{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);align-items:center;gap:40px}
+.ymc-campaign-art{overflow:hidden;border-radius:8px;border:1px solid rgba(212,175,55,.3);box-shadow:0 20px 50px #0003}
+.ymc-campaign-art img{display:block;width:100%;height:auto;max-width:100%}
+.ymc-campaign-impact{min-width:0}
+.ymc-campaign-impact .ymc-campaign-brand{color:#d4af37;font-size:11px;letter-spacing:.18em;margin:0 0 14px}
+.ymc-campaign-impact .ymc-campaign-brand:after{display:none}
+.ymc-campaign-kicker{font:500 18px/1.5 Montserrat,Arial,sans-serif;color:#fff;margin:0 0 22px}
+.ymc-clean-campaign .ymc-campaign-impact h2{font-size:clamp(64px,6.5vw,96px)!important;line-height:1!important;margin:0 0 12px!important}
+.ymc-campaign-impact .ymc-goal-caption{font-size:14px;line-height:1.6;margin:0 0 24px;color:#c1b3d0}
+.ymc-campaign-impact progress{display:block;width:100%;height:8px;margin:0}
+.ymc-campaign-impact #ymc-goal-percent{margin:8px 0 24px;text-align:right;font:500 12px/1.5 Montserrat,Arial,sans-serif;color:#c1b3d0}
+.ymc-campaign-impact .ymc-clean-donate{display:flex;align-items:center;justify-content:center;width:100%;box-sizing:border-box;min-height:52px;margin:0;padding:16px 24px;border-radius:4px}
+.ymc-clean-campaign .ymc-donor-panel{max-width:100%;margin:40px 0 0;padding:28px 0 0}
+.ymc-clean-campaign .ymc-donor-panel h3{font-size:30px;margin:0 0 10px}
+@media(max-width:850px){.ymc-campaign-feature{grid-template-columns:minmax(0,1fr);gap:28px}.ymc-clean-campaign{padding:40px 20px}.ymc-campaign-impact{padding:0 4px}.ymc-campaign-kicker{font-size:17px}.ymc-clean-campaign .ymc-campaign-impact h2{font-size:76px!important}.ymc-clean-campaign .ymc-donor-panel{margin-top:32px}}
