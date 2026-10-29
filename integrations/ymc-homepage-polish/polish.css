@@ -130,3 +130,16 @@
 /* Keep both intro lines on the solid entrance beam without moving the countdown. */
 .ymc-stadium-opening .ymc-stadium-purpose{position:relative;top:-24px}
 @media(max-width:640px){.ymc-stadium-opening .ymc-stadium-purpose{top:-12px}}
+
+/* Align corresponding rows across the tournament tickets. */
+#tournaments [data-dc-tpl="123"],#tournaments [data-dc-tpl="145"]{gap:18px!important}
+#tournaments [data-dc-tpl="125"],#tournaments [data-dc-tpl="147"]{margin-top:0!important}
+#tournaments [data-dc-tpl="125"],#tournaments [data-dc-tpl="148"],#tournaments [data-dc-tpl="150"]{min-height:82px;box-sizing:border-box}
+@media(min-width:1024px){
+ #tournaments [data-dc-tpl="104"]{grid-template-columns:repeat(2,minmax(0,1fr))!important;row-gap:0!important}
+ #tournaments [data-dc-tpl="105"],#tournaments [data-dc-tpl="127"]{display:grid!important;grid-row:span 5;grid-template-rows:subgrid;row-gap:0}
+ #tournaments [data-dc-tpl="124"],#tournaments [data-dc-tpl="146"]{min-height:73px;box-sizing:border-box}
+}
+@media(max-width:767px){.ymc-ref-sticky-header{display:none!important}}
+
+.ymc-ref-sticky-header{display:none!important}
