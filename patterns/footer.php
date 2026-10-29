@@ -4,6 +4,14 @@
  * Slug: ymcatmtb/footer
  * Categories: featured
  * Description: Matches the supplied YMC Event Registration reference.
+ *
+ * The Campaign column is the site's only shared link list. Every template pulls
+ * this part in, the homepage included since its own embedded copy was removed,
+ * so a link added here appears everywhere and nowhere else needs editing.
+ *
+ * Bump Version in style.css when changing this file. WordPress caches the
+ * pattern index against the theme version and will otherwise keep serving the
+ * previous markup.
  */
 ob_start();
 ?>
