@@ -1,4 +1,16 @@
 <?php
+// Refresh WordPress's theme-pattern cache when the shared footer source changes.
+// A theme version bump alone cannot repair a saved database template-part copy.
+add_action( 'after_setup_theme', function () {
+	$file = get_theme_file_path( 'patterns/footer.php' );
+	if ( ! is_readable( $file ) ) { return; }
+	$hash = hash_file( 'sha256', $file );
+	$key = 'ymcatmtb_footer_pattern_hash';
+	if ( get_option( $key ) !== $hash ) {
+		wp_get_theme()->delete_pattern_cache();
+		update_option( $key, $hash, false );
+	}
+}, 20 );
 add_action( 'wp_enqueue_scripts', function () {
 	if ( is_404() ) {
 		wp_enqueue_style( 'ymc-notfound', get_theme_file_uri( 'assets/css/notfound.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/notfound.css' ) ) );
@@ -9,6 +21,12 @@ add_action( 'wp_enqueue_scripts', function () {
 		wp_enqueue_style( 'ymc-team-request', get_theme_file_uri( 'assets/css/team-request.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/team-request.css' ) ) );
 		wp_enqueue_script( 'ymc-captain-steps', get_theme_file_uri( 'assets/js/captain-steps.js' ), array(), (string) filemtime( get_theme_file_path( 'assets/js/captain-steps.js' ) ), true );
 	}
+}, 40 );
+// Players reach Givebutter from the homepage, so the instructions belong there.
+add_action( 'wp_enqueue_scripts', function () {
+	if ( ! is_front_page() ) { return; }
+	wp_enqueue_style( 'ymc-join-modal', get_theme_file_uri( 'assets/css/join-team-modal.css' ), array(), (string) filemtime( get_theme_file_path( 'assets/css/join-team-modal.css' ) ) );
+	wp_enqueue_script( 'ymc-join-modal', get_theme_file_uri( 'assets/js/join-team-modal.js' ), array(), (string) filemtime( get_theme_file_path( 'assets/js/join-team-modal.js' ) ), true );
 }, 40 );
 /**
  * Names the site as the sender of every email it sends.

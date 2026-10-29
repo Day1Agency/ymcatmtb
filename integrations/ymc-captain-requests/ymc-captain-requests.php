@@ -22,6 +22,22 @@ function ymc_captain_colours() {
  return ['Blue','Brown','Gray','Green','Maroon','Orange','Purple','Red','Teal','White','Yellow','Black'];
 }
 
+/**
+ * The swatch shown beside each colour name.
+ *
+ * A name alone is harder to scan and useless to anyone who does not read
+ * English confidently, so the dot carries the same information visually. The
+ * name stays as the label, because a dot alone fails for colour-blind readers.
+ */
+function ymc_captain_colour_hex($colour) {
+ $map = [
+  'Blue'=>'#2563c9','Brown'=>'#7b4a25','Gray'=>'#8a8f98','Green'=>'#2f8f4e',
+  'Maroon'=>'#7d2340','Orange'=>'#e07b26','Purple'=>'#6b3fa0','Red'=>'#c62f32',
+  'Teal'=>'#1c8f8f','White'=>'#f2f2f2','Yellow'=>'#e8c53c','Black'=>'#1a1a1a',
+ ];
+ return $map[$colour] ?? '#999999';
+}
+
 /** Option name holding a colour claim. One row per colour; its existence is the claim. */
 function ymc_captain_colour_key($colour) {
  return 'ymc_cap_colour_'.sanitize_key($colour);
@@ -591,7 +607,30 @@ add_shortcode('ymc_captain_request', function () {
  </div>
  <div class="ymct-card">
  <?php if ('received' === $status) : ?>
- <div class="ymct-success" role="status"><span class="ymct-check" aria-hidden="true">&#10003;</span><p class="ymct-eyebrow">REQUEST RECEIVED</p><h2>Your color is held.</h2><p>Your team request has been received and your color is reserved for you. YMC will set up your team and email your registration link.</p><p class="ymct-note">This is a team request only. You still need to register as a player under your team once your link arrives.</p><a class="ymct-button" href="<?php echo esc_url(home_url('/')); ?>">Back to the event</a></div>
+ <?php
+ /* Only a colour that exists is echoed back, so a hand-edited query string
+    cannot put arbitrary text on the page. */
+ $held = isset($_GET['color']) ? sanitize_text_field(wp_unslash($_GET['color'])) : '';
+ if (!in_array($held, ymc_captain_colours(), true)) { $held = ''; }
+ $register = defined('YMC\\CaptainInvitations\\REGISTRATION') ? constant('YMC\\CaptainInvitations\\REGISTRATION') : 'https://givebutter.com/ymc-adult-player-registration/register';
+ ?>
+ <div class="ymct-success" role="status"><span class="ymct-check" aria-hidden="true">&#10003;</span><p class="ymct-eyebrow">REQUEST RECEIVED</p>
+ <h2><?php echo $held ? esc_html($held) . ' is yours.' : 'Your color is held.'; ?></h2>
+ <?php /* The email repeats these steps; saying so once is enough, and the button
+          means nobody has to go and find it. */ ?>
+ <p>Your team is ready. Register as a player to complete your place.</p>
+ <?php /* The same three steps the email carries. Repeating them here saves the
+          captain going to find the email to do something they can do now. */ ?>
+ <ol class="ymct-steps-compact">
+  <li>Sign in to Givebutter or create your account.</li>
+  <li>Choose <strong>Join a team</strong> and select <strong><?php echo $held ? esc_html($held) : 'your color'; ?></strong>.</li>
+  <li>Pick <strong>Adult Tournament &mdash; Player</strong> and complete your $180 registration.</li>
+ </ol>
+ <p class="ymct-note">We have emailed these steps to you as well, so you can finish later if you prefer.</p>
+ <div class="ymct-actions">
+  <a class="ymct-button" href="<?php echo esc_url($register); ?>" target="_blank" rel="noopener">Continue to registration</a>
+  <a class="ymct-button ymct-button-alt" href="<?php echo esc_url(home_url('/')); ?>">Back to the event</a>
+ </div></div>
  <?php elseif (!$available) : ?>
  <p class="ymct-eyebrow">ALL TEAMS TAKEN</p><h2>Every color is claimed.</h2><p class="ymct-card-intro">All team colors have been requested. Email <a href="mailto:<?php echo esc_attr(ymc_captain_request_recipient()); ?>"><?php echo esc_html(ymc_captain_request_recipient()); ?></a> and we will let you know if one frees up.</p>
  <?php else : ?>
@@ -605,12 +644,20 @@ add_shortcode('ymc_captain_request', function () {
  <p class="ymct-field"><label for="ymcc-name">Your full name <span>(required)</span></label><input id="ymcc-name" name="full_name" required maxlength="120" autocomplete="name" placeholder="Your full name"></p>
  <p class="ymct-field"><label for="ymcc-email">Email address <span>(required)</span></label><input id="ymcc-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.com"></p>
  <p class="ymct-field"><label for="ymcc-phone">Phone number <span>(optional)</span></label><input id="ymcc-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="Your phone number"></p>
- <p class="ymct-field"><label for="ymcc-colour">Team color <span>(required)</span></label>
- <select id="ymcc-colour" name="colour" required>
- <option value="">Choose a color</option>
- <?php foreach ($available as $colour) printf('<option value="%s">%s</option>', esc_attr($colour), esc_html($colour)); ?>
- </select>
- <span class="ymct-note">Only colors still available are listed.</span></p>
+ <?php /* Radios rather than a dropdown: a select cannot show a swatch beside each
+          option in any reliable way, and every colour being visible at once is
+          quicker to scan than opening a list. */ ?>
+ <fieldset class="ymct-field ymcc-colours"><legend>Team color <span>(required)</span></legend>
+ <div class="ymcc-swatches">
+ <?php foreach ($available as $i => $colour) : ?>
+  <label class="ymcc-swatch">
+   <input type="radio" name="colour" value="<?php echo esc_attr($colour); ?>"<?php echo 0 === $i ? ' required' : ''; ?>>
+   <span class="ymcc-dot" style="background:<?php echo esc_attr(ymc_captain_colour_hex($colour)); ?>" aria-hidden="true"></span>
+   <span class="ymcc-name"><?php echo esc_html($colour); ?></span>
+  </label>
+ <?php endforeach; ?>
+ </div>
+ <span class="ymct-note">Only colors still available are shown.</span></fieldset>
  <p class="ymct-field"><label for="ymcc-play">How competitive would your team like to play? <span>(required)</span></label>
  <select id="ymcc-play" name="competitiveness" required>
  <option value="">Select an option</option>
@@ -703,7 +750,9 @@ function ymc_handle_captain_request() {
     stays as the safety net for when the team is not there yet. */
  ymc_captain_poll_teams();
 
- wp_safe_redirect(add_query_arg('captain_request','received',$redirect)); exit;
+ /* The colour travels back so the confirmation can name the team to pick,
+    which is the whole of what the captain has to do next. */
+ wp_safe_redirect(add_query_arg(array('captain_request'=>'received','color'=>rawurlencode($colour)),$redirect)); exit;
 }
 add_action('admin_post_nopriv_ymc_captain_request','ymc_handle_captain_request');
 add_action('admin_post_ymc_captain_request','ymc_handle_captain_request');

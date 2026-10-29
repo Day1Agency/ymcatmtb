@@ -50,8 +50,13 @@
       const names = ['Full name', 'Email address', 'Phone number', 'Team color', 'Play style', 'Team story'];
       fields.forEach((field, n) => {
         const input = field.querySelector('input, select, textarea');
+        /* A radio group's first input holds its own value, not the chosen one,
+           so the review would always show the first colour. */
+        const picked = input.type === 'radio'
+          ? (field.querySelector('input[type=radio]:checked') || {}).value || ''
+          : input.value;
         const dt = document.createElement('dt'); dt.textContent = names[n];
-        const dd = document.createElement('dd'); dd.textContent = input.value.trim() || 'Not provided';
+        const dd = document.createElement('dd'); dd.textContent = picked.trim() || 'Not provided';
         review.append(dt, dd);
       });
     }

@@ -74,3 +74,54 @@ body.page .ymc-main:has(.ymct-page){margin-block-start:0}
 @media(max-width:800px){.ymcc-stepped .ymct-card{min-height:0}.ymcc-progress{gap:8px}.ymcc-review{grid-template-columns:82px minmax(0,1fr);gap:10px}.ymcc-stepped .ymct-card h2{scroll-margin-top:120px}}
 /* The programmatically focused step heading is announced, not an input. */
 .ymcc-stepped .ymct-card h2:focus{outline:none}
+
+/* Secondary action beside the primary button on the request success panel. */
+.ymct-success .ymct-link { display: inline-block; margin-left: 18px; color: #b9a9cf; font: 400 13px/1.5 Montserrat, Arial, sans-serif; text-decoration: underline; }
+.ymct-success .ymct-link:hover { color: #d4af37; }
+
+/* Team colour picker: swatch plus name, so the colour is readable at a glance
+   and still named for anyone who cannot rely on the dot alone. */
+.ymcc-colours { border: 0; padding: 0; margin: 0 0 22px; }
+.ymcc-colours legend { padding: 0; margin-bottom: 10px; font: 700 13px/1.4 Montserrat, Arial, sans-serif; color: #241046; }
+.ymcc-colours legend span { font-weight: 400; color: #6b6478; }
+
+.ymcc-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+
+.ymcc-swatch { position: relative; display: flex; align-items: center; gap: 10px; padding: 11px 13px; border: 1px solid #ddd8e4; border-radius: 4px; background: #fff; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.ymcc-swatch:hover { border-color: #d4af37; }
+.ymcc-swatch input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.ymcc-dot { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .22); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .35); }
+.ymcc-name { font: 600 14px/1.3 Montserrat, Arial, sans-serif; color: #241046; }
+
+/* The tick matters: colour alone cannot show which option is selected. */
+.ymcc-swatch:has(input:checked) { border-color: #241046; box-shadow: 0 0 0 2px #241046; }
+.ymcc-swatch:has(input:checked)::after { content: '\2713'; margin-left: auto; font-weight: 700; color: #241046; }
+.ymcc-swatch:has(input:focus-visible) { outline: 3px solid #d4af37; outline-offset: 2px; }
+
+@media (max-width: 480px) { .ymcc-swatches { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 8px; } }
+
+/* The generic .ymct-field label rules above outrank the swatch styles, which
+   flattens the dot and shrinks the name, so these are scoped to match. */
+.ymct-field.ymcc-colours label.ymcc-swatch { display: flex; align-items: center; gap: 10px; margin-bottom: 0; padding: 11px 13px; font-size: 14px; }
+.ymct-field.ymcc-colours label.ymcc-swatch span.ymcc-dot { display: block; width: 22px; height: 22px; flex: 0 0 22px; border-radius: 50%; font-size: 0; border: 1px solid rgba(0, 0, 0, .25); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .35); }
+.ymct-field.ymcc-colours label.ymcc-swatch span.ymcc-name { font: 600 14px/1.3 var(--ymc-ui); color: var(--ymc-purple); }
+.ymct-field.ymcc-colours label.ymcc-swatch input { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; margin: 0; opacity: 0; }
+
+/* Two actions of equal weight sit side by side; the secondary is outlined so
+   the primary still reads first. */
+.ymct-success .ymct-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.ymct-success .ymct-actions .ymct-button { flex: 1 1 auto; justify-content: center; text-align: center; }
+.ymct-success .ymct-button-alt { background: transparent; color: var(--ymc-purple); border: 1px solid rgba(36, 16, 70, .35); }
+.ymct-success .ymct-button-alt:hover { border-color: var(--ymc-purple); background: rgba(36, 16, 70, .05); }
+@media (max-width: 420px) { .ymct-success .ymct-actions .ymct-button { flex: 1 1 100%; } }
+
+/* flex:1 1 auto lets a long label push its button onto its own line, which is
+   how these ended up stacked; a zero basis makes them share the row evenly. */
+.ymct-success .ymct-actions .ymct-button { flex: 1 1 0; min-width: 0; padding-left: 14px; padding-right: 14px; font-size: 12px; letter-spacing: .08em; }
+
+/* The emailed steps, repeated so the captain can act without leaving the page. */
+.ymct-steps-compact { margin: 0 0 18px; padding-left: 20px; font: 400 14px/1.7 var(--ymc-ui); color: var(--ymc-ink); }
+.ymct-steps-compact li { margin-bottom: 6px; padding-left: 2px; }
+.ymct-steps-compact li::marker { color: var(--ymc-gold); font-weight: 700; }
+.ymct-steps-compact strong { color: var(--ymc-purple); }
