@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.0.2
+ * Version: 1.0.3
  */
 if (!defined('ABSPATH')) exit;
 
@@ -659,7 +659,18 @@ add_filter('manage_ymc_captain_request_posts_columns', function ($cols) {
 
 add_action('manage_ymc_captain_request_posts_custom_column', function ($col,$id) {
  if ('ymc_colour' === $col) { echo esc_html(get_post_meta($id,'ymc_colour',true) ?: '—'); return; }
- if ('ymc_status' === $col) { echo esc_html(get_post_meta($id,'ymc_status',true) ?: 'pending'); return; }
+ if ('ymc_status' === $col) {
+  echo esc_html(get_post_meta($id,'ymc_status',true) ?: 'pending');
+  /* The admin notice is gone on the next page load, so the row carries the
+     record of a resend instead. */
+  if ($n = (int) get_post_meta($id,'ymc_link_resent_count',true)) {
+   $at = (string) get_post_meta($id,'ymc_link_resent_at',true);
+   echo '<br><span class="description">resent '.esc_html($n > 1 ? $n.' times' : 'once');
+   if ($at) echo ', last '.esc_html(mysql2date(get_option('date_format').' g:i a',$at));
+   echo '</span>';
+  }
+  return;
+ }
  if ('ymc_notification' !== $col) return;
  $sent = get_post_meta($id,'ymc_notification_sent',true);
  if ('yes' === $sent) {
@@ -669,6 +680,65 @@ add_action('manage_ymc_captain_request_posts_custom_column', function ($col,$id)
  }
  echo 'no' === $sent ? '<strong style="color:#b32d2e">Failed</strong>' : '&mdash;';
 },10,2);
+
+/**
+ * Lets staff re-send a captain's team link from the list screen.
+ *
+ * Mail goes astray - a typo in the address, a spam folder, a captain who
+ * deleted it. Without this the only repair is to rebuild the email by hand or
+ * to clear the sent flag in the database, so in practice captains were simply
+ * left waiting.
+ */
+function ymc_captain_resend_link($id) {
+ $team = (string) get_post_meta($id,'ymc_team_name',true);
+ /* No team yet means there is nothing to point the captain at; the cron sends
+    the link by itself the moment the team appears. */
+ if ('' === $team) return 'noteam';
+ $email = (string) get_post_meta($id,'ymc_email',true);
+ if (!is_email($email)) return 'noemail';
+ $sent = wp_mail($email,'YMC: Your team is ready — register now',
+  ymc_captain_link_email((string) get_post_meta($id,'ymc_name',true),$team,(string) get_post_meta($id,'ymc_team_url',true),(string) get_post_meta($id,'ymc_colour',true)),
+  ['Content-Type: text/html; charset=UTF-8','Reply-To: '.ymc_captain_request_recipient()]);
+ /* Kept in step with the first send so a failed resend cannot leave the row
+    claiming the link went out. */
+ update_post_meta($id,'ymc_link_sent',$sent ? 'yes':'no');
+ if ($sent) {
+  update_post_meta($id,'ymc_status','team created, link sent');
+  update_post_meta($id,'ymc_link_resent_at',current_time('mysql'));
+  $n = (int) get_post_meta($id,'ymc_link_resent_count',true);
+  update_post_meta($id,'ymc_link_resent_count',$n + 1);
+ }
+ return $sent ? 'sent' : 'failed';
+}
+
+add_filter('post_row_actions', function ($actions, $post) {
+ if ('ymc_captain_request' !== $post->post_type || !current_user_can('edit_post',$post->ID)) return $actions;
+ if ('' === (string) get_post_meta($post->ID,'ymc_team_name',true)) return $actions;
+ $url = wp_nonce_url(admin_url('admin-post.php?action=ymc_captain_resend&id='.$post->ID),'ymc_captain_resend_'.$post->ID);
+ $actions['ymc_resend'] = '<a href="'.esc_url($url).'">Resend link</a>';
+ return $actions;
+},10,2);
+
+add_action('admin_post_ymc_captain_resend', function () {
+ $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+ check_admin_referer('ymc_captain_resend_'.$id);
+ if (!$id || !current_user_can('edit_post',$id) || 'ymc_captain_request' !== get_post_type($id)) wp_die('Not allowed.');
+ wp_safe_redirect(add_query_arg('ymc_resent',ymc_captain_resend_link($id),admin_url('edit.php?post_type=ymc_captain_request')));
+ exit;
+});
+
+add_action('admin_notices', function () {
+ if (!isset($_GET['ymc_resent']) || 'ymc_captain_request' !== get_query_var('post_type')) return;
+ $notices = [
+  'sent'    => ['updated','The team link was sent again.'],
+  'failed'  => ['error','That email could not be sent. Check the mail setup and try again.'],
+  'noteam'  => ['error','No team has been created for that request yet, so there is no link to send.'],
+  'noemail' => ['error','That request has no valid email address on it.'],
+ ];
+ $key = sanitize_key(wp_unslash($_GET['ymc_resent']));
+ if (!isset($notices[$key])) return;
+ printf('<div class="notice notice-%s is-dismissible"><p>%s</p></div>',esc_attr('updated'===$notices[$key][0]?'success':'error'),esc_html($notices[$key][1]));
+});
 
 /* Every rejection used to redirect identically, so a taken colour looked exactly
    like a typo and the visitor was told nothing they could act on. */
