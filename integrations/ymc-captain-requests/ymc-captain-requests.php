@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.2.1
+ * Version: 1.3.0
  */
 if (!defined('ABSPATH')) exit;
 
@@ -455,9 +455,22 @@ function ymc_captain_poll_teams() {
   'post_type'   => 'ymc_captain_request',
   'post_status' => 'private',
   'numberposts' => 50,
+  /* Anything that has not actually been delivered is still a candidate. A send
+     that failed once left ymc_link_sent at 'no', and an ambiguous match left a
+     status of its own; both used to drop the request out of the poll for good,
+     so it was never retried even after staff fixed the team. */
   'meta_query'  => [
-   ['key'=>'ymc_link_sent','compare'=>'NOT EXISTS'],
-   ['key'=>'ymc_status','value'=>'pending'],
+   'relation' => 'AND',
+   [
+    'relation' => 'OR',
+    ['key'=>'ymc_link_sent','compare'=>'NOT EXISTS'],
+    ['key'=>'ymc_link_sent','value'=>'yes','compare'=>'!='],
+   ],
+   [
+    'relation' => 'OR',
+    ['key'=>'ymc_status','compare'=>'NOT EXISTS'],
+    ['key'=>'ymc_status','value'=>['pending','team match unclear, send link manually'],'compare'=>'IN'],
+   ],
   ],
  ]);
  if (!$pending) return;
@@ -478,7 +491,10 @@ function ymc_captain_poll_teams() {
     only consulted when the team name carries no colour at all. */
  $pairs = [];
  foreach ($pending as $post) {
-  $name = (string) get_post_meta($post->ID,'ymc_name',true);
+  /* Staff name the team after the captain, who is not always the person who
+     filled in the form. Matching on the submitter missed every proxy request. */
+  list(, $name) = ymc_captain_target($post->ID);
+  if ('' === $name) $name = (string) get_post_meta($post->ID,'ymc_name',true);
   $colour = (string) get_post_meta($post->ID,'ymc_colour',true);
   foreach ($teams as $team) {
    if (empty($team['url']) || empty($team['name'])) continue;
@@ -642,9 +658,21 @@ add_filter('cron_schedules', function ($s) {
  $s['ymc_one_minute'] = ['interval'=>60,'display'=>'Every minute'];
  return $s;
 });
-register_activation_hook(__FILE__, function () {
- if (!wp_next_scheduled('ymc_captain_poll_teams')) wp_schedule_event(time()+60,'ymc_one_minute','ymc_captain_poll_teams');
-});
+/**
+ * Re-arms the poll on every load, not only on activation.
+ *
+ * Deactivation clears the schedule, and replacing the plugin through the
+ * uploader deactivates it without ever running the activation hook again - so
+ * each upgrade silently removed the scheduler and no team link was ever sent
+ * automatically afterwards. Checking here costs one cached option read.
+ */
+function ymc_captain_ensure_schedule() {
+ if (!wp_next_scheduled('ymc_captain_poll_teams')) {
+  wp_schedule_event(time()+60,'ymc_one_minute','ymc_captain_poll_teams');
+ }
+}
+add_action('init','ymc_captain_ensure_schedule');
+register_activation_hook(__FILE__,'ymc_captain_ensure_schedule');
 register_deactivation_hook(__FILE__, function () {
  wp_clear_scheduled_hook('ymc_captain_poll_teams');
 });
