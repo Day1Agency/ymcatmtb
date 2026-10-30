@@ -53,7 +53,9 @@ function api( $path ) {
 function collection( $path ) {
 	$items = array();
 	for ( $page = 1; $page <= 20; $page++ ) {
-		$response = api( $path . '?page=' . $page );
+		// A path may already carry a query (tickets?campaign_id=...), and a second
+		// '?' silently breaks paging: every page returns the first one.
+		$response = api( $path . ( false === strpos( $path, '?' ) ? '?' : '&' ) . 'page=' . $page );
 		$items = array_merge( $items, $response['data'] );
 		if ( empty( $response['links']['next'] ) ) { return $items; }
 	}

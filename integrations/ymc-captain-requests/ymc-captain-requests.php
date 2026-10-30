@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.0.3
+ * Version: 1.2.0
  */
 if (!defined('ABSPATH')) exit;
 
@@ -99,34 +99,82 @@ function ymc_captain_colour_holder($colour) {
 }
 
 /**
- * Colours that have a real team in Givebutter right now, or null if unknown.
+ * Colours whose (Captain Only) ticket has been bought, or null if unknown.
  *
- * Offering a colour with no team behind it strands the captain: their request
- * is taken, the colour is held, and no link can ever be sent. Cached for a
- * minute so the form stays fast. Returning null on any failure is deliberate -
- * a Givebutter outage must not empty the form and block registrations.
+ * The ticket title carries the colour - "Adult Tournament - Gray (Captain
+ * Only)" - so a purchase identifies the colour by itself. That matters because
+ * the buyer's email need not match the request: Gray was requested from one
+ * address and paid from another, so matching on email alone would have missed
+ * it. Each colour ticket is limited to one, so a sale means sold out.
+ *
+ * Null on any failure is deliberate: a Givebutter outage must not release
+ * colours that are genuinely gone.
  */
-function ymc_captain_live_team_colours() {
- $cached = get_transient('ymc_captain_live_colours');
+function ymc_captain_paid_colours() {
+ $cached = get_transient('ymc_captain_paid_colours');
  if (is_array($cached)) return $cached;
- if (!function_exists('YMC\\CaptainInvitations\\collection')) return null;
+ if (!function_exists('YMC\\CaptainInvitations\\api')) return null;
+ $found = [];
  try {
-  $teams = call_user_func('YMC\\CaptainInvitations\\collection', 'campaigns/'.YMC_CAPTAIN_CAMPAIGN_ID.'/teams');
+  for ($page = 1; $page <= 20; $page++) {
+   $r = call_user_func('YMC\\CaptainInvitations\\api','tickets?campaign_id='.YMC_CAPTAIN_CAMPAIGN_ID.'&page='.$page);
+   foreach ($r['data'] as $ticket) {
+    $title = (string) ($ticket['title'] ?? '');
+    if (false === stripos($title,'(Captain Only)')) continue;
+    /* The test tickets carry no colour, so they fall out here on their own. */
+    $colour = ymc_captain_colour_in_team($title);
+    if ('' !== $colour && !isset($found[$colour])) $found[$colour] = (string) ($ticket['email'] ?? '');
+   }
+   if (empty($r['links']['next'])) break;
+  }
  } catch (\Throwable $e) {
   return null;
  }
+ set_transient('ymc_captain_paid_colours', $found, 120);
+ return $found;
+}
+
+/** Just the colours, for the places that do not care who bought them. */
+function ymc_captain_paid_colour_names() {
+ $paid = ymc_captain_paid_colours();
+ return null === $paid ? null : array_keys($paid);
+}
+
+/**
+ * Colours that actually have a (Captain Only) ticket, or null if unknown.
+ *
+ * A colour with no ticket cannot be registered for, so offering it strands the
+ * captain. Givebutter's API has no endpoint for ticket definitions - only for
+ * tickets already sold - so this reads the public registration page, which
+ * carries every ticket name whether sold or not.
+ *
+ * Null on any failure, and an unparsable page counts as a failure rather than
+ * as "no tickets exist": a layout change at Givebutter must not empty the form.
+ */
+function ymc_captain_ticket_colours() {
+ $cached = get_transient('ymc_captain_ticket_colours');
+ if (is_array($cached)) return $cached;
+ $url = defined('YMC\\CaptainInvitations\\REGISTRATION')
+  ? constant('YMC\\CaptainInvitations\\REGISTRATION')
+  : 'https://givebutter.com/ymc-adult-player-registration/register';
+ $response = wp_remote_get($url, ['timeout' => 20]);
+ if (is_wp_error($response) || 200 !== wp_remote_retrieve_response_code($response)) return null;
+ if (!preg_match_all('/Adult Tournament[^"]{0,60}\(Captain Only\)/i', wp_remote_retrieve_body($response), $m)) return null;
  $found = [];
- foreach ($teams as $team) {
-  $colour = ymc_captain_colour_in_team((string) ($team['name'] ?? ''));
-  if ('' !== $colour) $found[] = $colour;
+ foreach ($m[0] as $title) {
+  /* The page is JSON, so the em dash arrives as an escape sequence. */
+  $decoded = json_decode('"'.$title.'"');
+  $colour = ymc_captain_colour_in_team(is_string($decoded) ? $decoded : $title);
+  if ('' !== $colour) $found[$colour] = true;
  }
- $found = array_values(array_unique($found));
- set_transient('ymc_captain_live_colours', $found, 60);
+ if (!$found) return null;
+ $found = array_keys($found);
+ set_transient('ymc_captain_ticket_colours', $found, 600);
  return $found;
 }
 
 /**
- * Every colour the form should list, as colour => taken.
+ * Every colour the form should list, as colour => state.
  *
  * A claimed colour stays on the page, greyed out: seeing that Blue is gone is
  * clearer than Blue silently not being there, and it stops a captain wondering
@@ -135,25 +183,35 @@ function ymc_captain_live_team_colours() {
  * offering it would strand whoever picked it.
  */
 function ymc_captain_colour_states() {
- $live = ymc_captain_live_team_colours();
- $states = [];
+ $paid    = ymc_captain_paid_colour_names();
+ $tickets = ymc_captain_ticket_colours();
+ $states  = [];
  foreach (ymc_captain_colours() as $colour) {
-  /* The claim is checked first on purpose. The Givebutter test below exists to
-     stop anyone picking a colour we cannot fulfil, and a claimed colour cannot
-     be picked anyway - so a reserved colour with no team yet, like Black, still
-     belongs on the page as taken rather than disappearing from it. */
-  if ('' !== ymc_captain_colour_holder($colour)) { $states[$colour] = true; continue; }
-  /* Unknown means Givebutter could not be read; fall back to offering the lot
-     rather than showing an empty form. */
-  if (null !== $live && !in_array($colour, $live, true)) continue;
-  $states[$colour] = false;
+  /* Paid outranks everything. The captain ticket is limited to one, so a sale
+     means that colour is gone for good and no reservation can revive it. */
+  if (null !== $paid && in_array($colour, $paid, true)) { $states[$colour] = 'taken'; continue; }
+  /* Requested but not yet paid for. It still blocks the colour - two captains
+     promised the same colour is worse than one waiting - but unlike taken it
+     can be released. */
+  $held = ('' !== ymc_captain_colour_holder($colour));
+  /* Adding a colour in Settings is not enough on its own: without a ticket to
+     buy there is nothing for the captain to do with it. One already spoken for
+     stays listed, so a ticket withdrawn after the fact does not hide it. */
+  if (!$held && null !== $tickets && !in_array($colour, $tickets, true)) continue;
+  $states[$colour] = $held ? 'reserved' : 'free';
  }
  return $states;
 }
 
-/** Colours still on offer: unclaimed here, and backed by a team in Givebutter. */
+/**
+ * Colours still on offer.
+ *
+ * Teams are created by hand after a request now, so a colour is no longer
+ * required to have a Givebutter team before it can be chosen; requiring that
+ * would leave the form with nothing to offer.
+ */
 function ymc_captain_available_colours() {
- return array_keys(array_filter(ymc_captain_colour_states(), function ($taken) { return !$taken; }));
+ return array_keys(array_filter(ymc_captain_colour_states(), function ($state) { return 'free' === $state; }));
 }
 
 /**
@@ -204,7 +262,7 @@ add_action('init', function () {
 add_action('add_meta_boxes', function () {
  add_meta_box('ymc_captain_request_detail','Request', function ($post) {
   echo '<pre style="white-space:pre-wrap;margin:0;font-family:inherit;font-size:14px;line-height:1.6">'.esc_html($post->post_content).'</pre>';
-  $rows = ['Color held'=>'ymc_colour','Status'=>'ymc_status','Team name'=>'ymc_team_name','Team link'=>'ymc_team_url','Team link sent'=>'ymc_link_sent','Team ID'=>'ymc_team_id','Rename notices sent'=>'ymc_rename_count','Notification'=>'ymc_notification_sent','Sent to'=>'ymc_notification_recipient','Confirmation to captain'=>'ymc_confirmation_sent'];
+  $rows = ['Captain'=>'ymc_captain_name','Captain email'=>'ymc_captain_email','Submitted by themselves'=>'ymc_is_captain','Color held'=>'ymc_colour','Status'=>'ymc_status','Team name'=>'ymc_team_name','Team link'=>'ymc_team_url','Team link sent'=>'ymc_link_sent','Team ID'=>'ymc_team_id','Rename notices sent'=>'ymc_rename_count','Notification'=>'ymc_notification_sent','Sent to'=>'ymc_notification_recipient','Confirmation to captain'=>'ymc_confirmation_sent'];
   echo '<table class="widefat striped" style="margin-top:16px"><tbody>';
   foreach ($rows as $label=>$meta) printf('<tr><td style="width:200px"><strong>%s</strong></td><td>%s</td></tr>', esc_html($label), esc_html(get_post_meta($post->ID,$meta,true) ?: '-'));
   echo '</tbody></table>';
@@ -317,14 +375,32 @@ function ymc_captain_link_email($name, $team, $url, $colour = '') {
   'YMC may add sponsor branding to the team later; that does not affect your registration or theirs.');
 }
 
+/**
+ * The captain's own name and address, which may not be the submitter's.
+ *
+ * Someone can request a team for their captain, and it is the captain who buys
+ * the (Captain Only) ticket - so the link has to reach them, not the person who
+ * filled in the form. Older requests have neither field and fall back.
+ */
+function ymc_captain_target($id) {
+ $email = sanitize_email((string) get_post_meta($id,'ymc_captain_email',true));
+ if (is_email($email)) return [$email, (string) get_post_meta($id,'ymc_captain_name',true)];
+ return [(string) get_post_meta($id,'ymc_email',true), (string) get_post_meta($id,'ymc_name',true)];
+}
+
+/** Copies in the person who asked, when that is not the captain themselves. */
+function ymc_captain_cc($id, $to) {
+ $sub = sanitize_email((string) get_post_meta($id,'ymc_email',true));
+ return (is_email($sub) && strtolower($sub) !== strtolower($to)) ? ['Cc: '.$sub] : [];
+}
+
 /** Sends the link, records the outcome, and never sends twice for one request. */
 function ymc_captain_send_link($id, $team, $url, $team_id = '') {
  if ('yes' === get_post_meta($id,'ymc_link_sent',true)) return false;
- $email = (string) get_post_meta($id,'ymc_email',true);
- $name  = (string) get_post_meta($id,'ymc_name',true);
+ list($email, $name) = ymc_captain_target($id);
  if (!is_email($email)) return false;
  $sent = wp_mail($email,'YMC: Your team is ready — register now',ymc_captain_link_email($name,$team,$url,(string) get_post_meta($id,'ymc_colour',true)),
-  ['Content-Type: text/html; charset=UTF-8','Reply-To: '.ymc_captain_request_recipient()]);
+  array_merge(['Content-Type: text/html; charset=UTF-8','Reply-To: '.ymc_captain_request_recipient()], ymc_captain_cc($id,$email)));
  update_post_meta($id,'ymc_link_sent',$sent ? 'yes':'no');
  update_post_meta($id,'ymc_team_name',$team);
  update_post_meta($id,'ymc_team_url',$url);
@@ -595,13 +671,32 @@ add_action('admin_menu', function () {
   settings_errors('ymc_captain_request');
   printf('<p>Requests are currently emailed to <strong>%s</strong>%s.</p>', esc_html(ymc_captain_request_recipient()),
    is_email((string) get_option('ymc_captain_request_recipient','')) ? '' : ' (the built-in default, because no address is set)');
-  echo '<h2>Colors</h2><table class="widefat striped" style="max-width:520px"><thead><tr><th>Color</th><th>Status</th></tr></thead><tbody>';
+  /* Read from the same source as the public form. Showing the stored hold
+     instead made a colour someone had paid for read as merely reserved. */
+  $states  = ymc_captain_colour_states();
+  $paid    = (array) ymc_captain_paid_colours();
+  $tickets = ymc_captain_ticket_colours();
+  echo '<h2>Colors</h2><table class="widefat striped" style="max-width:720px"><thead><tr><th>Color</th><th>Status</th><th>Detail</th></tr></thead><tbody>';
   foreach (ymc_captain_colours() as $colour) {
-   $holder = ymc_captain_colour_holder($colour);
-   $label = '' === $holder ? 'Available' : ('reserved' === $holder ? 'Reserved' : 'Taken by request #'.$holder);
-   printf('<tr><td>%s</td><td>%s</td></tr>', esc_html($colour), esc_html($label));
+   if (!isset($states[$colour])) {
+    printf('<tr><td>%s</td><td>&mdash;</td><td class="description">Not shown: no &ldquo;(Captain Only)&rdquo; ticket for this color in Givebutter.</td></tr>', esc_html($colour));
+    continue;
+   }
+   if ('taken' === $states[$colour]) {
+    $status = '<strong style="color:#1d6f42">Taken</strong>';
+    $detail = 'Captain ticket purchased' . (!empty($paid[$colour]) ? ' by ' . esc_html($paid[$colour]) : '');
+   } elseif ('reserved' === $states[$colour]) {
+    $holder = ymc_captain_colour_holder($colour);
+    $status = '<strong style="color:#8a6d1f">Reserved</strong>';
+    $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; request #' . esc_html($holder) . ', awaiting payment';
+   } else {
+    $status = 'Available';
+    $detail = '';
+   }
+   printf('<tr><td>%s</td><td>%s</td><td class="description">%s</td></tr>', esc_html($colour), $status, $detail);
   }
   echo '</tbody></table>';
+  if (null === $tickets) echo '<p class="description">Givebutter&rsquo;s ticket list could not be read just now, so every color in the list is being offered.</p>';
   echo '<form action="options.php" method="post">';
   settings_fields('ymc_captain_request');
   do_settings_sections('ymc-captain-requests');
@@ -694,11 +789,11 @@ function ymc_captain_resend_link($id) {
  /* No team yet means there is nothing to point the captain at; the cron sends
     the link by itself the moment the team appears. */
  if ('' === $team) return 'noteam';
- $email = (string) get_post_meta($id,'ymc_email',true);
+ list($email, $name) = ymc_captain_target($id);
  if (!is_email($email)) return 'noemail';
  $sent = wp_mail($email,'YMC: Your team is ready — register now',
-  ymc_captain_link_email((string) get_post_meta($id,'ymc_name',true),$team,(string) get_post_meta($id,'ymc_team_url',true),(string) get_post_meta($id,'ymc_colour',true)),
-  ['Content-Type: text/html; charset=UTF-8','Reply-To: '.ymc_captain_request_recipient()]);
+  ymc_captain_link_email($name,$team,(string) get_post_meta($id,'ymc_team_url',true),(string) get_post_meta($id,'ymc_colour',true)),
+  array_merge(['Content-Type: text/html; charset=UTF-8','Reply-To: '.ymc_captain_request_recipient()], ymc_captain_cc($id,$email)));
  /* Kept in step with the first send so a failed resend cannot leave the row
     claiming the link went out. */
  update_post_meta($id,'ymc_link_sent',$sent ? 'yes':'no');
@@ -749,6 +844,7 @@ function ymc_captain_request_message($reason) {
   'expired'   => 'That form had been open a while and the session expired. Please try again.',
   'taken'     => 'That color was claimed while you were filling in the form. Please choose another.',
   'nocolour'  => 'Please choose a team color.',
+  'nocaptain' => 'Please give your captain&rsquo;s full name and email address.',
  ];
  return isset($messages[$reason]) ? $messages[$reason] : 'We could not submit your request. Please try again or email '.YMC_CAPTAIN_REQUEST_FALLBACK.'.';
 }
@@ -756,7 +852,7 @@ function ymc_captain_request_message($reason) {
 add_shortcode('ymc_captain_request', function () {
  $status = isset($_GET['captain_request']) ? sanitize_key($_GET['captain_request']) : '';
  $states    = ymc_captain_colour_states();
- $available = array_keys(array_filter($states, function ($taken) { return !$taken; }));
+ $available = array_keys(array_filter($states, function ($state) { return 'free' === $state; }));
  ob_start(); ?>
  <section class="ymct-page" aria-labelledby="ymcc-title">
  <div class="ymct-shell">
@@ -777,23 +873,36 @@ add_shortcode('ymc_captain_request', function () {
     cannot put arbitrary text on the page. */
  $held = isset($_GET['color']) ? sanitize_text_field(wp_unslash($_GET['color'])) : '';
  if (!in_array($held, ymc_captain_colours(), true)) { $held = ''; }
+ /* Someone acting for their captain must not be sent to the captain ticket. */
+ $proxy = isset($_GET['role']) && 'proxy' === sanitize_key(wp_unslash($_GET['role']));
  $register = defined('YMC\\CaptainInvitations\\REGISTRATION') ? constant('YMC\\CaptainInvitations\\REGISTRATION') : 'https://givebutter.com/ymc-adult-player-registration/register';
  ?>
  <div class="ymct-success" role="status"><span class="ymct-check" aria-hidden="true">&#10003;</span><p class="ymct-eyebrow">REQUEST RECEIVED</p>
- <h2><?php echo $held ? esc_html($held) . ' is yours.' : 'Your color is held.'; ?></h2>
+ <h2><?php echo $held ? esc_html($held) . ($proxy ? ' is held.' : ' is yours.') : 'Your color is held.'; ?></h2>
  <?php /* The email repeats these steps; saying so once is enough, and the button
           means nobody has to go and find it. */ ?>
+ <?php if ($proxy) : ?>
+ <p>We have emailed your captain their registration link. They complete the team from there.</p>
+ <?php else : ?>
  <p>Your team is ready. Register as a player to complete your place.</p>
+ <?php endif; ?>
  <?php /* The same three steps the email carries. Repeating them here saves the
           captain going to find the email to do something they can do now. */ ?>
  <ol class="ymct-steps-compact">
   <li>Sign in to Givebutter or create your account.</li>
   <li>Choose <strong>Join a team</strong> and select <strong><?php echo $held ? esc_html($held) : 'your color'; ?></strong>.</li>
-  <?php /* Captains buy the ticket named after their colour, not the Player
-           ticket. It is what identifies their colour if they ever register
-           without joining the team. */ ?>
+  <?php /* Captains buy the ticket named after their colour; anyone acting for a
+           captain is a player and must not. Sending the wrong person to the
+           (Captain Only) ticket is the mistake worth preventing here. */ ?>
+  <?php if ($proxy) : ?>
+  <li>Choose <strong>Adult Tournament &mdash; Player</strong> and complete your $180 registration.</li>
+  <?php else : ?>
   <li>Pick <strong>Adult Tournament &mdash; <?php echo $held ? esc_html($held) : 'your color'; ?> (Captain Only)</strong> and complete your $180 registration.</li>
+  <?php endif; ?>
  </ol>
+ <?php if ($proxy) : ?>
+ <p class="ymct-note">Those steps are for you, if you are playing on the team. Your captain uses the <strong>(Captain Only)</strong> ticket and must pay with the email address you gave us.</p>
+ <?php endif; ?>
  <p class="ymct-note">We have emailed these steps to you as well, so you can finish later if you prefer.</p>
  <div class="ymct-actions">
   <a class="ymct-button" href="<?php echo esc_url($register); ?>" target="_blank" rel="noopener">Continue to registration</a>
@@ -809,38 +918,50 @@ add_shortcode('ymc_captain_request', function () {
  <?php wp_nonce_field('ymc_captain_request','ymc_nonce'); ?>
  <?php /* Named so browser autofill leaves it alone: a filled honeypot silently rejects a real person. */ ?>
  <p style="position:absolute;left:-10000px" aria-hidden="true"><label>Leave empty<input name="ymc_hp" tabindex="-1" autocomplete="off"></label></p>
- <p class="ymct-field"><label for="ymcc-name">Your full name <span>(required)</span></label><input id="ymcc-name" name="full_name" required maxlength="120" autocomplete="name" placeholder="Your full name"></p>
- <p class="ymct-field"><label for="ymcc-email">Email address <span>(required)</span></label><input id="ymcc-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.com"></p>
- <p class="ymct-field"><label for="ymcc-phone">Phone number <span>(optional)</span></label><input id="ymcc-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="Your phone number"></p>
+ <?php /* The captain pays and their email is what we match against Givebutter,
+         so we must know whether the person filling this in is that captain. */ ?>
+ <p class="ymct-field" data-step="1"><label for="ymcc-iscaptain">Are you the team captain? <span>(required)</span></label>
+ <select id="ymcc-iscaptain" name="is_captain" required>
+ <option value="">Select an option</option>
+ <option value="yes">Yes, I am the captain</option>
+ <option value="no">No, I am requesting for our captain</option>
+ </select></p>
+ <p class="ymct-field" data-step="1"><label for="ymcc-name">Your full name <span>(required)</span></label><input id="ymcc-name" name="full_name" required maxlength="120" autocomplete="name" placeholder="Your full name"></p>
+ <p class="ymct-field" data-step="1"><label for="ymcc-email">Email address <span>(required)</span></label><input id="ymcc-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.com"></p>
+ <p class="ymct-field" data-step="1"><label for="ymcc-phone">Phone number <span>(optional)</span></label><input id="ymcc-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="Your phone number"></p>
  <?php /* Radios rather than a dropdown: a select cannot show a swatch beside each
           option in any reliable way, and every colour being visible at once is
           quicker to scan than opening a list. */ ?>
- <fieldset class="ymct-field ymcc-colours"><legend>Team color <span>(required)</span></legend>
+ <?php /* Shown only when the answer is no. Without JavaScript both stay visible
+         and optional, and the handler demands them only when no was chosen. */ ?>
+ <p class="ymct-field ymcc-ifproxy" data-step="1"><label for="ymcc-capname">Your captain&rsquo;s full name <span>(required)</span></label><input id="ymcc-capname" name="captain_name" maxlength="120" placeholder="Their full name"></p>
+ <p class="ymct-field ymcc-ifproxy" data-step="1"><label for="ymcc-capemail">Your captain&rsquo;s email address <span>(required)</span></label><input id="ymcc-capemail" name="captain_email" type="email" maxlength="254" placeholder="captain@example.com"><span class="ymct-note">They must use this same address when they pay in Givebutter.</span></p>
+ <fieldset class="ymct-field ymcc-colours" data-step="2"><legend>Team color <span>(required)</span></legend>
  <div class="ymcc-swatches">
- <?php $first = true; foreach ($states as $colour => $taken) : ?>
+ <?php $first = true; foreach ($states as $colour => $state) : $gone = ('free' !== $state); ?>
   <?php /* Disabled rather than hidden, so a taken colour reads as gone rather
            than as never having been there. The server re-checks on submit, so
            re-enabling it in the browser gains nothing. */ ?>
-  <label class="ymcc-swatch<?php echo $taken ? ' is-taken' : ''; ?>">
+  <label class="ymcc-swatch<?php echo $gone ? ' is-'.esc_attr($state) : ''; ?>">
    <input type="radio" name="colour" value="<?php echo esc_attr($colour); ?>"<?php
-    if ($taken) { echo ' disabled'; }
+    if ($gone) { echo ' disabled'; }
     /* required belongs on the first colour that can actually be chosen. */
     elseif ($first) { echo ' required'; $first = false; } ?>>
    <span class="ymcc-dot" style="background:<?php echo esc_attr(ymc_captain_colour_hex($colour)); ?>" aria-hidden="true"></span>
    <span class="ymcc-name"><?php echo esc_html($colour); ?></span>
-   <?php if ($taken) : ?><span class="ymcc-taken">Taken</span><?php endif; ?>
+   <?php if ($gone) : ?><span class="ymcc-taken"><?php echo 'taken' === $state ? 'Taken' : 'Reserved'; ?></span><?php endif; ?>
   </label>
  <?php endforeach; ?>
  </div>
- <span class="ymct-note">Colors marked <em>Taken</em> already have a captain.</span></fieldset>
- <p class="ymct-field"><label for="ymcc-play">How competitive would your team like to play? <span>(required)</span></label>
+ <span class="ymct-note">Colors already claimed are crossed out. <em>Reserved</em> means a captain has asked for it; <em>Taken</em> means they have paid.</span></fieldset>
+ <p class="ymct-field" data-step="2"><label for="ymcc-play">How competitive would your team like to play? <span>(required)</span></label>
  <select id="ymcc-play" name="competitiveness" required>
  <option value="">Select an option</option>
  <option value="Highly competitive">Highly competitive</option>
  <option value="Somewhat competitive">Somewhat competitive</option>
  <option value="Laid-back, mainly for fun">Laid-back, mainly for fun</option>
  </select></p>
- <p class="ymct-field"><label for="ymcc-story">Your team story <span>(optional)</span></label><textarea id="ymcc-story" name="story" rows="4" maxlength="1200" placeholder="Anything you would like on your team page"></textarea></p>
+ <p class="ymct-field" data-step="2"><label for="ymcc-story">Your team story <span>(optional)</span></label><textarea id="ymcc-story" name="story" rows="4" maxlength="1200" placeholder="Anything you would like on your team page"></textarea></p>
  <p class="ymct-note" id="ymcc-privacy">This is a team request only. It does not register you as a player and does not take payment. YMC names the team after you and assigns sponsor branding.</p>
  <button class="ymct-button" type="submit" aria-describedby="ymcc-privacy">Request my team</button>
  </form>
@@ -865,6 +986,15 @@ function ymc_handle_captain_request() {
  $story = sanitize_textarea_field(wp_unslash($_POST['story'] ?? ''));
  $colour = sanitize_text_field(wp_unslash($_POST['colour'] ?? ''));
  $play  = sanitize_text_field(wp_unslash($_POST['competitiveness'] ?? ''));
+ $isCap    = sanitize_text_field(wp_unslash($_POST['is_captain'] ?? ''));
+ $capName  = sanitize_text_field(wp_unslash($_POST['captain_name'] ?? ''));
+ $capEmail = sanitize_email(wp_unslash($_POST['captain_email'] ?? ''));
+
+ if (!in_array($isCap, ['yes','no'], true)) $fail('invalid');
+ /* Whoever is named here is the one who pays, so a request made for someone
+    else has to identify them or there is nothing to match in Givebutter. */
+ if ('no' === $isCap && (!$capName || strlen($capName)>120 || !is_email($capEmail))) $fail('nocaptain');
+ if ('yes' === $isCap) { $capName = $name; $capEmail = $email; }
 
  if (!$name || strlen($name)>120 || !is_email($email) || strlen($phone)>40 || strlen($story)>1200) $fail('invalid');
  if (!in_array($colour, ymc_captain_colours(), true)) $fail('nocolour');
@@ -875,7 +1005,8 @@ function ymc_handle_captain_request() {
  $throttled = !current_user_can('manage_options');
  if ($throttled && get_transient($key)) $fail('throttled');
 
- $body = "Adult captain team request\n\nName: $name\nEmail: $email\nPhone: $phone\nColor: $colour\nPlay style: $play\n\nStory:\n".($story ?: 'Not given')
+ $who = ('yes' === $isCap) ? "Submitted by the captain." : "Submitted by $name for their captain.";
+ $body = "Adult captain team request\n\n$who\n\nCaptain: $capName\nCaptain email: $capEmail\nSubmitted by: $name\nEmail: $email\nPhone: $phone\nColor: $colour\nPlay style: $play\n\nStory:\n".($story ?: 'Not given')
   ."\n\nCreate the team in Givebutter under this captain's name, set the goal to \$15,000, then send them their registration link. They still need to register as a player under the team.";
  $id = wp_insert_post(['post_type'=>'ymc_captain_request','post_status'=>'private','post_title'=>$name.' — '.$colour,'post_content'=>$body],true);
  if (is_wp_error($id) || !$id) $fail();
@@ -896,16 +1027,25 @@ function ymc_handle_captain_request() {
     wording changes. */
  update_post_meta($id,'ymc_name',$name);
  update_post_meta($id,'ymc_email',$email);
+ update_post_meta($id,'ymc_is_captain',$isCap);
+ update_post_meta($id,'ymc_captain_name',$capName);
+ update_post_meta($id,'ymc_captain_email',$capEmail);
  if ($throttled) set_transient($key,1,60);
 
  $recipient = ymc_captain_request_recipient();
  $rows = '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">';
- foreach (['Name'=>$name,'Email'=>$email,'Phone'=>($phone ?: 'Not given'),'Color'=>$colour,'Play style'=>$play,'Story'=>($story ?: 'Not given')] as $label=>$value) {
+ /* Staff need the captain's address at a glance: it is what the Givebutter
+    payment is matched against, and it is not always the submitter's. */
+ $fieldRows = ('yes' === $isCap)
+  ? ['Name'=>$name,'Email'=>$email]
+  : ['Captain'=>$capName,'Captain email'=>$capEmail,'Requested by'=>$name,'Their email'=>$email];
+ $fieldRows += ['Phone'=>($phone ?: 'Not given'),'Color'=>$colour,'Play style'=>$play,'Story'=>($story ?: 'Not given')];
+ foreach ($fieldRows as $label=>$value) {
   $rows .= '<tr><td style="padding:9px 0;width:96px;font:700 13px/1.5 Arial,Helvetica,sans-serif;color:#5c5c5c;vertical-align:top">'.esc_html($label).'</td>'
    .'<td style="padding:9px 0;font:400 15px/1.5 Arial,Helvetica,sans-serif;color:#1c1c1c">'.nl2br(esc_html($value)).'</td></tr>';
  }
  $rows .= '</table>';
- $html = ymc_captain_email('Adult captain team request','A captain has requested a team. The '.esc_html($colour).' color is now held for them.',$rows,
+ $html = ymc_captain_email('Adult captain team request',('yes' === $isCap ? 'A captain has requested a team. ' : esc_html($name).' has requested a team for '.esc_html($capName).'. ').'The '.esc_html($colour).' color is now held.',$rows,
   'Create the team in Givebutter under the captain&rsquo;s name, set the goal to $15,000, then send them their registration link. Replying to this email reaches the captain directly.');
  $sent = wp_mail($recipient,'YMC: Adult captain team request — '.$colour,$html,['Content-Type: text/html; charset=UTF-8','Reply-To: '.$email]);
  update_post_meta($id,'ymc_notification_sent',$sent ? 'yes':'no');
@@ -913,9 +1053,21 @@ function ymc_handle_captain_request() {
 
  /* The captain otherwise has no proof the request went through, and no way to
     know a second step is still coming. */
- $steps = '<p style="margin:0;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#1c1c1c">The <strong>'.esc_html($colour).'</strong> team color is held for you. YMC will create your team and email your registration link. <strong>You still need to register as a player under your team once that link arrives.</strong></p>';
- $receipt = ymc_captain_email('We have your team request','Hi '.esc_html($name).', thanks for stepping up as a captain for the Adult Tournament.',$steps,
-  'This message confirms your team request only. It is not a player registration and no payment has been taken.');
+ /* A captain and someone acting for one need different instructions: only the
+    captain buys the (Captain Only) ticket, and telling the wrong person to buy
+    it is how captains end up registered as players and players as captains. */
+ if ('yes' === $isCap) {
+  $steps = '<p style="margin:0;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#1c1c1c">The <strong>'.esc_html($colour).'</strong> team color is held for you. YMC will create your team and email your registration link. <strong>You still need to register as a player under your team once that link arrives.</strong></p>'
+   .'<p style="margin:14px 0 0;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#1c1c1c">When it does, choose <strong>Adult Tournament &mdash; '.esc_html($colour).' (Captain Only)</strong>. That ticket is what marks you as captain.</p>';
+  $receipt = ymc_captain_email('We have your team request','Hi '.esc_html($name).', thanks for stepping up as a captain for the Adult Tournament.',$steps,
+   'This message confirms your team request only. It is not a player registration and no payment has been taken.');
+ } else {
+  $steps = '<p style="margin:0;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#1c1c1c">The <strong>'.esc_html($colour).'</strong> team color is held for <strong>'.esc_html($capName).'</strong>. We have emailed them at <strong>'.esc_html($capEmail).'</strong> with their registration link.</p>'
+   .'<p style="margin:14px 0 0;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#1c1c1c">They must register using <strong>Adult Tournament &mdash; '.esc_html($colour).' (Captain Only)</strong>, and pay with that same email address so we can confirm the team is theirs.</p>'
+   .'<p style="margin:14px 0 0;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#1c1c1c">If you are playing on the team yourself, choose <strong>Adult Tournament &mdash; Player</strong> and join '.esc_html($capName).'&rsquo;s team. Do not use the captain ticket.</p>';
+  $receipt = ymc_captain_email('We have your team request','Hi '.esc_html($name).', thanks for requesting a team for '.esc_html($capName).'.',$steps,
+   'This message confirms the team request only. It is not a player registration and no payment has been taken.');
+ }
  $confirmed = wp_mail($email,'YMC: We received your team request',$receipt,['Content-Type: text/html; charset=UTF-8','Reply-To: '.$recipient]);
  update_post_meta($id,'ymc_confirmation_sent',$confirmed ? 'yes':'no');
 
@@ -927,7 +1079,7 @@ function ymc_handle_captain_request() {
 
  /* The colour travels back so the confirmation can name the team to pick,
     which is the whole of what the captain has to do next. */
- wp_safe_redirect(add_query_arg(array('captain_request'=>'received','color'=>rawurlencode($colour)),$redirect)); exit;
+ wp_safe_redirect(add_query_arg(array('captain_request'=>'received','color'=>rawurlencode($colour),'role'=>('yes' === $isCap ? 'captain' : 'proxy')),$redirect)); exit;
 }
 add_action('admin_post_nopriv_ymc_captain_request','ymc_handle_captain_request');
 add_action('admin_post_ymc_captain_request','ymc_handle_captain_request');
