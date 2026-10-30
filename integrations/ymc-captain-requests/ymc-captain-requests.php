@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.2.0
+ * Version: 1.2.1
  */
 if (!defined('ABSPATH')) exit;
 
@@ -531,11 +531,8 @@ function ymc_captain_poll_teams() {
  */
 function ymc_captain_release_deleted_teams($teams) {
  $ids = [];
- $colours = [];
  foreach ($teams as $team) {
   if (!empty($team['id'])) $ids[(string) $team['id']] = true;
-  $c = ymc_captain_colour_in_team((string) ($team['name'] ?? ''));
-  if ('' !== $c) $colours[strtolower($c)] = true;
  }
  /* An empty campaign is more likely a bad read than a deliberate wipe. */
  if (!$ids) return;
@@ -550,8 +547,12 @@ function ymc_captain_release_deleted_teams($teams) {
   if ('' === $colour) continue;
   if (ymc_captain_colour_holder($colour) !== (string) $post->ID) continue;
   $teamId = (string) get_post_meta($post->ID,'ymc_team_id',true);
-  $gone = '' !== $teamId ? !isset($ids[$teamId]) : !isset($colours[strtolower($colour)]);
-  if (!$gone) continue;
+  /* Only a request that was linked to a team can lose one. Teams are created by
+     hand after the request now, so a reservation waiting for its team has no
+     team id - and judging those on "does any team carry this colour" released
+     every new reservation within a minute of it being made. */
+  if ('' === $teamId) continue;
+  if (isset($ids[$teamId])) continue;
   ymc_captain_release_colour($colour);
   update_post_meta($post->ID,'ymc_status','team deleted in Givebutter, '.$colour.' released');
  }
