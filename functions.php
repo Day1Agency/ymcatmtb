@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/inc/brand-logo.php';
 // Refresh WordPress's theme-pattern cache when the shared footer source changes.
 // A theme version bump alone cannot repair a saved database template-part copy.
 add_action( 'after_setup_theme', function () {

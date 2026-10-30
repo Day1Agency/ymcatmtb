@@ -30,6 +30,34 @@
    card.append(avatar,body);if(row.amount)card.append(text('span','ymc-donor-amount',money(row.amount)));frag.append(card);
   }root.replaceChildren(frag);if(!rows.length)root.append(text('p','','Be the first to support YMC.'));
  }catch{if(!root.childElementCount)root.append(text('p','ymc-donor-error','View the latest donations on Givebutter below.'));}}
- async function total(){try{const r=await fetch('/wp-json/ymc/v1/campaign-progress',{credentials:'omit'});if(!r.ok)throw Error();const d=await r.json();if(!Number.isFinite(d.raised)||d.raised<0)throw Error();document.getElementById('ymc-raised').textContent=money(d.raised);document.getElementById('ymc-goal-progress').value=d.raised;document.getElementById('ymc-goal-percent').textContent=(d.raised/750000*100).toFixed(1)+'%';}catch{if(document.getElementById('ymc-raised').textContent==='—')document.getElementById('ymc-raised').textContent='Support YMC';}}
+
+ const campaigns=[
+  {id:733202,title:'Annual campaign',detail:'Donations & sponsorships',slug:'ymc-annual-campaign'},
+  {id:729740,title:'Adults',detail:'Adult tournament',slug:'ymc-adult-player-registration'},
+  {id:749484,title:'Teens',detail:'Teen tournament',slug:'ymc-teen-player-registration'},
+  {id:725223,title:'Tickets',detail:'General admission & VIP',slug:'ymc-at-mtb-tickets'}
+ ];
+ function breakdown(d){
+  if(d.currency!=='USD'||!Array.isArray(d.campaigns)||d.campaigns.length!==4)throw Error();
+  const rows=campaigns.map(c=>{const matches=d.campaigns.filter(r=>Number(r.id)===c.id);if(matches.length!==1||!Number.isFinite(matches[0].raised)||matches[0].raised<0)throw Error();return {...c,raised:matches[0].raised};});
+  if(rows.reduce((sum,r)=>sum+Math.round(r.raised*100),0)!==Math.round(d.raised*100))throw Error();
+  const cards=document.getElementById('ymc-campaign-cards');if(!cards)return;
+  const frag=document.createDocumentFragment();
+  rows.forEach(row=>{
+   const card=text('a','ymc-campaign-card','');card.href='https://givebutter.com/'+row.slug;
+   card.append(text('span','ymc-campaign-card-title',row.title),text('strong','ymc-campaign-card-amount',money(row.raised)),text('span','ymc-campaign-card-detail',row.detail),text('span','ymc-campaign-card-link','View campaign →'));frag.append(card);
+  });cards.replaceChildren(frag);
+  const stamp=document.getElementById('ymc-breakdown-updated');
+  stamp.textContent=Number.isFinite(Date.parse(d.updated_at))?'Updated '+new Date(d.updated_at).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ET · Included in the total above.':'Included in the total above.';
+ }
+ async function total(){try{
+  const r=await fetch(window.ymcProgressEndpoint||'/wp-json/ymc/v1/campaign-progress',{credentials:'omit'});if(!r.ok)throw Error();const d=await r.json();if(!Number.isFinite(d.raised)||d.raised<0)throw Error();
+  breakdown(d);
+  document.getElementById('ymc-raised').textContent=money(d.raised);document.getElementById('ymc-goal-progress').value=d.raised;document.getElementById('ymc-goal-percent').textContent=(d.raised/750000*100).toFixed(1)+'%';
+ }catch{
+  const cards=document.getElementById('ymc-campaign-cards');if(cards&&!cards.querySelector('a'))cards.replaceChildren(text('p','ymc-breakdown-status','Campaign totals are temporarily unavailable. Please check back shortly.'));
+  const stamp=document.getElementById('ymc-breakdown-updated');if(cards?.querySelector('a')&&stamp)stamp.textContent='Showing the last available totals. Refreshing automatically.';
+  const amount=document.getElementById('ymc-raised');if(amount.textContent==='—')amount.textContent='Support YMC';
+ }}
  refresh();total();setInterval(refresh,120000);setInterval(total,120000);
 })();
