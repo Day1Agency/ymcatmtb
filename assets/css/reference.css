@@ -1724,43 +1724,51 @@ a:hover { color: rgb(230, 198, 90); }
 @media(max-width:559px) { .ymc-ref-facts {grid-template-columns:minmax(0,1fr) !important;} }
 @media(prefers-reduced-motion:reduce) { .ymc-reference *, .ymc-reference *::before {animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;} html {scroll-behavior:auto;} }
 
-/* Sponsor wall: featured MVP beside the supporting tiers; original transparent marks. */
-#sponsor .ymc-sponsor-recognition{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);column-gap:64px;max-width:1120px;margin:60px auto 0;text-align:center}
-#sponsor .ymc-sponsor-recognition>h3{grid-column:1/-1;margin:0 0 44px}
-#sponsor .ymc-sponsor-recognition>h4{margin:0 0 20px;line-height:1.5}
-#sponsor .ymc-sponsor-recognition>h4:first-of-type{grid-column:1;grid-row:2}
-#sponsor .ymc-mvp-sponsors{grid-column:1;grid-row:3/6;align-self:center;width:100%}
-#sponsor .ymc-sponsor-recognition .ymc-mvp-logo{width:100%;min-height:300px}
-#sponsor .ymc-sponsor-recognition .ymc-mvp-logo img{width:100%;max-width:400px;height:300px;object-fit:contain}
-#sponsor .ymc-sponsor-recognition>h4:nth-of-type(2){grid-column:2;grid-row:2}
-#sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos{grid-column:2;grid-row:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;width:100%;align-items:center}
-#sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos .ymc-sponsor-logo{width:100%;min-height:160px}
-#sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos img{width:100%;height:140px;object-fit:contain}
-#sponsor .ymc-supporting-tiers{grid-column:2;grid-row:4;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:28px 0 0;padding-top:24px;border-top:1px solid rgba(212,175,55,.25)}
+/* Sponsor wall: full-width MVP tier accommodates multiple premier sponsors. */
+#sponsor .ymc-sponsor-recognition{display:flex;flex-direction:column;max-width:1120px;margin:60px auto 0;text-align:center}
+#sponsor .ymc-sponsor-recognition>h3{margin:0 0 32px}
+#sponsor .ymc-sponsor-recognition .ymc-tier-banner{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:20px;min-height:72px;margin:0 0 24px;padding:16px 48px;box-sizing:border-box;line-height:1.1}
+#sponsor .ymc-tier-banner>span{font-size:32px;line-height:1.1;white-space:nowrap}
+#sponsor .ymc-tier-banner>small{font-size:24px;line-height:1.2;padding-left:20px;white-space:nowrap}
+#sponsor .ymc-mvp-sponsors{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:40px;width:100%;margin:0 auto 40px}
+#sponsor .ymc-sponsor-recognition .ymc-mvp-logo{width:calc(50% - 20px);max-width:440px;min-height:280px;display:flex;align-items:center;justify-content:center}
+#sponsor .ymc-sponsor-recognition .ymc-mvp-logo img{width:100%;max-width:360px;height:260px;object-fit:contain}
+#sponsor .ymc-sponsor-recognition>h4:nth-of-type(2){width:76%;align-self:center}
+#sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:40px;width:76%;margin:0 auto}
+#sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos .ymc-sponsor-logo{width:calc(50% - 20px);max-width:280px;min-height:170px}
+#sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos img{width:100%;max-width:250px;height:150px;object-fit:contain}
+#sponsor .ymc-supporting-tiers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;width:76%;margin:36px auto 0;padding:0;border:0;align-items:stretch}
 #sponsor .ymc-supporting-tier{min-width:0;display:flex;flex-direction:column}
-#sponsor .ymc-supporting-tier h4{font-size:12px;letter-spacing:.08em;line-height:1.5;margin:0 0 16px}
-#sponsor .ymc-supporting-tier .ymc-sponsor-logos{width:100%;margin-top:auto}
-#sponsor .ymc-sponsor-recognition .ymc-additional-sponsors .ymc-sponsor-logo{width:100%;min-height:90px}
-#sponsor .ymc-sponsor-recognition .ymc-additional-sponsors img{width:100%;max-width:170px;height:66px;object-fit:contain}
+#sponsor .ymc-supporting-tier .ymc-tier-banner{min-height:68px;padding:14px 16px;gap:12px;margin:0 0 18px}
+#sponsor .ymc-supporting-tier .ymc-tier-banner:before,#sponsor .ymc-supporting-tier .ymc-tier-banner:after{display:none}
+#sponsor .ymc-supporting-tier .ymc-tier-banner>span{font-size:26px}
+#sponsor .ymc-supporting-tier .ymc-tier-banner>small{font-size:20px;padding-left:12px}
+#sponsor .ymc-supporting-tier .ymc-sponsor-logos{width:100%;margin:auto 0 0}
+#sponsor .ymc-sponsor-recognition .ymc-additional-sponsors .ymc-sponsor-logo{width:100%;min-height:110px}
+#sponsor .ymc-sponsor-recognition .ymc-additional-sponsors img{width:100%;max-width:180px;height:70px;object-fit:contain}
 #sponsor .ymc-sponsor-recognition .ymc-sponsor-wordmark{font-size:21px}
 #sponsor .ymc-sponsor-recognition a:focus-visible{outline:2px solid #d4af37;outline-offset:6px}
-@media(max-width:800px){
- #sponsor .ymc-sponsor-recognition{column-gap:32px}
- #sponsor .ymc-sponsor-recognition .ymc-mvp-logo img{height:260px}
- #sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos{gap:16px}
- #sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos img{height:110px}
+@media(max-width:850px){
+ #sponsor .ymc-sponsor-recognition>h4:nth-of-type(2),#sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos,#sponsor .ymc-supporting-tiers{width:100%}
+ #sponsor .ymc-mvp-sponsors{gap:24px}
+ #sponsor .ymc-sponsor-recognition .ymc-mvp-logo{width:calc(50% - 12px)}
 }
 @media(max-width:640px){
- #sponsor .ymc-sponsor-recognition{display:flex;flex-direction:column;margin-top:42px}
- #sponsor .ymc-sponsor-recognition>h3{margin-bottom:28px}
- #sponsor .ymc-sponsor-recognition>h4{margin:0 0 16px}
- #sponsor .ymc-mvp-sponsors{margin:0 auto 32px}
- #sponsor .ymc-sponsor-recognition .ymc-mvp-logo{min-height:240px}
- #sponsor .ymc-sponsor-recognition .ymc-mvp-logo img{height:240px;max-width:320px}
- #sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos .ymc-sponsor-logo{min-height:130px}
- #sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos img{height:120px}
- #sponsor .ymc-supporting-tiers{gap:16px;margin-top:24px;padding-top:24px}
- #sponsor .ymc-supporting-tier h4{min-height:36px;font-size:11px}
+ #sponsor .ymc-sponsor-recognition{margin-top:40px}
+ #sponsor .ymc-sponsor-recognition>h3{margin-bottom:24px}
+ #sponsor .ymc-sponsor-recognition .ymc-tier-banner{min-height:62px;padding:14px 30px;gap:14px;margin-bottom:20px}
+ #sponsor .ymc-tier-banner>span{font-size:28px}
+ #sponsor .ymc-tier-banner>small{font-size:20px;padding-left:14px}
+ #sponsor .ymc-mvp-sponsors{gap:12px;margin-bottom:28px}
+ #sponsor .ymc-sponsor-recognition .ymc-mvp-logo{width:100%;max-width:310px;min-height:190px}
+ #sponsor .ymc-sponsor-recognition .ymc-mvp-logo img{height:210px;max-width:290px}
+ #sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos{gap:20px}
+ #sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos .ymc-sponsor-logo{width:calc(50% - 10px);min-height:120px}
+ #sponsor .ymc-sponsor-recognition>.ymc-sponsor-logos img{height:110px}
+ #sponsor .ymc-supporting-tiers{gap:16px;margin-top:28px}
+ #sponsor .ymc-supporting-tier .ymc-tier-banner{flex-direction:column;gap:8px;min-height:88px;padding:12px 6px;margin-bottom:12px}
+ #sponsor .ymc-supporting-tier .ymc-tier-banner>span{font-size:24px}
+ #sponsor .ymc-supporting-tier .ymc-tier-banner>small{border-left:0;padding-left:0;font-size:18px}
  #sponsor .ymc-sponsor-recognition .ymc-additional-sponsors img{max-width:145px;height:60px}
  #sponsor .ymc-sponsor-recognition .ymc-sponsor-wordmark{font-size:17px}
 }
