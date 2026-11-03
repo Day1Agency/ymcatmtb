@@ -2,9 +2,13 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.3.0
+ * Version: 1.4.0
  */
 if (!defined('ABSPATH')) exit;
+
+/* The staff dashboard served outside wp-admin. Kept in its own file: it is a
+   whole screen with its own markup, and none of it is needed by the form. */
+require_once __DIR__ . '/dashboard.php';
 
 const YMC_CAPTAIN_REQUEST_FALLBACK = 'ykohen@yeshivasmekorchaim.org';
 
@@ -742,6 +746,20 @@ add_action('admin_init', function () {
    esc_attr((string) get_option('ymc_captain_request_recipient','')), esc_attr(YMC_CAPTAIN_REQUEST_FALLBACK), esc_html(YMC_CAPTAIN_REQUEST_FALLBACK));
  },'ymc-captain-requests','ymc_captain_request_main');
 
+ /* Write-only: the stored value is a hash, so there is nothing to show back.
+    An empty box therefore has to mean "leave it alone" rather than "clear it",
+    or every unrelated save on this page would lock Yossi out. */
+ register_setting('ymc_captain_request','ymc_captain_dash_password',['type'=>'string','sanitize_callback'=>'ymc_captain_sanitize_dash_password','default'=>'']);
+ add_settings_field('ymc_captain_dash_password','Dashboard password', function () {
+  $set = '' !== (string) get_option('ymc_captain_dash_password','');
+  printf('<input type="password" id="ymc_captain_dash_password" name="ymc_captain_dash_password" value="" class="regular-text" autocomplete="new-password" placeholder="%s">',
+   $set ? 'Leave empty to keep the current password' : 'Set a password to open the dashboard');
+  printf('<p class="description">The password for <a href="%s" target="_blank" rel="noopener">%s</a>, the staff screen outside WordPress. %s '
+   . 'Type <code>remove</code> to close the dashboard again. Changing it signs everyone out.</p>',
+   esc_url(ymc_captain_dash_url()), esc_html(ymc_captain_dash_url()),
+   $set ? 'A password is set.' : '<strong>No password is set, so the dashboard is closed.</strong>');
+ },'ymc-captain-requests','ymc_captain_request_main');
+
  /* Stored as text rather than a repeater: adding or dropping a colour is a
     rare, deliberate edit, and a line per colour is obvious to anyone. */
  register_setting('ymc_captain_request','ymc_captain_colour_list',['type'=>'string','sanitize_callback'=>'ymc_captain_sanitize_colour_list','default'=>'']);
@@ -757,6 +775,25 @@ add_action('admin_init', function () {
    . 'A color only appears on the form if a matching team also exists in Givebutter. Removing a line never affects a request that already holds that color.</p>';
  },'ymc-captain-requests','ymc_captain_request_main');
 });
+
+/**
+ * Hashes a new dashboard password, or keeps the current one.
+ *
+ * Never stores what was typed: the dashboard checks with wp_check_password, so
+ * a leaked options table does not hand over the password itself. Rotating the
+ * signing secret alongside it drops every open session, which is the behaviour
+ * expected of a password change.
+ */
+function ymc_captain_sanitize_dash_password($value) {
+ $value = trim((string) $value);
+ if ('' === $value) return (string) get_option('ymc_captain_dash_password','');
+ if ('remove' === strtolower($value)) {
+  delete_option('ymc_captain_dash_secret');
+  return '';
+ }
+ delete_option('ymc_captain_dash_secret');
+ return wp_hash_password($value);
+}
 
 /** Keeps the stored list to one clean "Name #hex" per line. */
 function ymc_captain_sanitize_colour_list($value) {
