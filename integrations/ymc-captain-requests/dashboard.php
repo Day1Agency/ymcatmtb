@@ -339,13 +339,22 @@ function ymc_captain_dash_colour_board() {
     $dot, esc_html($colour));
    continue;
   }
+  $staff = ymc_captain_colour_tag($colour);
   if ('taken' === $states[$colour]) {
-   $tag    = '<span class="tag taken">Taken</span>';
-   $detail = 'Captain ticket paid' . (!empty($paid[$colour]) ? ' &mdash; ' . esc_html($paid[$colour]) : '');
+   $tag = '<span class="tag taken">Taken</span>';
+   /* Says which of the two it is. "Paid" against a colour nobody paid for sends
+      staff hunting through Givebutter for a transaction that is not there. */
+   $detail = !empty($paid[$colour])
+    ? 'Captain ticket paid &mdash; ' . esc_html($paid[$colour])
+    : 'Marked taken by staff';
   } elseif ('reserved' === $states[$colour]) {
    $holder = ymc_captain_colour_holder($colour);
    $tag    = '<span class="tag reserved">Reserved</span>';
-   $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; awaiting payment in Givebutter';
+   if ('reserved' === $staff) {
+    $detail = 'Marked reserved by staff';
+   } else {
+    $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; awaiting payment in Givebutter';
+   }
   } else {
    $tag    = '<span class="tag free">Available</span>';
    $detail = '';

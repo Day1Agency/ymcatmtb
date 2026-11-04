@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.4.0
+ * Version: 1.5.0
  */
 if (!defined('ABSPATH')) exit;
 
@@ -79,6 +79,33 @@ function ymc_captain_colour_hex($colour) {
 /** Option name holding a colour claim. One row per colour; its existence is the claim. */
 function ymc_captain_colour_key($colour) {
  return 'ymc_cap_colour_'.sanitize_key($colour);
+}
+
+/** Option name holding a staff tag for a colour. Absent means no tag. */
+function ymc_captain_tag_key($colour) {
+ return 'ymc_cap_tag_'.sanitize_key($colour);
+}
+
+/**
+ * A staff tag forcing a colour to read taken or reserved, or '' for none.
+ *
+ * Captains keep buying the plain player ticket instead of their colour's
+ * "(Captain Only)" one. Nothing in the ticket then names a colour, so the site
+ * cannot tell the colour has gone and happily offers it to the next captain.
+ * This lets staff say so by hand.
+ */
+function ymc_captain_colour_tag($colour) {
+ $tag = (string) get_option(ymc_captain_tag_key($colour), '');
+ return in_array($tag, ['taken', 'reserved'], true) ? $tag : '';
+}
+
+/** Sets or, with any other value, clears a colour's staff tag. */
+function ymc_captain_set_colour_tag($colour, $tag) {
+ if (!in_array($tag, ['taken', 'reserved'], true)) {
+  delete_option(ymc_captain_tag_key($colour));
+  return;
+ }
+ update_option(ymc_captain_tag_key($colour), $tag, false);
 }
 
 /**
@@ -198,10 +225,14 @@ function ymc_captain_colour_states() {
      promised the same colour is worse than one waiting - but unlike taken it
      can be released. */
   $held = ('' !== ymc_captain_colour_holder($colour));
+  $tag  = ymc_captain_colour_tag($colour);
   /* Adding a colour in Settings is not enough on its own: without a ticket to
      buy there is nothing for the captain to do with it. One already spoken for
      stays listed, so a ticket withdrawn after the fact does not hide it. */
-  if (!$held && null !== $tickets && !in_array($colour, $tickets, true)) continue;
+  if ('' === $tag && !$held && null !== $tickets && !in_array($colour, $tickets, true)) continue;
+  /* A staff tag outranks the claim but never a sale: it exists to cover the
+     case the ticket data cannot see, not to contradict money already taken. */
+  if ('' !== $tag) { $states[$colour] = $tag; continue; }
   $states[$colour] = $held ? 'reserved' : 'free';
  }
  return $states;
@@ -696,6 +727,22 @@ add_action('admin_init', function () {
  exit;
 });
 
+/* Tagging runs before the Settings screen renders so the table it draws is
+   already the new one, rather than showing the previous state until a reload. */
+add_action('admin_init', function () {
+ if (empty($_POST['ymc_tag_colour'])) return;
+ if (!current_user_can('manage_options')) return;
+ check_admin_referer('ymc_captain_tag','ymc_tag_nonce');
+ $colour = sanitize_text_field(wp_unslash($_POST['ymc_tag_colour']));
+ /* Only a colour on the list: a stale form must not create a tag for a colour
+    that no longer exists, which nothing would ever show or clear. */
+ if (!in_array($colour, ymc_captain_colours(), true)) return;
+ ymc_captain_set_colour_tag($colour, sanitize_text_field(wp_unslash($_POST['ymc_tag_state'] ?? '')));
+ wp_safe_redirect(add_query_arg('ymc_tagged', rawurlencode($colour),
+  admin_url('edit.php?post_type=ymc_captain_request&page=ymc-captain-requests')));
+ exit;
+});
+
 add_action('admin_menu', function () {
  add_submenu_page('edit.php?post_type=ymc_captain_request','Captain Request Settings','Settings','manage_options','ymc-captain-requests', function () {
   if (!current_user_can('manage_options')) return;
@@ -706,27 +753,63 @@ add_action('admin_menu', function () {
    is_email((string) get_option('ymc_captain_request_recipient','')) ? '' : ' (the built-in default, because no address is set)');
   /* Read from the same source as the public form. Showing the stored hold
      instead made a colour someone had paid for read as merely reserved. */
-  $states  = ymc_captain_colour_states();
-  $paid    = (array) ymc_captain_paid_colours();
-  $tickets = ymc_captain_ticket_colours();
-  echo '<h2>Colors</h2><table class="widefat striped" style="max-width:720px"><thead><tr><th>Color</th><th>Status</th><th>Detail</th></tr></thead><tbody>';
+  $states    = ymc_captain_colour_states();
+  $paid      = (array) ymc_captain_paid_colours();
+  $paidNames = ymc_captain_paid_colour_names();
+  $tickets   = ymc_captain_ticket_colours();
+  if (isset($_GET['ymc_tagged'])) {
+   printf('<div class="notice notice-success is-dismissible"><p>%s updated.</p></div>',
+    esc_html(sanitize_text_field(wp_unslash($_GET['ymc_tagged']))));
+  }
+  echo '<h2>Colors</h2><p class="description" style="max-width:720px">Set a color by hand when the site cannot work it out itself &mdash; '
+   . 'most often when a captain paid with the plain &ldquo;Player&rdquo; ticket instead of their color&rsquo;s &ldquo;(Captain Only)&rdquo; one, '
+   . 'which leaves nothing in Givebutter naming the color. <strong>Auto</strong> hands the color back to the site to decide. '
+   . 'A purchased color always reads Taken and cannot be overridden.</p>';
+  echo '<table class="widefat striped" style="max-width:860px"><thead><tr><th>Color</th><th>Status</th><th>Detail</th><th style="width:220px">Set by hand</th></tr></thead><tbody>';
   foreach (ymc_captain_colours() as $colour) {
+   $tag  = ymc_captain_colour_tag($colour);
+   $sold = null !== $paidNames && in_array($colour, $paidNames, true);
+
    if (!isset($states[$colour])) {
-    printf('<tr><td>%s</td><td>&mdash;</td><td class="description">Not shown: no &ldquo;(Captain Only)&rdquo; ticket for this color in Givebutter.</td></tr>', esc_html($colour));
-    continue;
-   }
-   if ('taken' === $states[$colour]) {
+    $status = '&mdash;';
+    $detail = 'Not shown: no &ldquo;(Captain Only)&rdquo; ticket for this color in Givebutter.';
+   } elseif ('taken' === $states[$colour]) {
     $status = '<strong style="color:#1d6f42">Taken</strong>';
-    $detail = 'Captain ticket purchased' . (!empty($paid[$colour]) ? ' by ' . esc_html($paid[$colour]) : '');
+    $detail = $sold
+     ? 'Captain ticket purchased' . (!empty($paid[$colour]) ? ' by ' . esc_html($paid[$colour]) : '')
+     : 'Marked taken by staff';
    } elseif ('reserved' === $states[$colour]) {
     $holder = ymc_captain_colour_holder($colour);
     $status = '<strong style="color:#8a6d1f">Reserved</strong>';
-    $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; request #' . esc_html($holder) . ', awaiting payment';
+    if ('reserved' === $tag) {
+     $detail = 'Marked reserved by staff';
+    } else {
+     $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; request #' . esc_html($holder) . ', awaiting payment';
+    }
    } else {
     $status = 'Available';
     $detail = '';
    }
-   printf('<tr><td>%s</td><td>%s</td><td class="description">%s</td></tr>', esc_html($colour), $status, $detail);
+
+   /* A sold colour gets no control: there is nothing a tag could usefully say
+      about money already taken, and a disabled row says so more clearly than
+      a menu that silently refuses to take effect. */
+   if ($sold) {
+    $control = '<span class="description">Paid &mdash; locked</span>';
+   } else {
+    $options = '';
+    foreach (['' => 'Auto', 'reserved' => 'Reserved', 'taken' => 'Taken'] as $value => $label) {
+     $options .= sprintf('<option value="%s"%s>%s</option>', esc_attr($value), selected($tag, $value, false), esc_html($label));
+    }
+    $control = '<form method="post" style="display:flex;gap:6px;align-items:center">'
+     . wp_nonce_field('ymc_captain_tag', 'ymc_tag_nonce', true, false)
+     . '<input type="hidden" name="ymc_tag_colour" value="' . esc_attr($colour) . '">'
+     . '<select name="ymc_tag_state">' . $options . '</select>'
+     . get_submit_button('Apply', 'secondary small', 'submit', false)
+     . '</form>';
+   }
+   printf('<tr><td>%s</td><td>%s</td><td class="description">%s</td><td>%s</td></tr>',
+    esc_html($colour), $status, $detail, $control);
   }
   echo '</tbody></table>';
   if (null === $tickets) echo '<p class="description">Givebutter&rsquo;s ticket list could not be read just now, so every color in the list is being offered.</p>';
