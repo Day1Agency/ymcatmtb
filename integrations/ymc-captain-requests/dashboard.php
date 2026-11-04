@@ -152,6 +152,15 @@ function ymc_captain_dash_cancel($id) {
  $colour = (string) get_post_meta($id, 'ymc_colour', true);
  if ($colour && ymc_captain_colour_holder($colour) === (string) $id) ymc_captain_release_colour($colour);
  update_post_meta($id, 'ymc_status', 'cancelled');
+ /* Recorded the same way the admin screen records it, so the Details button
+    reads alike wherever the cancelling was done from. Password-only staff have
+    no WordPress account to name, so the dashboard says so plainly. */
+ update_post_meta($id, 'ymc_outcome_reason', sprintf(
+  'Cancelled by %s on %s%s.',
+  current_user_can('manage_options') ? (wp_get_current_user()->display_name ?: 'a staff member') : 'staff from the team dashboard',
+  date_i18n('j M Y, g:i a'),
+  $colour ? ', releasing '.$colour : ''
+ ));
  return 'cancelled';
 }
 
@@ -379,7 +388,13 @@ function ymc_captain_dash_request_row($post) {
  $isCap  = (string) get_post_meta($id, 'ymc_is_captain', true);
  list($email, $name) = ymc_captain_target($id);
 
- $bucket = 'cancelled' === $status ? 'cancelled' : ('yes' === $sent ? 'sent' : 'waiting');
+ $reason = ymc_captain_request_reason($id);
+ /* Four buckets, not three. A request the site turned away and one staff called
+    off both end here, but only one of them is anybody's decision, and lumping
+    them together is what made the screen read as if we had cancelled on him. */
+ if ('unsuccessful' === $status)   $bucket = 'unsuccessful';
+ elseif ('cancelled' === $status)  $bucket = 'cancelled';
+ else                              $bucket = 'yes' === $sent ? 'sent' : 'waiting';
  echo '<tr data-request data-bucket="' . esc_attr($bucket) . '"><td>' . esc_html(get_the_date('j M, g:i a', $post)) . '</td>';
 
  /* The captain is the person the link is owed to, which is not always the one
@@ -390,11 +405,17 @@ function ymc_captain_dash_request_row($post) {
    ? '<span class="sub">requested by ' . esc_html((string) get_post_meta($id, 'ymc_name', true)) . '</span>'
    : '');
 
- printf('<td>%s%s</td>',
-  $colour ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($colour)) . '"></span>' : '',
-  esc_html($colour ?: '-'));
+ /* A refused request holds no colour, but the one it asked for is the point of
+    the row, so it shows with a note rather than a dash. */
+ $wanted = $colour ?: (string) get_post_meta($id, 'ymc_wanted_colour', true);
+ printf('<td>%s%s%s</td>',
+  $wanted ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($wanted)) . '"></span>' : '',
+  esc_html($wanted ?: '-'),
+  ('' === $colour && '' !== $wanted) ? '<span class="sub">asked for, not held</span>' : '');
 
- echo '<td><span class="request-status status-' . esc_attr($bucket) . '">' . esc_html(ucwords(str_replace('_', ' ', $status))) . '</span>';
+ echo '<td><span class="request-status status-' . esc_attr($bucket) . '">'
+  . esc_html('unsuccessful' === $status ? 'Unsuccessful' : ucwords(str_replace('_', ' ', $status))) . '</span>';
+ if ('unsuccessful' === $status) echo '<span class="sub">not cancelled by staff</span>';
  if ($n = (int) get_post_meta($id, 'ymc_link_resent_count', true)) {
   $at = (string) get_post_meta($id, 'ymc_link_resent_at', true);
   echo '<span class="sub">link resent ' . esc_html($n > 1 ? $n . ' times' : 'once');
@@ -414,8 +435,17 @@ function ymc_captain_dash_request_row($post) {
  }
  echo '</td><td><div class="request-actions">';
 
- if ('cancelled' === $status) {
-  echo '<span class="sub">Cancelled</span>';
+ if (ymc_captain_request_is_closed($status)) {
+  /* The reason sits behind a disclosure rather than in the row: it is a
+     sentence, and a closed request is the one people stop and ask about. Older
+     records predate the reason being stored, so they say so instead of
+     offering an empty panel. */
+  printf('<details class="why"><summary>%s</summary><p>%s</p>%s</details>',
+   esc_html('unsuccessful' === $status ? 'Why it failed' : 'Why it was cancelled'),
+   esc_html($reason ?: 'No reason was recorded. This request closed before the dashboard started keeping them.'),
+   'unsuccessful' === $status
+    ? '<p class="muted">Nothing was sent to the captain beyond the message on the form. If they never came back, they still need a team.</p>'
+    : '');
  } else {
   if ('' !== $team) {
    printf('<form method="post" class="inline"><input type="hidden" name="ymc_dash_action" value="resend">'
@@ -460,7 +490,7 @@ function ymc_captain_dash_screen() {
  $waiting = 0;
  $done    = 0;
  foreach ($requests as $post) {
-  if ('cancelled' === get_post_meta($post->ID, 'ymc_status', true)) continue;
+  if (ymc_captain_request_is_closed(get_post_meta($post->ID, 'ymc_status', true))) continue;
   if ('yes' === get_post_meta($post->ID, 'ymc_link_sent', true)) { $done++; } else { $waiting++; }
  }
  $states = ymc_captain_colour_states();
@@ -483,7 +513,7 @@ function ymc_captain_dash_screen() {
   count($requests), $waiting, $done, $taken);
 
  echo '<section id="requests"><div class="section-heading"><div><p class="eyebrow">CAPTAIN MANAGEMENT</p><h2>Team requests</h2></div><span class="sub">Newest requests first</span></div><div class="panel requests-panel">';
- echo '<div class="request-toolbar" hidden><div class="request-filters" role="group" aria-label="Filter requests"><button type="button" data-filter="all" aria-pressed="true">All requests</button><button type="button" data-filter="waiting" aria-pressed="false">Needs follow-up</button><button type="button" data-filter="sent" aria-pressed="false">Link sent</button><button type="button" data-filter="cancelled" aria-pressed="false">Cancelled</button></div><label class="search-label">Search requests<input id="request-search" type="search" placeholder="Name, email, color or team"></label></div><div class="request-table-scroll" tabindex="0" role="region" aria-label="Team requests">';
+ echo '<div class="request-toolbar" hidden><div class="request-filters" role="group" aria-label="Filter requests"><button type="button" data-filter="all" aria-pressed="true">All requests</button><button type="button" data-filter="waiting" aria-pressed="false">Needs follow-up</button><button type="button" data-filter="sent" aria-pressed="false">Link sent</button><button type="button" data-filter="unsuccessful" aria-pressed="false">Unsuccessful</button><button type="button" data-filter="cancelled" aria-pressed="false">Cancelled by staff</button></div><label class="search-label">Search requests<input id="request-search" type="search" placeholder="Name, email, color or team"></label></div><div class="request-table-scroll" tabindex="0" role="region" aria-label="Team requests">';
  if (!$requests) {
   echo '<p class="empty">No team requests yet. They will appear here as captains submit the form.</p>';
  } else {
