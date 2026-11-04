@@ -28,3 +28,4 @@ details.why summary:hover{background:#faf9fc}
 details.why[open] summary{margin-bottom:8px}
 details.why p{font-size:11px;line-height:1.6;margin:0 0 6px;color:var(--ink)}
 details.why p.muted{color:var(--mute)}
+.status-unpaid{color:#8a5a00;background:#fdf2dc;display:block;width:fit-content;margin-top:6px}

@@ -377,8 +377,25 @@ function ymc_captain_dash_colour_board() {
  echo '</section>';
 }
 
+/**
+ * True when a captain has their link but has not bought their ticket.
+ *
+ * "Link sent" was being read as finished, which it is not: the colour is only
+ * reserved until the (Captain Only) ticket sells, and a reserved colour is one
+ * nobody else can take either. Red sat like this for days looking settled.
+ * Unknown colours are left alone - if Givebutter could not be read, silence is
+ * better than telling staff to chase someone who has already paid.
+ */
+function ymc_captain_dash_awaiting_payment($id, $states) {
+ if ('yes' !== get_post_meta($id, 'ymc_link_sent', true)) return false;
+ if (ymc_captain_request_is_closed(get_post_meta($id, 'ymc_status', true))) return false;
+ $colour = (string) get_post_meta($id, 'ymc_colour', true);
+ if ('' === $colour || !isset($states[$colour])) return false;
+ return 'taken' !== $states[$colour];
+}
+
 /** One row per request, with the controls that apply to it. */
-function ymc_captain_dash_request_row($post) {
+function ymc_captain_dash_request_row($post, $states = []) {
  $id     = $post->ID;
  $colour = (string) get_post_meta($id, 'ymc_colour', true);
  $status = (string) get_post_meta($id, 'ymc_status', true) ?: 'pending';
@@ -392,10 +409,15 @@ function ymc_captain_dash_request_row($post) {
  /* Four buckets, not three. A request the site turned away and one staff called
     off both end here, but only one of them is anybody's decision, and lumping
     them together is what made the screen read as if we had cancelled on him. */
- if ('unsuccessful' === $status)   $bucket = 'unsuccessful';
- elseif ('cancelled' === $status)  $bucket = 'cancelled';
- else                              $bucket = 'yes' === $sent ? 'sent' : 'waiting';
- echo '<tr data-request data-bucket="' . esc_attr($bucket) . '"><td>' . esc_html(get_the_date('j M, g:i a', $post)) . '</td>';
+ if ('unsuccessful' === $status)   $buckets = ['unsuccessful'];
+ elseif ('cancelled' === $status)  $buckets = ['cancelled'];
+ else                              $buckets = ['yes' === $sent ? 'sent' : 'waiting'];
+ /* A row can sit in more than one list. Awaiting payment is not an alternative
+    to Link sent, it is a fact about a link that was sent, and moving the row out
+    of Link sent to say so would just hide it somewhere else. */
+ $owed = ymc_captain_dash_awaiting_payment($id, $states);
+ if ($owed) $buckets[] = 'unpaid';
+ echo '<tr data-request data-bucket="' . esc_attr(implode(' ', $buckets)) . '"><td>' . esc_html(get_the_date('j M, g:i a', $post)) . '</td>';
 
  /* The captain is the person the link is owed to, which is not always the one
     who filled the form in - showing only the submitter hid that entirely. */
@@ -413,9 +435,15 @@ function ymc_captain_dash_request_row($post) {
   esc_html($wanted ?: '-'),
   ('' === $colour && '' !== $wanted) ? '<span class="sub">asked for, not held</span>' : '');
 
- echo '<td><span class="request-status status-' . esc_attr($bucket) . '">'
+ echo '<td><span class="request-status status-' . esc_attr($buckets[0]) . '">'
   . esc_html('unsuccessful' === $status ? 'Unsuccessful' : ucwords(str_replace('_', ' ', $status))) . '</span>';
  if ('unsuccessful' === $status) echo '<span class="sub">not cancelled by staff</span>';
+ /* Sits beside the status rather than replacing it, because both are true: the
+    link really was sent, and the ticket really has not been bought. */
+ if ($owed) {
+  echo '<span class="request-status status-unpaid">Awaiting payment</span>'
+   . '<span class="sub">' . esc_html($colour) . ' is still only reserved &mdash; the captain ticket has not been bought</span>';
+ }
  if ($n = (int) get_post_meta($id, 'ymc_link_resent_count', true)) {
   $at = (string) get_post_meta($id, 'ymc_link_resent_at', true);
   echo '<span class="sub">link resent ' . esc_html($n > 1 ? $n . ' times' : 'once');
@@ -485,16 +513,25 @@ function ymc_captain_dash_screen() {
   'order'          => 'DESC',
  ]);
 
+ /* Read once and handed down to every row. It calls Givebutter, so asking per
+    row would mean one request each time the table is drawn. */
+ $states = ymc_captain_colour_states();
+ $taken  = count(array_keys($states, 'taken', true));
+
  /* Counted from the records rather than the colour board: this answers "who is
     waiting on me", which is the question the screen exists for. */
  $waiting = 0;
  $done    = 0;
+ $unpaid  = 0;
  foreach ($requests as $post) {
   if (ymc_captain_request_is_closed(get_post_meta($post->ID, 'ymc_status', true))) continue;
-  if ('yes' === get_post_meta($post->ID, 'ymc_link_sent', true)) { $done++; } else { $waiting++; }
+  if ('yes' !== get_post_meta($post->ID, 'ymc_link_sent', true)) { $waiting++; continue; }
+  $done++;
+  /* Sending the link is not the finish line. Until the captain buys their
+     ticket the colour is only reserved, and a request sitting here looked
+     settled while nobody had paid for it. */
+  if (ymc_captain_dash_awaiting_payment($post->ID, $states)) $unpaid++;
  }
- $states = ymc_captain_colour_states();
- $taken  = count(array_keys($states, 'taken', true));
 
  ymc_captain_dash_head('Team dashboard');
  printf('<header class="bar" id="overview"><div><p class="eyebrow">TOURNAMENT OPERATIONS</p><h1>Team dashboard</h1>'
@@ -508,18 +545,19 @@ function ymc_captain_dash_screen() {
  printf('<div class="cards">'
   . '<a href="#requests" class="card"><span>Total requests</span><b>%d</b><small>Latest 200 submissions</small></a>'
   . '<a href="#requests" data-filter-shortcut="waiting" class="card attention"><span>Needs follow-up</span><b>%d</b><small>Registration link not sent</small></a>'
+  . '<a href="#requests" data-filter-shortcut="unpaid" class="card attention"><span>Awaiting payment</span><b>%d</b><small>Link sent, captain ticket not bought</small></a>'
   . '<a href="#requests" data-filter-shortcut="sent" class="card"><span>Links sent</span><b>%d</b><small>Captains have their next step</small></a>'
   . '<a href="#team-colors" class="card"><span>Paid colors</span><b>%d</b><small>Captain tickets purchased</small></a></div>',
-  count($requests), $waiting, $done, $taken);
+  count($requests), $waiting, $unpaid, $done, $taken);
 
  echo '<section id="requests"><div class="section-heading"><div><p class="eyebrow">CAPTAIN MANAGEMENT</p><h2>Team requests</h2></div><span class="sub">Newest requests first</span></div><div class="panel requests-panel">';
- echo '<div class="request-toolbar" hidden><div class="request-filters" role="group" aria-label="Filter requests"><button type="button" data-filter="all" aria-pressed="true">All requests</button><button type="button" data-filter="waiting" aria-pressed="false">Needs follow-up</button><button type="button" data-filter="sent" aria-pressed="false">Link sent</button><button type="button" data-filter="unsuccessful" aria-pressed="false">Unsuccessful</button><button type="button" data-filter="cancelled" aria-pressed="false">Cancelled by staff</button></div><label class="search-label">Search requests<input id="request-search" type="search" placeholder="Name, email, color or team"></label></div><div class="request-table-scroll" tabindex="0" role="region" aria-label="Team requests">';
+ echo '<div class="request-toolbar" hidden><div class="request-filters" role="group" aria-label="Filter requests"><button type="button" data-filter="all" aria-pressed="true">All requests</button><button type="button" data-filter="waiting" aria-pressed="false">Needs follow-up</button><button type="button" data-filter="sent" aria-pressed="false">Link sent</button><button type="button" data-filter="unpaid" aria-pressed="false">Awaiting payment</button><button type="button" data-filter="unsuccessful" aria-pressed="false">Unsuccessful</button><button type="button" data-filter="cancelled" aria-pressed="false">Cancelled by staff</button></div><label class="search-label">Search requests<input id="request-search" type="search" placeholder="Name, email, color or team"></label></div><div class="request-table-scroll" tabindex="0" role="region" aria-label="Team requests">';
  if (!$requests) {
   echo '<p class="empty">No team requests yet. They will appear here as captains submit the form.</p>';
  } else {
   echo '<table><thead><tr><th>Submitted</th><th>Captain</th><th>Color</th>'
    . '<th>Status</th><th>Team</th><th>Actions</th></tr></thead><tbody>';
-  foreach ($requests as $post) { ymc_captain_dash_request_row($post); }
+  foreach ($requests as $post) { ymc_captain_dash_request_row($post, $states); }
   echo '</tbody></table>';
  }
  echo '</div><p class="filter-empty empty" hidden>No requests match. Try another name or filter.</p><div class="table-footer"><span id="request-count" role="status">' . count($requests) . ' requests</span><span>Showing up to 200 most recent requests</span></div></div></section>';
