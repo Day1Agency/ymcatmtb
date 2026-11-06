@@ -631,8 +631,11 @@ function ymc_captain_dash_person_note($p) {
     warnings on it is a row nobody reads. Each says what to do with it, because
     a note at the foot of the table explaining the tags goes unread. */
  if ($p['mislabelled']) {
+  /* Names the control they are being sent to, word for word. "Mark it taken"
+     sent staff looking for a setting called Taken that no longer exists. */
   return '<span class="tag taken">Captain on a player ticket</span>'
-   . '<span class="sub">Their color never sold &mdash; mark it taken under Team colors</span>';
+   . '<span class="sub">' . esc_html('The ' . $p['colour'] . ' captain ticket was never bought, so the form still offers it. '
+    . 'Set ' . $p['colour'] . ' to Unavailable under Team colors.') . '</span>';
  }
  if ('' === $p['colour']) {
   return '<span class="tag reserved">No team given</span>'
@@ -712,12 +715,15 @@ function ymc_captain_dash_colour_board() {
   }
   $staff = ymc_captain_colour_tag($colour);
   if ('taken' === $states[$colour]) {
-   $tag = '<span class="tag taken">Taken</span>';
-   /* Says which of the two it is. "Paid" against a colour nobody paid for sends
-      staff hunting through Givebutter for a transaction that is not there. */
+   /* Says which of the two it is, in the chip as well as beside it. "Paid"
+      against a colour nobody paid for sends staff hunting through Givebutter
+      for a transaction that is not there. */
+   $tag = !empty($paid[$colour])
+    ? '<span class="tag taken">Taken</span>'
+    : '<span class="tag taken">Unavailable</span>';
    $detail = !empty($paid[$colour])
     ? 'Captain ticket paid &mdash; ' . esc_html($paid[$colour])
-    : 'Marked taken by staff';
+    : 'Marked unavailable by staff';
   } elseif ('reserved' === $states[$colour]) {
    $holder = ymc_captain_colour_holder($colour);
    $tag    = '<span class="tag reserved">Reserved</span>';
