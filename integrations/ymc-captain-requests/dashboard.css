@@ -42,7 +42,7 @@ details.why p.muted{color:var(--mute)}
 .panel-note strong{color:var(--ink)}
 .dash-sidebar nav .nav-part.current{color:#fff;background:#ffffff16;font-weight:600}
 .wrap section+section{margin-top:36px}
-.panel-heading{margin:30px 0 14px}
+.panel-heading{margin:0 0 14px}
 .panel-heading h3{font-size:16px;letter-spacing:-.015em;margin:0 0 4px;color:var(--ink)}
 .panel-heading .sub{margin:0;max-width:62ch}
 .reg-tabs{display:flex;gap:6px;margin-bottom:14px}

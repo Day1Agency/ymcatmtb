@@ -593,7 +593,9 @@ function ymc_captain_dash_registration_board() {
  }
  echo '</tbody></table></div>';
 
- echo '<div class="panel-heading" data-reg-panel="players"><h3>Players breakdown</h3>'
+ /* No heading of its own: the tab above is already called this, and repeating it
+    pushes the table it describes further down the screen. */
+ echo '<div class="panel-heading" data-reg-panel="players">'
   . '<p class="sub">Every person in those teams &mdash; what they bought, which color they play for, '
   . 'and anything that still needs doing.</p></div>';
 
