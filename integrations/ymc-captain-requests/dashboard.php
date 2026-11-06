@@ -152,6 +152,15 @@ function ymc_captain_dash_cancel($id) {
  $colour = (string) get_post_meta($id, 'ymc_colour', true);
  if ($colour && ymc_captain_colour_holder($colour) === (string) $id) ymc_captain_release_colour($colour);
  update_post_meta($id, 'ymc_status', 'cancelled');
+ /* Recorded the same way the admin screen records it, so the Details button
+    reads alike wherever the cancelling was done from. Password-only staff have
+    no WordPress account to name, so the dashboard says so plainly. */
+ update_post_meta($id, 'ymc_outcome_reason', sprintf(
+  'Cancelled by %s on %s%s.',
+  current_user_can('manage_options') ? (wp_get_current_user()->display_name ?: 'a staff member') : 'staff from the team dashboard',
+  date_i18n('j M Y, g:i a'),
+  $colour ? ', releasing '.$colour : ''
+ ));
  return 'cancelled';
 }
 
@@ -288,10 +297,57 @@ details.send input{font:inherit;padding:7px 9px;border:1px solid var(--line);bor
 <?php if (ymc_captain_dash_may_view()) : ?>
 <a class="skip-link" href="#dashboard-main">Skip to dashboard</a>
 <aside class="dash-sidebar"><a class="dash-brand" href="<?php echo esc_url(home_url('/')); ?>"><img src="<?php echo esc_url(get_theme_file_uri('assets/images/ymc-event-logo-transparent.png')); ?>" alt="YMC at M&amp;T"><span>YMC at M&amp;T<small>TOURNAMENT STAFF</small></span></a>
-<p class="nav-label">WORKSPACE</p><nav aria-label="Dashboard"><a href="#overview" class="active">Overview</a><a href="#requests">Team requests</a><a href="#team-colors">Team colors</a></nav>
+<p class="nav-label">WORKSPACE</p><?php ymc_captain_dash_nav(); ?>
 <div class="sidebar-bottom"><span>ADULT TOURNAMENT</span><p>Keep your teams<br>moving forward.</p><a href="<?php echo esc_url(home_url('/')); ?>">View website &nearr;</a></div></aside>
 <?php endif; ?><main class="wrap" id="dashboard-main">
 <?php }
+
+/** Which of the two screens is being asked for. */
+function ymc_captain_dash_view() {
+ return 'team-requests' === sanitize_key(wp_unslash($_GET['view'] ?? '')) ? 'team-requests' : 'main';
+}
+
+/**
+ * The sidebar: two places to be, each with its own parts underneath.
+ *
+ * The two are different jobs - people who have registered against people still
+ * waiting for a team - so they are pages rather than two more sections on one
+ * long scroll. Only the open one lists its parts; showing both sets of anchors
+ * would offer links that go nowhere from the page you are on.
+ */
+function ymc_captain_dash_nav() {
+ $view  = ymc_captain_dash_view();
+ $pages = [
+  'main' => [
+   'label' => 'Team registrations',
+   'url'   => ymc_captain_dash_url(),
+   'parts' => [
+    '#overview'      => 'Overview',
+    '#requests'      => 'Team registrations',
+    '#registrations' => 'Player registrations',
+    '#team-colors'   => 'Team colors',
+   ],
+  ],
+  'team-requests' => [
+   'label' => 'Team requests',
+   'url'   => ymc_captain_dash_url(['view' => 'team-requests']),
+   'parts' => ['#placements' => 'Who is waiting'],
+  ],
+ ];
+ echo '<nav aria-label="Dashboard">';
+ foreach ($pages as $key => $page) {
+  printf('<a class="nav-main%s" href="%s"%s>%s</a>',
+   $key === $view ? ' active' : '', esc_url($page['url']),
+   $key === $view ? ' aria-current="page"' : '', esc_html($page['label']));
+  if ($key !== $view) continue;
+  echo '<span class="nav-parts">';
+  foreach ($page['parts'] as $anchor => $label) {
+   printf('<a class="nav-part" href="%s">%s</a>', esc_attr($anchor), esc_html($label));
+  }
+  echo '</span>';
+ }
+ echo '</nav>';
+}
 
 function ymc_captain_dash_foot() {
  echo '</main><script src="' . esc_url(plugins_url('dashboard.js', __FILE__) . '?v=' . filemtime(__DIR__ . '/dashboard.js')) . '" defer></script></body></html>';
@@ -324,6 +380,272 @@ function ymc_captain_dash_login_screen() {
  ymc_captain_dash_foot();
 }
 
+/**
+ * The answer a buyer gave to one of the registration questions, or ''.
+ *
+ * Matched on a few words of the question rather than the whole of it, so
+ * rewording "Are you the team captain?" in Givebutter does not quietly stop
+ * this working. Field ids would be stabler, but they are not visible anywhere
+ * staff can read them.
+ */
+function ymc_captain_ticket_answer($ticket, $needle) {
+ foreach ((array) ($ticket['custom_fields'] ?? []) as $field) {
+  if (!is_array($field)) continue;
+  if (false !== stripos((string) ($field['title'] ?? ''), $needle)) return trim((string) ($field['value'] ?? ''));
+ }
+ return '';
+}
+
+/**
+ * What one ticket says about its buyer, or null if it is not a registration.
+ *
+ * The title names the tournament and whether a captain ticket was bought, but
+ * it is not the last word on who someone is. Captains keep buying the plain
+ * player ticket - Lichtman did - and the registration form asks them outright,
+ * so the answer to "Are you the team captain?" overrules the title. Without
+ * that, a captain reads as an ordinary player and their colour looks free.
+ *
+ * Test and sample tickets are staff rehearsing the form, not people who are
+ * coming, so they are dropped here rather than counted as registrations.
+ */
+function ymc_captain_dash_classify_ticket($ticket) {
+ $title = (string) (is_array($ticket) ? ($ticket['title'] ?? '') : $ticket);
+ if (preg_match('/\b(test|sample)\b/i', $title)) return null;
+ /* Adult only. The teen tournament does not run on captain teams and this screen
+    is about the team side, so counting teens here would only pad the numbers. */
+ if (!preg_match('/^\s*adult\s+tournament\b/i', $title)) return null;
+ $where = 'Adult';
+ $ticket = is_array($ticket) ? $ticket : [];
+
+ /* What they said they are playing on. On a captain ticket the colour is in the
+    title; on a player ticket it is the only place the colour appears at all. */
+ $says = ymc_captain_ticket_answer($ticket, 'which team');
+ $said = ymc_captain_colour_in_team($says);
+
+ if (false !== stripos($title, '(Captain Only)')) {
+  return ['where' => $where, 'kind' => 'captain', 'colour' => ymc_captain_colour_in_team($title), 'mislabelled' => false];
+ }
+ if (!preg_match('/\bplayer\b/i', $title)) return null;
+
+ /* Yes here and a player ticket in hand is the gap nothing else can see. */
+ $isCaptain = 0 === strcasecmp('yes', ymc_captain_ticket_answer($ticket, 'team captain'));
+ return [
+  'where'       => $where,
+  'kind'        => $isCaptain ? 'captain' : 'player',
+  'colour'      => $said,
+  'mislabelled' => $isCaptain,
+ ];
+}
+
+/**
+ * Everyone registered in Givebutter, with their team counts, or null if it
+ * could not be read.
+ *
+ * Three calls, cached together, because the screen needs all three to say
+ * anything useful: the tickets are who paid, the teams are how full each one
+ * is, and the member list is the only way to tell whether someone who paid ever
+ * ended up on a team at all.
+ *
+ * Givebutter will not say which member belongs to which team - the member
+ * records carry no team, and filtering them by team is ignored - so the roster
+ * is a count per team, and people are matched to "on a team or not" by email.
+ */
+function ymc_captain_dash_registrations() {
+ $cached = get_transient('ymc_captain_dash_registrations');
+ if (is_array($cached)) return $cached;
+ if (!function_exists('YMC\\CaptainInvitations\\collection')) return null;
+ try {
+  $tickets = call_user_func('YMC\\CaptainInvitations\\collection', 'tickets?campaign_id=' . YMC_CAPTAIN_CAMPAIGN_ID);
+  $teams   = call_user_func('YMC\\CaptainInvitations\\collection', 'campaigns/' . YMC_CAPTAIN_CAMPAIGN_ID . '/teams');
+  $members = call_user_func('YMC\\CaptainInvitations\\collection', 'campaigns/' . YMC_CAPTAIN_CAMPAIGN_ID . '/members');
+ } catch (\Throwable $e) {
+  return null;
+ }
+
+ $onTeam = [];
+ foreach ($members as $m) {
+  $email = strtolower(trim((string) ($m['email'] ?? '')));
+  if ('' !== $email) $onTeam[$email] = true;
+ }
+
+ $people = [];
+ foreach ($tickets as $t) {
+  $what = ymc_captain_dash_classify_ticket($t);
+  if (null === $what) continue;
+  $email = strtolower(trim((string) ($t['email'] ?? '')));
+  $people[] = [
+   'name'        => trim((string) ($t['first_name'] ?? '') . ' ' . (string) ($t['last_name'] ?? '')) ?: (string) ($t['name'] ?? ''),
+   'email'       => $email,
+   'title'       => (string) ($t['title'] ?? ''),
+   'where'       => $what['where'],
+   'kind'        => $what['kind'],
+   'colour'      => $what['colour'],
+   'mislabelled' => $what['mislabelled'],
+   'date'        => (string) ($t['created_at'] ?? ''),
+   'adrift'      => '' !== $email && empty($onTeam[$email]),
+  ];
+ }
+ usort($people, function ($a, $b) { return strcmp($b['date'], $a['date']); });
+
+ /* Counted from what each person wrote on their own form. Givebutter's member
+    list does not say which team anyone is on, and filtering it by team is
+    ignored, so the registration answer is the only thing that does. */
+ $byColour = [];
+ foreach ($people as $p) {
+  if ('' === $p['colour']) continue;
+  $byColour[$p['colour']] = ($byColour[$p['colour']] ?? 0) + 1;
+ }
+
+ $rosters = [];
+ foreach ($teams as $t) {
+  $colour = ymc_captain_colour_in_team($t['name'] ?? '');
+  $rosters[] = [
+   'name'      => (string) ($t['name'] ?? ''),
+   'url'       => (string) ($t['url'] ?? ''),
+   'raised'    => (float) ($t['raised'] ?? 0),
+   'colour'    => $colour,
+   /* Two counts, because they answer different questions. Givebutter's is who
+      has a fundraising page on the team; ours is who said they are playing for
+      it. They part company the moment somebody pays without being added. */
+   'members'   => (int) ($t['members'] ?? 0),
+   'signed_up' => $colour ? (int) ($byColour[$colour] ?? 0) : 0,
+  ];
+ }
+ usort($rosters, function ($a, $b) { return $b['signed_up'] <=> $a['signed_up']; });
+
+ $data = ['people' => $people, 'teams' => $rosters];
+ /* Short, because staff refresh this screen while adding people in Givebutter
+    in another tab and a stale roster would read as the change not working. */
+ set_transient('ymc_captain_dash_registrations', $data, 180);
+ return $data;
+}
+
+/** Everyone who registered in Givebutter, and how full each team is. */
+function ymc_captain_dash_registration_board() {
+ $data = ymc_captain_dash_registrations();
+ echo '<section id="registrations"><div class="section-heading"><div><p class="eyebrow">WHO IS COMING</p><h2>Player registrations</h2>'
+  . '<p class="sub">Everyone who has bought a ticket, read live from Givebutter.</p></div></div>';
+
+ if (null === $data) {
+  echo '<div class="panel"><p class="empty">Givebutter could not be reached just now, so registrations cannot be shown. '
+   . 'This does not mean nobody has registered &mdash; try refreshing in a minute.</p></div></section>';
+  return;
+ }
+
+ $players  = array_filter($data['people'], function ($p) { return 'player' === $p['kind']; });
+ $captains = array_filter($data['people'], function ($p) { return 'captain' === $p['kind']; });
+ $adrift   = array_filter($data['people'], function ($p) { return $p['adrift']; });
+ $mixedUp  = array_filter($data['people'], function ($p) { return $p['mislabelled']; });
+
+ printf('<div class="panel"><p class="sub reg-summary">%d registered &mdash; %d captains and %d players.%s</p>',
+  count($data['people']), count($captains), count($players),
+  $mixedUp ? ' <strong>' . count($mixedUp) . ' bought the wrong ticket.</strong>' : '');
+
+ echo '<table><thead><tr><th>Team</th><th>Registered for this team</th><th>On the Givebutter team</th><th>Raised</th></tr></thead><tbody>';
+ foreach ($data['teams'] as $team) {
+  $dot = $team['colour'] ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($team['colour'])) . '"></span>' : '';
+  printf('<tr><td>%s%s</td><td>%s</td><td class="muted">%d</td><td class="muted">$%s</td></tr>',
+   $dot,
+   $team['url'] ? '<a href="' . esc_url($team['url']) . '" target="_blank" rel="noopener">' . esc_html($team['name']) . '</a>' : esc_html($team['name']),
+   /* Nobody at all is the thing worth noticing, so it says so in words. */
+   0 === $team['signed_up'] ? '<span class="muted">Nobody yet</span>' : esc_html($team['signed_up'] . (1 === $team['signed_up'] ? ' person' : ' people')),
+   $team['members'],
+   esc_html(number_format($team['raised'])));
+ }
+ echo '</tbody></table>'
+  . '<p class="sub">&ldquo;Registered for this team&rdquo; counts everyone, captain included, who named this color on their registration form. '
+  . '&ldquo;On the Givebutter team&rdquo; counts who has actually been added there. '
+  . 'When the two differ, somebody has paid but still needs adding to their team.</p></div>';
+
+ echo '<div class="panel" style="margin-top:18px"><table><thead><tr><th>Registered</th><th>Name</th><th>Bought</th><th>Playing for</th><th>Notes</th></tr></thead><tbody>';
+ if (!$data['people']) {
+  echo '<tr><td colspan="5"><p class="empty">Nobody has registered yet. Test tickets are not counted here.</p></td></tr>';
+ }
+ foreach ($data['people'] as $p) {
+  printf('<tr><td>%s</td><td><strong>%s</strong><span class="sub">%s</span></td><td>%s%s</td><td>%s</td><td>%s</td></tr>',
+   esc_html($p['date'] ? mysql2date('j M, g:i a', $p['date']) : '-'),
+   esc_html($p['name'] ?: '-'), esc_html($p['email']),
+   /* What the ticket was, not what they turned out to be: staff looking for the
+      transaction in Givebutter need the name it was sold under. */
+   esc_html(false !== stripos($p['title'], '(Captain Only)') ? 'Captain ticket' : 'Player ticket'),
+   $p['mislabelled'] ? '<span class="sub">but said they are the captain</span>' : '',
+   $p['colour']
+    ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($p['colour'])) . '"></span>' . esc_html($p['colour'])
+    : '<span class="muted">Not given</span>',
+   ymc_captain_dash_person_note($p));
+ }
+ echo '</tbody></table>';
+ /* Said once under the table rather than on every flagged row. The Gray team is
+    the standing example: Avi paid for it and Dany Donaty holds the page, so
+    both are accounted for and the flag still fires. */
+ if ($adrift) {
+  echo '<p class="sub">&ldquo;Not on a team&rdquo; means Givebutter has no fundraiser page under that email. '
+   . 'Usually it means they still need adding to a team. It can also mean someone else set the team up for them, '
+   . 'so check the team before chasing anyone.</p>';
+ }
+ if ($mixedUp) {
+  echo '<p class="sub">&ldquo;Captain on a player ticket&rdquo; means they said they are the captain but bought the plain player ticket, '
+   . 'so their color never sold and the website still thinks it is free. Tag that color by hand under Team colors.</p>';
+ }
+ echo '</div></section>';
+}
+
+/** The one thing worth saying about a registration, or nothing. */
+function ymc_captain_dash_person_note($p) {
+ /* Ordered by what staff would act on first. Only one shows: a row with three
+    warnings on it is a row nobody reads. */
+ if ($p['mislabelled']) return '<span class="tag taken">Captain on a player ticket</span>';
+ if ('' === $p['colour']) return '<span class="tag reserved">No team given</span>';
+ if ($p['adrift'])       return '<span class="tag reserved">Not on a team</span>';
+ return '<span class="muted">&mdash;</span>';
+}
+
+/** Everyone waiting to be placed on a team, on a page of its own. */
+function ymc_captain_dash_team_requests_screen() {
+ $asks = get_posts([
+  'post_type'      => 'ymc_team_request',
+  'post_status'    => ['publish', 'draft', 'pending', 'private'],
+  'posts_per_page' => 200,
+  'orderby'        => 'date',
+  'order'          => 'DESC',
+ ]);
+
+ ymc_captain_dash_head('Team requests');
+ printf('<header class="bar" id="overview"><div><p class="eyebrow">TOURNAMENT OPERATIONS</p><h1>Team requests</h1>'
+  . '<p>People who asked for help joining a team.</p></div><div class="bar-actions">'
+  . '<a class="refresh-link" href="%s">Back to the dashboard</a>%s</div></header>',
+  esc_url(ymc_captain_dash_url()),
+  current_user_can('manage_options')
+   ? '<a href="' . esc_url(admin_url('edit.php?post_type=ymc_team_request')) . '">Open in WordPress</a>'
+   : '<a href="' . esc_url(ymc_captain_dash_url(['logout' => 1])) . '">Sign out</a>');
+
+ ymc_captain_dash_print_notice();
+
+ printf('<div class="cards"><a href="#placements" class="card%s"><span>Waiting to be placed</span><b>%d</b>'
+  . '<small>Asked on the website, not yet registered</small></a></div>',
+  $asks ? ' attention' : '', count($asks));
+
+ echo '<section id="placements"><div class="section-heading"><div><p class="eyebrow">LOOKING FOR A TEAM</p><h2>Who is waiting</h2>'
+  . '<p class="sub">These people have not paid &mdash; they are waiting for someone to place them on a team.</p></div></div><div class="panel">';
+ if (!$asks) {
+  echo '<p class="empty">Nobody is waiting for a placement right now. Submissions from the Need a Team form appear here.</p></div></section>';
+  ymc_captain_dash_foot();
+  return;
+ }
+ echo '<table><thead><tr><th>Asked</th><th>Name</th><th>Phone</th><th>Staff emailed</th></tr></thead><tbody>';
+ foreach ($asks as $ask) {
+  /* Read back out of the body, which is where this form writes them. */
+  printf('<tr><td>%s</td><td><strong>%s</strong><span class="sub">%s</span></td><td class="muted">%s</td><td class="muted">%s</td></tr>',
+   esc_html(get_the_date('j M, g:i a', $ask)),
+   esc_html($ask->post_title),
+   esc_html(ymc_captain_body_field($ask->post_content, 'Email')),
+   esc_html(ymc_captain_body_field($ask->post_content, 'Phone') ?: '-'),
+   'yes' === get_post_meta($ask->ID, 'ymc_notification_sent', true) ? 'Sent' : 'Not sent');
+ }
+ echo '</tbody></table></div></section>';
+ ymc_captain_dash_foot();
+}
+
 /** The colour board: the same reading the public form works from. */
 function ymc_captain_dash_colour_board() {
  $states  = ymc_captain_colour_states();
@@ -339,13 +661,22 @@ function ymc_captain_dash_colour_board() {
     $dot, esc_html($colour));
    continue;
   }
+  $staff = ymc_captain_colour_tag($colour);
   if ('taken' === $states[$colour]) {
-   $tag    = '<span class="tag taken">Taken</span>';
-   $detail = 'Captain ticket paid' . (!empty($paid[$colour]) ? ' &mdash; ' . esc_html($paid[$colour]) : '');
+   $tag = '<span class="tag taken">Taken</span>';
+   /* Says which of the two it is. "Paid" against a colour nobody paid for sends
+      staff hunting through Givebutter for a transaction that is not there. */
+   $detail = !empty($paid[$colour])
+    ? 'Captain ticket paid &mdash; ' . esc_html($paid[$colour])
+    : 'Marked taken by staff';
   } elseif ('reserved' === $states[$colour]) {
    $holder = ymc_captain_colour_holder($colour);
    $tag    = '<span class="tag reserved">Reserved</span>';
-   $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; awaiting payment in Givebutter';
+   if ('reserved' === $staff) {
+    $detail = 'Marked reserved by staff';
+   } else {
+    $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; awaiting payment in Givebutter';
+   }
   } else {
    $tag    = '<span class="tag free">Available</span>';
    $detail = '';
@@ -359,8 +690,25 @@ function ymc_captain_dash_colour_board() {
  echo '</section>';
 }
 
+/**
+ * True when a captain has their link but has not bought their ticket.
+ *
+ * "Link sent" was being read as finished, which it is not: the colour is only
+ * reserved until the (Captain Only) ticket sells, and a reserved colour is one
+ * nobody else can take either. Red sat like this for days looking settled.
+ * Unknown colours are left alone - if Givebutter could not be read, silence is
+ * better than telling staff to chase someone who has already paid.
+ */
+function ymc_captain_dash_awaiting_payment($id, $states) {
+ if ('yes' !== get_post_meta($id, 'ymc_link_sent', true)) return false;
+ if (ymc_captain_request_is_closed(get_post_meta($id, 'ymc_status', true))) return false;
+ $colour = (string) get_post_meta($id, 'ymc_colour', true);
+ if ('' === $colour || !isset($states[$colour])) return false;
+ return 'taken' !== $states[$colour];
+}
+
 /** One row per request, with the controls that apply to it. */
-function ymc_captain_dash_request_row($post) {
+function ymc_captain_dash_request_row($post, $states = []) {
  $id     = $post->ID;
  $colour = (string) get_post_meta($id, 'ymc_colour', true);
  $status = (string) get_post_meta($id, 'ymc_status', true) ?: 'pending';
@@ -370,8 +718,19 @@ function ymc_captain_dash_request_row($post) {
  $isCap  = (string) get_post_meta($id, 'ymc_is_captain', true);
  list($email, $name) = ymc_captain_target($id);
 
- $bucket = 'cancelled' === $status ? 'cancelled' : ('yes' === $sent ? 'sent' : 'waiting');
- echo '<tr data-request data-bucket="' . esc_attr($bucket) . '"><td>' . esc_html(get_the_date('j M, g:i a', $post)) . '</td>';
+ $reason = ymc_captain_request_reason($id);
+ /* Four buckets, not three. A request the site turned away and one staff called
+    off both end here, but only one of them is anybody's decision, and lumping
+    them together is what made the screen read as if we had cancelled on him. */
+ if ('unsuccessful' === $status)   $buckets = ['unsuccessful'];
+ elseif ('cancelled' === $status)  $buckets = ['cancelled'];
+ else                              $buckets = ['yes' === $sent ? 'sent' : 'waiting'];
+ /* A row can sit in more than one list. Awaiting payment is not an alternative
+    to Link sent, it is a fact about a link that was sent, and moving the row out
+    of Link sent to say so would just hide it somewhere else. */
+ $owed = ymc_captain_dash_awaiting_payment($id, $states);
+ if ($owed) $buckets[] = 'unpaid';
+ echo '<tr data-request data-bucket="' . esc_attr(implode(' ', $buckets)) . '"><td>' . esc_html(get_the_date('j M, g:i a', $post)) . '</td>';
 
  /* The captain is the person the link is owed to, which is not always the one
     who filled the form in - showing only the submitter hid that entirely. */
@@ -381,11 +740,23 @@ function ymc_captain_dash_request_row($post) {
    ? '<span class="sub">requested by ' . esc_html((string) get_post_meta($id, 'ymc_name', true)) . '</span>'
    : '');
 
- printf('<td>%s%s</td>',
-  $colour ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($colour)) . '"></span>' : '',
-  esc_html($colour ?: '-'));
+ /* A refused request holds no colour, but the one it asked for is the point of
+    the row, so it shows with a note rather than a dash. */
+ $wanted = $colour ?: (string) get_post_meta($id, 'ymc_wanted_colour', true);
+ printf('<td>%s%s%s</td>',
+  $wanted ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($wanted)) . '"></span>' : '',
+  esc_html($wanted ?: '-'),
+  ('' === $colour && '' !== $wanted) ? '<span class="sub">asked for, not held</span>' : '');
 
- echo '<td><span class="request-status status-' . esc_attr($bucket) . '">' . esc_html(ucwords(str_replace('_', ' ', $status))) . '</span>';
+ echo '<td><span class="request-status status-' . esc_attr($buckets[0]) . '">'
+  . esc_html('unsuccessful' === $status ? 'Unsuccessful' : ucwords(str_replace('_', ' ', $status))) . '</span>';
+ if ('unsuccessful' === $status) echo '<span class="sub">not cancelled by staff</span>';
+ /* Sits beside the status rather than replacing it, because both are true: the
+    link really was sent, and the ticket really has not been bought. */
+ if ($owed) {
+  echo '<span class="request-status status-unpaid">Awaiting payment</span>'
+   . '<span class="sub">' . esc_html($colour) . ' is still only reserved &mdash; the captain ticket has not been bought</span>';
+ }
  if ($n = (int) get_post_meta($id, 'ymc_link_resent_count', true)) {
   $at = (string) get_post_meta($id, 'ymc_link_resent_at', true);
   echo '<span class="sub">link resent ' . esc_html($n > 1 ? $n . ' times' : 'once');
@@ -405,8 +776,17 @@ function ymc_captain_dash_request_row($post) {
  }
  echo '</td><td><div class="request-actions">';
 
- if ('cancelled' === $status) {
-  echo '<span class="sub">Cancelled</span>';
+ if (ymc_captain_request_is_closed($status)) {
+  /* The reason sits behind a disclosure rather than in the row: it is a
+     sentence, and a closed request is the one people stop and ask about. Older
+     records predate the reason being stored, so they say so instead of
+     offering an empty panel. */
+  printf('<details class="why"><summary>%s</summary><p>%s</p>%s</details>',
+   esc_html('unsuccessful' === $status ? 'Why it failed' : 'Why it was cancelled'),
+   esc_html($reason ?: 'No reason was recorded. This request closed before the dashboard started keeping them.'),
+   'unsuccessful' === $status
+    ? '<p class="muted">Nothing was sent to the captain beyond the message on the form. If they never came back, they still need a team.</p>'
+    : '');
  } else {
   if ('' !== $team) {
    printf('<form method="post" class="inline"><input type="hidden" name="ymc_dash_action" value="resend">'
@@ -446,19 +826,28 @@ function ymc_captain_dash_screen() {
   'order'          => 'DESC',
  ]);
 
+ /* Read once and handed down to every row. It calls Givebutter, so asking per
+    row would mean one request each time the table is drawn. */
+ $states = ymc_captain_colour_states();
+ $taken  = count(array_keys($states, 'taken', true));
+
  /* Counted from the records rather than the colour board: this answers "who is
     waiting on me", which is the question the screen exists for. */
  $waiting = 0;
  $done    = 0;
+ $unpaid  = 0;
  foreach ($requests as $post) {
-  if ('cancelled' === get_post_meta($post->ID, 'ymc_status', true)) continue;
-  if ('yes' === get_post_meta($post->ID, 'ymc_link_sent', true)) { $done++; } else { $waiting++; }
+  if (ymc_captain_request_is_closed(get_post_meta($post->ID, 'ymc_status', true))) continue;
+  if ('yes' !== get_post_meta($post->ID, 'ymc_link_sent', true)) { $waiting++; continue; }
+  $done++;
+  /* Sending the link is not the finish line. Until the captain buys their
+     ticket the colour is only reserved, and a request sitting here looked
+     settled while nobody had paid for it. */
+  if (ymc_captain_dash_awaiting_payment($post->ID, $states)) $unpaid++;
  }
- $states = ymc_captain_colour_states();
- $taken  = count(array_keys($states, 'taken', true));
 
  ymc_captain_dash_head('Team dashboard');
- printf('<header class="bar" id="overview"><div><p class="eyebrow">TOURNAMENT OPERATIONS</p><h1>Team dashboard</h1>'
+ printf('<header class="bar" id="overview"><div><p class="eyebrow">TOURNAMENT OPERATIONS</p><h1>Team registrations</h1>'
   . '<p>Your teams, captain requests, and next steps in one place.</p></div><div class="bar-actions"><a class="refresh-link" href="' . esc_url(ymc_captain_dash_url()) . '">Refresh overview</a>%s</div></header>',
   current_user_can('manage_options')
    ? '<a href="' . esc_url(admin_url('edit.php?post_type=ymc_captain_request')) . '">Open in WordPress</a>'
@@ -469,22 +858,24 @@ function ymc_captain_dash_screen() {
  printf('<div class="cards">'
   . '<a href="#requests" class="card"><span>Total requests</span><b>%d</b><small>Latest 200 submissions</small></a>'
   . '<a href="#requests" data-filter-shortcut="waiting" class="card attention"><span>Needs follow-up</span><b>%d</b><small>Registration link not sent</small></a>'
+  . '<a href="#requests" data-filter-shortcut="unpaid" class="card attention"><span>Awaiting payment</span><b>%d</b><small>Link sent, captain ticket not bought</small></a>'
   . '<a href="#requests" data-filter-shortcut="sent" class="card"><span>Links sent</span><b>%d</b><small>Captains have their next step</small></a>'
   . '<a href="#team-colors" class="card"><span>Paid colors</span><b>%d</b><small>Captain tickets purchased</small></a></div>',
-  count($requests), $waiting, $done, $taken);
+  count($requests), $waiting, $unpaid, $done, $taken);
 
- echo '<section id="requests"><div class="section-heading"><div><p class="eyebrow">CAPTAIN MANAGEMENT</p><h2>Team requests</h2></div><span class="sub">Newest requests first</span></div><div class="panel requests-panel">';
- echo '<div class="request-toolbar" hidden><div class="request-filters" role="group" aria-label="Filter requests"><button type="button" data-filter="all" aria-pressed="true">All requests</button><button type="button" data-filter="waiting" aria-pressed="false">Needs follow-up</button><button type="button" data-filter="sent" aria-pressed="false">Link sent</button><button type="button" data-filter="cancelled" aria-pressed="false">Cancelled</button></div><label class="search-label">Search requests<input id="request-search" type="search" placeholder="Name, email, color or team"></label></div><div class="request-table-scroll" tabindex="0" role="region" aria-label="Team requests">';
+ echo '<section id="requests"><div class="section-heading"><div><p class="eyebrow">CAPTAIN MANAGEMENT</p><h2>Team registrations</h2></div><span class="sub">Newest requests first</span></div><div class="panel requests-panel">';
+ echo '<div class="request-toolbar" hidden><div class="request-filters" role="group" aria-label="Filter requests"><button type="button" data-filter="all" aria-pressed="true">All requests</button><button type="button" data-filter="waiting" aria-pressed="false">Needs follow-up</button><button type="button" data-filter="sent" aria-pressed="false">Link sent</button><button type="button" data-filter="unpaid" aria-pressed="false">Awaiting payment</button><button type="button" data-filter="unsuccessful" aria-pressed="false">Unsuccessful</button><button type="button" data-filter="cancelled" aria-pressed="false">Cancelled by staff</button></div><label class="search-label">Search requests<input id="request-search" type="search" placeholder="Name, email, color or team"></label></div><div class="request-table-scroll" tabindex="0" role="region" aria-label="Team requests">';
  if (!$requests) {
   echo '<p class="empty">No team requests yet. They will appear here as captains submit the form.</p>';
  } else {
   echo '<table><thead><tr><th>Submitted</th><th>Captain</th><th>Color</th>'
    . '<th>Status</th><th>Team</th><th>Actions</th></tr></thead><tbody>';
-  foreach ($requests as $post) { ymc_captain_dash_request_row($post); }
+  foreach ($requests as $post) { ymc_captain_dash_request_row($post, $states); }
   echo '</tbody></table>';
  }
  echo '</div><p class="filter-empty empty" hidden>No requests match. Try another name or filter.</p><div class="table-footer"><span id="request-count" role="status">' . count($requests) . ' requests</span><span>Showing up to 200 most recent requests</span></div></div></section>';
 
+ ymc_captain_dash_registration_board();
  ymc_captain_dash_colour_board();
  ymc_captain_dash_foot();
 }
@@ -542,7 +933,11 @@ function ymc_captain_dash_route() {
  }
 
  ymc_captain_dash_handle_action();
- ymc_captain_dash_screen();
+ if ('team-requests' === ymc_captain_dash_view()) {
+  ymc_captain_dash_team_requests_screen();
+ } else {
+  ymc_captain_dash_screen();
+ }
  exit;
 }
 /* Early enough to answer before WordPress decides the URL is a 404. */

@@ -21,3 +21,15 @@ html{scroll-behavior:smooth;scroll-padding-top:28px}body{padding:0;background:va
 .requests-panel .request-actions button.danger:hover{background:#fff4f4;border-color:#c98686;opacity:1}
 .requests-panel .request-actions details.send{margin:0}
 .request-actions .sub{margin:0}
+.status-unsuccessful{color:#8a3324;background:#fbeeea}
+details.why{margin:0}
+details.why summary{font-size:11px;font-weight:600;color:var(--ink);cursor:pointer;display:inline-block;border:1px solid #e3e0ea;border-radius:6px;padding:6px 11px}
+details.why summary:hover{background:#faf9fc}
+details.why[open] summary{margin-bottom:8px}
+details.why p{font-size:11px;line-height:1.6;margin:0 0 6px;color:var(--ink)}
+details.why p.muted{color:var(--mute)}
+.status-unpaid{color:#8a5a00;background:#fdf2dc;display:block;width:fit-content;margin-top:6px}
+.dash-sidebar nav .nav-main{font-weight:650}
+.dash-sidebar nav .nav-parts{display:block;margin:2px 0 10px}
+.dash-sidebar nav .nav-part{font-size:12px;padding-left:22px;opacity:.78}
+.dash-sidebar nav .nav-part:hover{opacity:1}

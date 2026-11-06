@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.4.0
+ * Version: 1.7.0
  */
 if (!defined('ABSPATH')) exit;
 
@@ -79,6 +79,33 @@ function ymc_captain_colour_hex($colour) {
 /** Option name holding a colour claim. One row per colour; its existence is the claim. */
 function ymc_captain_colour_key($colour) {
  return 'ymc_cap_colour_'.sanitize_key($colour);
+}
+
+/** Option name holding a staff tag for a colour. Absent means no tag. */
+function ymc_captain_tag_key($colour) {
+ return 'ymc_cap_tag_'.sanitize_key($colour);
+}
+
+/**
+ * A staff tag forcing a colour to read taken or reserved, or '' for none.
+ *
+ * Captains keep buying the plain player ticket instead of their colour's
+ * "(Captain Only)" one. Nothing in the ticket then names a colour, so the site
+ * cannot tell the colour has gone and happily offers it to the next captain.
+ * This lets staff say so by hand.
+ */
+function ymc_captain_colour_tag($colour) {
+ $tag = (string) get_option(ymc_captain_tag_key($colour), '');
+ return in_array($tag, ['taken', 'reserved'], true) ? $tag : '';
+}
+
+/** Sets or, with any other value, clears a colour's staff tag. */
+function ymc_captain_set_colour_tag($colour, $tag) {
+ if (!in_array($tag, ['taken', 'reserved'], true)) {
+  delete_option(ymc_captain_tag_key($colour));
+  return;
+ }
+ update_option(ymc_captain_tag_key($colour), $tag, false);
 }
 
 /**
@@ -198,10 +225,14 @@ function ymc_captain_colour_states() {
      promised the same colour is worse than one waiting - but unlike taken it
      can be released. */
   $held = ('' !== ymc_captain_colour_holder($colour));
+  $tag  = ymc_captain_colour_tag($colour);
   /* Adding a colour in Settings is not enough on its own: without a ticket to
      buy there is nothing for the captain to do with it. One already spoken for
      stays listed, so a ticket withdrawn after the fact does not hide it. */
-  if (!$held && null !== $tickets && !in_array($colour, $tickets, true)) continue;
+  if ('' === $tag && !$held && null !== $tickets && !in_array($colour, $tickets, true)) continue;
+  /* A staff tag outranks the claim but never a sale: it exists to cover the
+     case the ticket data cannot see, not to contradict money already taken. */
+  if ('' !== $tag) { $states[$colour] = $tag; continue; }
   $states[$colour] = $held ? 'reserved' : 'free';
  }
  return $states;
@@ -266,13 +297,13 @@ add_action('init', function () {
 add_action('add_meta_boxes', function () {
  add_meta_box('ymc_captain_request_detail','Request', function ($post) {
   echo '<pre style="white-space:pre-wrap;margin:0;font-family:inherit;font-size:14px;line-height:1.6">'.esc_html($post->post_content).'</pre>';
-  $rows = ['Captain'=>'ymc_captain_name','Captain email'=>'ymc_captain_email','Submitted by themselves'=>'ymc_is_captain','Color held'=>'ymc_colour','Status'=>'ymc_status','Team name'=>'ymc_team_name','Team link'=>'ymc_team_url','Team link sent'=>'ymc_link_sent','Team ID'=>'ymc_team_id','Rename notices sent'=>'ymc_rename_count','Notification'=>'ymc_notification_sent','Sent to'=>'ymc_notification_recipient','Confirmation to captain'=>'ymc_confirmation_sent'];
+  $rows = ['Captain'=>'ymc_captain_name','Captain email'=>'ymc_captain_email','Submitted by themselves'=>'ymc_is_captain','Color held'=>'ymc_colour','Color asked for'=>'ymc_wanted_colour','Status'=>'ymc_status','Why it closed'=>'ymc_outcome_reason','Team name'=>'ymc_team_name','Team link'=>'ymc_team_url','Team link sent'=>'ymc_link_sent','Team ID'=>'ymc_team_id','Rename notices sent'=>'ymc_rename_count','Notification'=>'ymc_notification_sent','Sent to'=>'ymc_notification_recipient','Confirmation to captain'=>'ymc_confirmation_sent'];
   echo '<table class="widefat striped" style="margin-top:16px"><tbody>';
   foreach ($rows as $label=>$meta) printf('<tr><td style="width:200px"><strong>%s</strong></td><td>%s</td></tr>', esc_html($label), esc_html(get_post_meta($post->ID,$meta,true) ?: '-'));
   echo '</tbody></table>';
   $colour = (string) get_post_meta($post->ID,'ymc_colour',true);
   $status = (string) get_post_meta($post->ID,'ymc_status',true);
-  if ($colour && 'cancelled' !== $status) {
+  if ($colour && !ymc_captain_request_is_closed($status)) {
    echo '<form method="post" style="margin-top:16px">';
    wp_nonce_field('ymc_captain_release','ymc_release_nonce');
    echo '<input type="hidden" name="ymc_release_request" value="'.esc_attr($post->ID).'">';
@@ -281,7 +312,7 @@ add_action('add_meta_boxes', function () {
   }
   /* The poll only matches a team named after the captain. Anything else has to
      be sent by hand, so the way to do that lives next to the record. */
-  if ('yes' !== get_post_meta($post->ID,'ymc_link_sent',true) && 'cancelled' !== $status) {
+  if ('yes' !== get_post_meta($post->ID,'ymc_link_sent',true) && !ymc_captain_request_is_closed($status)) {
    echo '<form method="post" style="margin-top:20px;padding-top:16px;border-top:1px solid #dcdcde">';
    wp_nonce_field('ymc_captain_send_link','ymc_send_link_nonce');
    echo '<input type="hidden" name="ymc_send_link_request" value="'.esc_attr($post->ID).'">';
@@ -307,6 +338,14 @@ add_action('admin_init', function () {
     record would free a colour a later captain is relying on. */
  if ($colour && ymc_captain_colour_holder($colour) === (string) $id) ymc_captain_release_colour($colour);
  update_post_meta($id,'ymc_status','cancelled');
+ /* Who and when, not just that it happened: a cancelled request is the one thing
+    on the dashboard somebody will be asked to account for later. */
+ update_post_meta($id,'ymc_outcome_reason', sprintf(
+  'Cancelled by %s on %s%s.',
+  wp_get_current_user()->display_name ?: 'a staff member',
+  date_i18n('j M Y, g:i a'),
+  $colour ? ', releasing '.$colour : ''
+ ));
  wp_safe_redirect(add_query_arg('ymc_released','1',get_edit_post_link($id,'raw')));
  exit;
 });
@@ -386,6 +425,24 @@ function ymc_captain_link_email($name, $team, $url, $colour = '') {
  * the (Captain Only) ticket - so the link has to reach them, not the person who
  * filled in the form. Older requests have neither field and fall back.
  */
+/**
+ * True when a request is finished and nothing more is owed on it.
+ *
+ * Two statuses close a request and they do not mean the same thing. 'cancelled'
+ * is staff deciding to stop; 'unsuccessful' is the site turning the request away
+ * at the moment it was made, with nobody involved. Everything asking "is this
+ * still open?" has to accept both, or a refused request keeps offering Resend
+ * and Cancel buttons for a team that was never created.
+ */
+function ymc_captain_request_is_closed($status) {
+ return in_array((string) $status, ['cancelled', 'unsuccessful'], true);
+}
+
+/** The sentence explaining why a request closed, or '' while it is still open. */
+function ymc_captain_request_reason($id) {
+ return (string) get_post_meta($id, 'ymc_outcome_reason', true);
+}
+
 function ymc_captain_target($id) {
  $email = sanitize_email((string) get_post_meta($id,'ymc_captain_email',true));
  if (is_email($email)) return [$email, (string) get_post_meta($id,'ymc_captain_name',true)];
@@ -696,6 +753,22 @@ add_action('admin_init', function () {
  exit;
 });
 
+/* Tagging runs before the Settings screen renders so the table it draws is
+   already the new one, rather than showing the previous state until a reload. */
+add_action('admin_init', function () {
+ if (empty($_POST['ymc_tag_colour'])) return;
+ if (!current_user_can('manage_options')) return;
+ check_admin_referer('ymc_captain_tag','ymc_tag_nonce');
+ $colour = sanitize_text_field(wp_unslash($_POST['ymc_tag_colour']));
+ /* Only a colour on the list: a stale form must not create a tag for a colour
+    that no longer exists, which nothing would ever show or clear. */
+ if (!in_array($colour, ymc_captain_colours(), true)) return;
+ ymc_captain_set_colour_tag($colour, sanitize_text_field(wp_unslash($_POST['ymc_tag_state'] ?? '')));
+ wp_safe_redirect(add_query_arg('ymc_tagged', rawurlencode($colour),
+  admin_url('edit.php?post_type=ymc_captain_request&page=ymc-captain-requests')));
+ exit;
+});
+
 add_action('admin_menu', function () {
  add_submenu_page('edit.php?post_type=ymc_captain_request','Captain Request Settings','Settings','manage_options','ymc-captain-requests', function () {
   if (!current_user_can('manage_options')) return;
@@ -706,27 +779,63 @@ add_action('admin_menu', function () {
    is_email((string) get_option('ymc_captain_request_recipient','')) ? '' : ' (the built-in default, because no address is set)');
   /* Read from the same source as the public form. Showing the stored hold
      instead made a colour someone had paid for read as merely reserved. */
-  $states  = ymc_captain_colour_states();
-  $paid    = (array) ymc_captain_paid_colours();
-  $tickets = ymc_captain_ticket_colours();
-  echo '<h2>Colors</h2><table class="widefat striped" style="max-width:720px"><thead><tr><th>Color</th><th>Status</th><th>Detail</th></tr></thead><tbody>';
+  $states    = ymc_captain_colour_states();
+  $paid      = (array) ymc_captain_paid_colours();
+  $paidNames = ymc_captain_paid_colour_names();
+  $tickets   = ymc_captain_ticket_colours();
+  if (isset($_GET['ymc_tagged'])) {
+   printf('<div class="notice notice-success is-dismissible"><p>%s updated.</p></div>',
+    esc_html(sanitize_text_field(wp_unslash($_GET['ymc_tagged']))));
+  }
+  echo '<h2>Colors</h2><p class="description" style="max-width:720px">Set a color by hand when the site cannot work it out itself &mdash; '
+   . 'most often when a captain paid with the plain &ldquo;Player&rdquo; ticket instead of their color&rsquo;s &ldquo;(Captain Only)&rdquo; one, '
+   . 'which leaves nothing in Givebutter naming the color. <strong>Auto</strong> hands the color back to the site to decide. '
+   . 'A purchased color always reads Taken and cannot be overridden.</p>';
+  echo '<table class="widefat striped" style="max-width:860px"><thead><tr><th>Color</th><th>Status</th><th>Detail</th><th style="width:220px">Set by hand</th></tr></thead><tbody>';
   foreach (ymc_captain_colours() as $colour) {
+   $tag  = ymc_captain_colour_tag($colour);
+   $sold = null !== $paidNames && in_array($colour, $paidNames, true);
+
    if (!isset($states[$colour])) {
-    printf('<tr><td>%s</td><td>&mdash;</td><td class="description">Not shown: no &ldquo;(Captain Only)&rdquo; ticket for this color in Givebutter.</td></tr>', esc_html($colour));
-    continue;
-   }
-   if ('taken' === $states[$colour]) {
+    $status = '&mdash;';
+    $detail = 'Not shown: no &ldquo;(Captain Only)&rdquo; ticket for this color in Givebutter.';
+   } elseif ('taken' === $states[$colour]) {
     $status = '<strong style="color:#1d6f42">Taken</strong>';
-    $detail = 'Captain ticket purchased' . (!empty($paid[$colour]) ? ' by ' . esc_html($paid[$colour]) : '');
+    $detail = $sold
+     ? 'Captain ticket purchased' . (!empty($paid[$colour]) ? ' by ' . esc_html($paid[$colour]) : '')
+     : 'Marked taken by staff';
    } elseif ('reserved' === $states[$colour]) {
     $holder = ymc_captain_colour_holder($colour);
     $status = '<strong style="color:#8a6d1f">Reserved</strong>';
-    $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; request #' . esc_html($holder) . ', awaiting payment';
+    if ('reserved' === $tag) {
+     $detail = 'Marked reserved by staff';
+    } else {
+     $detail = 'reserved' === $holder ? 'Held manually' : 'Requested &mdash; request #' . esc_html($holder) . ', awaiting payment';
+    }
    } else {
     $status = 'Available';
     $detail = '';
    }
-   printf('<tr><td>%s</td><td>%s</td><td class="description">%s</td></tr>', esc_html($colour), $status, $detail);
+
+   /* A sold colour gets no control: there is nothing a tag could usefully say
+      about money already taken, and a disabled row says so more clearly than
+      a menu that silently refuses to take effect. */
+   if ($sold) {
+    $control = '<span class="description">Paid &mdash; locked</span>';
+   } else {
+    $options = '';
+    foreach (['' => 'Auto', 'reserved' => 'Reserved', 'taken' => 'Taken'] as $value => $label) {
+     $options .= sprintf('<option value="%s"%s>%s</option>', esc_attr($value), selected($tag, $value, false), esc_html($label));
+    }
+    $control = '<form method="post" style="display:flex;gap:6px;align-items:center">'
+     . wp_nonce_field('ymc_captain_tag', 'ymc_tag_nonce', true, false)
+     . '<input type="hidden" name="ymc_tag_colour" value="' . esc_attr($colour) . '">'
+     . '<select name="ymc_tag_state">' . $options . '</select>'
+     . get_submit_button('Apply', 'secondary small', 'submit', false)
+     . '</form>';
+   }
+   printf('<tr><td>%s</td><td>%s</td><td class="description">%s</td><td>%s</td></tr>',
+    esc_html($colour), $status, $detail, $control);
   }
   echo '</tbody></table>';
   if (null === $tickets) echo '<p class="description">Givebutter&rsquo;s ticket list could not be read just now, so every color in the list is being offered.</p>';
@@ -1036,6 +1145,57 @@ add_shortcode('ymc_captain_request', function () {
  <?php return ob_get_clean();
 });
 
+/** Reads one "Label: value" line out of a request body, or '' if it is not there. */
+function ymc_captain_body_field($body, $label) {
+ return preg_match('/^'.preg_quote($label,'/').':\s*(.+)$/m', (string) $body, $m) ? trim($m[1]) : '';
+}
+
+/**
+ * One-off repair of requests refused before 1.6.0.
+ *
+ * Until now a refusal was stored as 'cancelled' with no reason and no contact
+ * details, so the dashboard showed a row of dashes that read as if staff had
+ * called the captain off. Everything needed is still in the body, which is
+ * written before the colour is ever claimed, so it can be put back.
+ */
+add_action('init', function () {
+ if ('1.6.0' === get_option('ymc_captain_repaired', '')) return;
+ /* Marked done first. A record that trips this up must not re-run the repair on
+    every page load for the rest of the site's life. */
+ update_option('ymc_captain_repaired', '1.6.0', false);
+
+ $posts = get_posts([
+  'post_type'      => 'ymc_captain_request',
+  'post_status'    => ['publish', 'draft', 'pending', 'private'],
+  'posts_per_page' => -1,
+ ]);
+ foreach ($posts as $post) {
+  if ('cancelled' !== get_post_meta($post->ID, 'ymc_status', true)) continue;
+  /* The renamed title is the only mark a refusal ever left. A request staff
+     cancelled by hand keeps its original title and must not be touched. */
+  if (false === strpos($post->post_title, 'unavailable')) continue;
+
+  $colour = ymc_captain_body_field($post->post_content, 'Color');
+  $name   = ymc_captain_body_field($post->post_content, 'Submitted by');
+  $email  = ymc_captain_body_field($post->post_content, 'Email');
+  $capN   = ymc_captain_body_field($post->post_content, 'Captain');
+  $capE   = ymc_captain_body_field($post->post_content, 'Captain email');
+
+  update_post_meta($post->ID, 'ymc_status', 'unsuccessful');
+  if ($colour) update_post_meta($post->ID, 'ymc_wanted_colour', $colour);
+  if ($name && '' === (string) get_post_meta($post->ID, 'ymc_name', true))  update_post_meta($post->ID, 'ymc_name', $name);
+  if ($email && '' === (string) get_post_meta($post->ID, 'ymc_email', true)) update_post_meta($post->ID, 'ymc_email', $email);
+  if ($capN && '' === (string) get_post_meta($post->ID, 'ymc_captain_name', true))  update_post_meta($post->ID, 'ymc_captain_name', $capN);
+  if ($capE && '' === (string) get_post_meta($post->ID, 'ymc_captain_email', true)) update_post_meta($post->ID, 'ymc_captain_email', $capE);
+  if ('' === ymc_captain_request_reason($post->ID)) {
+   update_post_meta($post->ID, 'ymc_outcome_reason', sprintf(
+    '%s was already taken when this form was sent, so the request could not go through. No team was created and no email was sent. They were shown the updated color list and asked to pick another.',
+    $colour ?: 'The color asked for'
+   ));
+  }
+ }
+});
+
 function ymc_handle_captain_request() {
  $redirect = home_url('/register-a-team/');
  $fail = function($reason = '') use ($redirect) {
@@ -1077,25 +1237,39 @@ function ymc_handle_captain_request() {
  $id = wp_insert_post(['post_type'=>'ymc_captain_request','post_status'=>'private','post_title'=>$name.' — '.$colour,'post_content'=>$body],true);
  if (is_wp_error($id) || !$id) $fail();
 
- /* Claimed after the record exists so the claim can name the request holding it.
-    If someone beat them to it the record is cancelled rather than deleted, so a
-    near-miss is still visible to staff. */
- if (!ymc_captain_claim_colour($colour,$id)) {
-  update_post_meta($id,'ymc_status','cancelled');
-  update_post_meta($id,'ymc_colour','');
-  wp_update_post(['ID'=>$id,'post_title'=>$name.' — color unavailable']);
-  $fail('taken');
- }
- update_post_meta($id,'ymc_colour',$colour);
- update_post_meta($id,'ymc_status','pending');
- /* Stored as meta as well as in the body: the team-ready email needs them back
-    out again, and parsing them from the text would break the moment the body
-    wording changes. */
+ /* Written before the colour is claimed, because a refused request is still a
+    person staff may want to call back. Writing them afterwards left the turned
+    away record showing nothing but dashes, which is how it first came up. */
  update_post_meta($id,'ymc_name',$name);
  update_post_meta($id,'ymc_email',$email);
  update_post_meta($id,'ymc_is_captain',$isCap);
  update_post_meta($id,'ymc_captain_name',$capName);
  update_post_meta($id,'ymc_captain_email',$capEmail);
+ /* The colour they asked for, kept apart from the one they hold. On a refusal
+    the hold is empty but the ask is the whole story. */
+ update_post_meta($id,'ymc_wanted_colour',$colour);
+
+ /* Claimed after the record exists so the claim can name the request holding it.
+    If someone beat them to it the record is closed rather than deleted, so a
+    near-miss is still visible to staff. */
+ if (!ymc_captain_claim_colour($colour,$id)) {
+  /* Not 'cancelled': nobody cancelled anything. The site refused the request on
+     the spot because the colour had gone, and staff reading the dashboard need
+     to tell that apart from a decision one of them made. */
+  update_post_meta($id,'ymc_status','unsuccessful');
+  update_post_meta($id,'ymc_colour','');
+  $heldBy = ymc_captain_colour_holder($colour);
+  $other  = ($heldBy && (string) $heldBy !== (string) $id) ? get_post_meta($heldBy,'ymc_captain_name',true) : '';
+  update_post_meta($id,'ymc_outcome_reason', sprintf(
+   '%s was already taken when this form was sent, so the request could not go through.%s No team was created and no email was sent. They were shown the updated color list and asked to pick another.',
+   $colour,
+   $other ? ' It is held by '.$other.'.' : ''
+  ));
+  wp_update_post(['ID'=>$id,'post_title'=>$name.' — '.$colour.' unavailable']);
+  $fail('taken');
+ }
+ update_post_meta($id,'ymc_colour',$colour);
+ update_post_meta($id,'ymc_status','pending');
  if ($throttled) set_transient($key,1,60);
 
  $recipient = ymc_captain_request_recipient();

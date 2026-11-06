@@ -8,7 +8,7 @@
  let selected='all';
  function filter(){
   const query=search.value.trim().toLowerCase();let count=0;
-  rows.forEach(row=>{row.hidden=!(selected==='all'||row.dataset.bucket===selected)||!row.textContent.toLowerCase().includes(query);if(!row.hidden)count++;});
+  rows.forEach(row=>{row.hidden=!(selected==='all'||row.dataset.bucket.split(' ').includes(selected))||!row.textContent.toLowerCase().includes(query);if(!row.hidden)count++;});
   buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===selected)));
   document.querySelector('#request-count').textContent=count+' of '+rows.length+' requests';
   document.querySelector('.filter-empty').hidden=count!==0||rows.length===0;
@@ -16,6 +16,6 @@
  buttons.forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.filter;filter();}));
  document.querySelectorAll('[data-filter-shortcut]').forEach(a=>a.addEventListener('click',()=>{selected=a.dataset.filterShortcut;search.value='';filter();}));
  search.addEventListener('input',filter);
- document.querySelectorAll('.dash-sidebar nav a').forEach(a=>a.addEventListener('click',()=>{document.querySelectorAll('.dash-sidebar nav a').forEach(n=>n.classList.toggle('active',n===a));}));
+ document.querySelectorAll('.dash-sidebar nav .nav-part').forEach(a=>a.addEventListener('click',()=>{document.querySelectorAll('.dash-sidebar nav .nav-part').forEach(n=>n.classList.toggle('active',n===a));}));
  filter();
 })();
