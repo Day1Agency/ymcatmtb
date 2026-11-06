@@ -417,6 +417,13 @@ function ymc_captain_dash_classify_ticket($ticket) {
  $where = 'Adult';
  $ticket = is_array($ticket) ? $ticket : [];
 
+ /* Staff rehearse on the real tickets too, so a clean title is not enough. Those
+    runs are always bought under a name or address saying so, which is the only
+    thing distinguishing them. Whole word only: it must not swallow a Testa. */
+ $who = trim((string) ($ticket['first_name'] ?? '') . ' ' . (string) ($ticket['last_name'] ?? '')
+  . ' ' . (string) ($ticket['email'] ?? ''));
+ if (preg_match('/\b(test|testing|sample|dummy)\b/i', $who)) return null;
+
  /* What they said they are playing on. On a captain ticket the colour is in the
     title; on a player ticket it is the only place the colour appears at all. */
  $says = ymc_captain_ticket_answer($ticket, 'which team');
@@ -537,9 +544,10 @@ function ymc_captain_dash_registration_board() {
  $adrift   = array_filter($data['people'], function ($p) { return $p['adrift']; });
  $mixedUp  = array_filter($data['people'], function ($p) { return $p['mislabelled']; });
 
- printf('<div class="panel"><p class="sub reg-summary">%d registered &mdash; %d captains and %d players.%s</p>',
-  count($data['people']), count($captains), count($players),
-  $mixedUp ? ' <strong>' . count($mixedUp) . ' bought the wrong ticket.</strong>' : '');
+ $count = function ($n, $word) { return $n . ' ' . $word . (1 === $n ? '' : 's'); };
+ printf('<div class="panel"><p class="panel-note top">%d registered &mdash; %s and %s.%s</p>',
+  count($data['people']), $count(count($captains), 'captain'), $count(count($players), 'player'),
+  $mixedUp ? ' <strong>' . esc_html($count(count($mixedUp), 'person')) . ' bought the wrong ticket.</strong>' : '');
 
  echo '<table><thead><tr><th>Team</th><th>Registered for this team</th><th>On the Givebutter team</th><th>Raised</th></tr></thead><tbody>';
  foreach ($data['teams'] as $team) {
@@ -553,7 +561,7 @@ function ymc_captain_dash_registration_board() {
    esc_html(number_format($team['raised'])));
  }
  echo '</tbody></table>'
-  . '<p class="sub">&ldquo;Registered for this team&rdquo; counts everyone, captain included, who named this color on their registration form. '
+  . '<p class="panel-note foot">&ldquo;Registered for this team&rdquo; counts everyone, captain included, who named this color on their registration form. '
   . '&ldquo;On the Givebutter team&rdquo; counts who has actually been added there. '
   . 'When the two differ, somebody has paid but still needs adding to their team.</p></div>';
 
@@ -579,12 +587,12 @@ function ymc_captain_dash_registration_board() {
     the standing example: Avi paid for it and Dany Donaty holds the page, so
     both are accounted for and the flag still fires. */
  if ($adrift) {
-  echo '<p class="sub">&ldquo;Not on a team&rdquo; means Givebutter has no fundraiser page under that email. '
+  echo '<p class="panel-note foot">&ldquo;Not on a team&rdquo; means Givebutter has no fundraiser page under that email. '
    . 'Usually it means they still need adding to a team. It can also mean someone else set the team up for them, '
    . 'so check the team before chasing anyone.</p>';
  }
  if ($mixedUp) {
-  echo '<p class="sub">&ldquo;Captain on a player ticket&rdquo; means they said they are the captain but bought the plain player ticket, '
+  echo '<p class="panel-note foot">&ldquo;Captain on a player ticket&rdquo; means they said they are the captain but bought the plain player ticket, '
    . 'so their color never sold and the website still thinks it is free. Tag that color by hand under Team colors.</p>';
  }
  echo '</div></section>';
