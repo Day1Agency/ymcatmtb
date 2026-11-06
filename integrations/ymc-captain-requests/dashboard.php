@@ -560,6 +560,30 @@ function ymc_captain_dash_registrations() {
  return $data;
 }
 
+/**
+ * The filter pills and search box that sit at the top of a table.
+ *
+ * One shape for every table on the screen. The request table had this and the
+ * others did not, which made them look like different kinds of thing when they
+ * are all just lists of rows.
+ *
+ * Hidden until the script shows it: the controls do nothing without JavaScript,
+ * and a dead row of buttons is worse than none.
+ */
+function ymc_captain_dash_toolbar($group, $filters, $label, $placeholder) {
+ $buttons = '';
+ $first   = true;
+ foreach ($filters as $value => $text) {
+  $buttons .= sprintf('<button type="button" data-filter="%s" aria-pressed="%s">%s</button>',
+   esc_attr($value), $first ? 'true' : 'false', esc_html($text));
+  $first = false;
+ }
+ return sprintf('<div class="request-toolbar" data-toolbar="%s" hidden>'
+  . '<div class="request-filters" role="group" aria-label="%s">%s</div>'
+  . '<label class="search-label">%s<input type="search" data-search placeholder="%s"></label></div>',
+  esc_attr($group), esc_attr($label), $buttons, esc_html($label), esc_attr($placeholder));
+}
+
 /** Everyone who registered in Givebutter, and how full each team is. */
 function ymc_captain_dash_registration_board() {
  $data = ymc_captain_dash_registrations();
@@ -573,38 +597,36 @@ function ymc_captain_dash_registration_board() {
  }
 
 
- /* Two views of the same people, so they share the space rather than making one
-    scroll past the other. Without JavaScript both panels simply show. */
- echo '<div class="reg-tabs" role="tablist" aria-label="Registrations" hidden>'
-  . '<button type="button" role="tab" data-reg-tab="teams" aria-selected="true">Teams</button>'
-  . '<button type="button" role="tab" data-reg-tab="players" aria-selected="false">Players breakdown</button>'
-  . '</div>';
+ /* Two views of the same people, in one panel with one toolbar, so they share
+    the space rather than one scrolling past the other. Without JavaScript the
+    toolbar stays hidden and both tables simply show. */
+ echo '<div class="panel">'
+  . ymc_captain_dash_toolbar('reg', ['teams' => 'Teams', 'players' => 'Players breakdown'],
+    'Search registrations', 'Name, email, color or team');
 
- echo '<div class="panel" data-reg-panel="teams">';
+ echo '<div data-reg-panel="teams"><div class="table-scroll">';
  echo '<table><thead><tr><th>Team</th><th>Players</th><th>Raised</th></tr></thead><tbody>';
  foreach ($data['teams'] as $team) {
   $dot = $team['colour'] ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($team['colour'])) . '"></span>' : '';
-  printf('<tr><td>%s%s</td><td>%s</td><td class="muted">$%s</td></tr>',
+  printf('<tr data-row><td>%s%s</td><td>%s</td><td class="muted">$%s</td></tr>',
    $dot,
    $team['url'] ? '<a href="' . esc_url($team['url']) . '" target="_blank" rel="noopener">' . esc_html($team['name']) . '</a>' : esc_html($team['name']),
    /* Nobody at all is the thing worth noticing, so it says so in words. */
    0 === $team['signed_up'] ? '<span class="muted">Nobody yet</span>' : esc_html($team['signed_up'] . (1 === $team['signed_up'] ? ' player' : ' players')),
    esc_html(number_format($team['raised'])));
  }
- echo '</tbody></table></div>';
+ echo '</tbody></table></div></div>';
 
- /* No heading of its own: the tab above is already called this, and repeating it
+ /* No heading of its own: the tab is already called this, and repeating it
     pushes the table it describes further down the screen. */
- echo '<div class="panel-heading" data-reg-panel="players">'
-  . '<p class="sub">Every person in those teams &mdash; what they bought, which color they play for, '
-  . 'and anything that still needs doing.</p></div>';
-
- echo '<div class="panel" data-reg-panel="players"><table><thead><tr><th>Registered</th><th>Name</th><th>Bought</th><th>Playing for</th><th>Notes</th></tr></thead><tbody>';
+ echo '<div data-reg-panel="players"><p class="panel-note top">Every person in those teams &mdash; what they bought, '
+  . 'which color they play for, and anything that still needs doing.</p><div class="table-scroll">'
+  . '<table><thead><tr><th>Registered</th><th>Name</th><th>Bought</th><th>Playing for</th><th>Notes</th></tr></thead><tbody>';
  if (!$data['people']) {
   echo '<tr><td colspan="5"><p class="empty">Nobody has registered yet. Test tickets are not counted here.</p></td></tr>';
  }
  foreach ($data['people'] as $p) {
-  printf('<tr><td>%s</td><td><strong>%s</strong><span class="sub">%s</span></td><td>%s%s</td><td>%s</td><td>%s</td></tr>',
+  printf('<tr data-row><td>%s</td><td><strong>%s</strong><span class="sub">%s</span></td><td>%s%s</td><td>%s</td><td>%s</td></tr>',
    esc_html($p['date'] ? mysql2date('j M, g:i a', $p['date']) : '-'),
    esc_html($p['name'] ?: '-'), esc_html($p['email']),
    /* What the ticket was, not what they turned out to be: staff looking for the
@@ -616,7 +638,7 @@ function ymc_captain_dash_registration_board() {
     : '<span class="muted">Not given</span>',
    ymc_captain_dash_person_note($p));
  }
- echo '</tbody></table></div></section>';
+ echo '</tbody></table></div></div><p class="filter-empty empty" hidden>Nothing matches that search.</p></div></section>';
 }
 
 /** The one thing worth saying about a registration, or nothing. */
@@ -679,14 +701,14 @@ function ymc_captain_dash_team_requests_screen() {
  echo '<table><thead><tr><th>Asked</th><th>Name</th><th>Phone</th><th>Staff emailed</th></tr></thead><tbody>';
  foreach ($asks as $ask) {
   /* Read back out of the body, which is where this form writes them. */
-  printf('<tr><td>%s</td><td><strong>%s</strong><span class="sub">%s</span></td><td class="muted">%s</td><td class="muted">%s</td></tr>',
+  printf('<tr data-row><td>%s</td><td><strong>%s</strong><span class="sub">%s</span></td><td class="muted">%s</td><td class="muted">%s</td></tr>',
    esc_html(get_the_date('j M, g:i a', $ask)),
    esc_html($ask->post_title),
    esc_html(ymc_captain_body_field($ask->post_content, 'Email')),
    esc_html(ymc_captain_body_field($ask->post_content, 'Phone') ?: '-'),
    'yes' === get_post_meta($ask->ID, 'ymc_notification_sent', true) ? 'Sent' : 'Not sent');
  }
- echo '</tbody></table></div></section>';
+ echo '</tbody></table></div></div><p class="filter-empty empty" hidden>Nothing matches that search.</p></div></section>';
  ymc_captain_dash_foot();
 }
 
@@ -695,12 +717,21 @@ function ymc_captain_dash_colour_board() {
  $states  = ymc_captain_colour_states();
  $paid    = (array) ymc_captain_paid_colours();
  $tickets = ymc_captain_ticket_colours();
- echo '<section id="team-colors" class="color-section"><div class="section-heading"><div><p class="eyebrow">TEAM AVAILABILITY</p><h2>Team colors</h2><p class="sub">Available, reserved, and paid captain colors.</p></div></div><div class="panel color-panel"><table><thead><tr>'
+ echo '<section id="team-colors" class="color-section"><div class="section-heading"><div><p class="eyebrow">TEAM AVAILABILITY</p><h2>Team colors</h2><p class="sub">Available, reserved, and paid captain colors.</p></div></div><div class="panel color-panel">'
+  . ymc_captain_dash_toolbar('colour', [
+    'all'      => 'All colors',
+    'free'     => 'Available',
+    'reserved' => 'Reserved',
+    'taken'    => 'Taken',
+   ], 'Search colors', 'Color or who holds it')
+  . '<div class="table-scroll"><table><thead><tr>'
   . '<th>Color</th><th>Status</th><th>Detail</th></tr></thead><tbody>';
  foreach (ymc_captain_colours() as $colour) {
   $dot = '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($colour)) . '"></span>';
   if (!isset($states[$colour])) {
-   printf('<tr><td>%s%s</td><td><span class="tag off">Not offered</span></td>'
+   /* Bucket "off" belongs to no tab, so a colour with no ticket shows only
+      under All rather than padding out whichever list it least belongs in. */
+   printf('<tr data-colour data-bucket="off"><td>%s%s</td><td><span class="tag off">Not offered</span></td>'
     . '<td class="muted">No &ldquo;(Captain Only)&rdquo; ticket for this color exists in Givebutter.</td></tr>',
     $dot, esc_html($colour));
    continue;
@@ -728,9 +759,10 @@ function ymc_captain_dash_colour_board() {
    $tag    = '<span class="tag free">Available</span>';
    $detail = '';
   }
-  printf('<tr><td>%s%s</td><td>%s</td><td class="muted">%s</td></tr>', $dot, esc_html($colour), $tag, $detail);
+  printf('<tr data-colour data-bucket="%s"><td>%s%s</td><td>%s</td><td class="muted">%s</td></tr>',
+   esc_attr($states[$colour]), $dot, esc_html($colour), $tag, $detail);
  }
- echo '</tbody></table></div>';
+ echo '</tbody></table></div><p class="filter-empty empty" hidden>No colors match.</p></div>';
  if (null === $tickets) {
   echo '<p class="sub">Givebutter&rsquo;s ticket list could not be read just now. Color availability may be incomplete.</p>';
  }
