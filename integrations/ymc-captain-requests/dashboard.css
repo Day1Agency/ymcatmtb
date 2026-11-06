@@ -47,3 +47,8 @@ details.why p.muted{color:var(--mute)}
 .panel-heading .sub{margin:0;max-width:62ch}
 .table-scroll{overflow-x:auto}
 .color-panel .request-toolbar{border-bottom:1px solid var(--line)}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 18px;border-top:1px solid var(--line)}
+.pager button{font:inherit;font-size:11px;font-weight:650;padding:7px 13px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;cursor:pointer}
+.pager button:hover:not(:disabled){background:#faf9fc}
+.pager button:disabled{opacity:.4;cursor:default}
+.pager [data-page-status]{font-size:11px;color:var(--mute)}
