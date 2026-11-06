@@ -16,9 +16,14 @@
  buttons.forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.filter;filter();}));
  document.querySelectorAll('[data-filter-shortcut]').forEach(a=>a.addEventListener('click',()=>{selected=a.dataset.filterShortcut;search.value='';filter();}));
  search.addEventListener('input',filter);
- /* Sidebar follows the scroll. The last heading to have passed the top of the
-    screen is the one you are reading, which is steadier than asking what is
-    merely visible: tall sections would otherwise fight over it. */
+ filter();
+})();
+/* Its own block: the filtering above returns early on a screen with no request
+   table, and the sidebar still has to follow the scroll there. */
+(() => {
+ /* The last heading to have passed the top of the screen is the one you are
+    reading, which is steadier than asking what is merely visible: tall sections
+    would otherwise fight over it. */
  const parts=[...document.querySelectorAll('.dash-sidebar nav .nav-part')];
  const targets=parts.map(a=>[a,document.querySelector(a.getAttribute('href'))]).filter(p=>p[1]);
  if(targets.length){
@@ -38,5 +43,17 @@
   parts.forEach(a=>a.addEventListener('click',()=>mark(a)));
   spy();
  }
- filter();
+})();
+(() => {
+ const tabs=[...document.querySelectorAll('[data-reg-tab]')];
+ if(!tabs.length)return;
+ const panels=[...document.querySelectorAll('[data-reg-panel]')];
+ const show=name=>{
+  tabs.forEach(t=>t.setAttribute('aria-selected',String(t.dataset.regTab===name)));
+  panels.forEach(p=>{p.hidden=p.dataset.regPanel!==name;});
+ };
+ tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.regTab)));
+ /* Hidden until here so the tabs never appear without anything to drive them. */
+ document.querySelector('.reg-tabs').hidden=false;
+ show('teams');
 })();

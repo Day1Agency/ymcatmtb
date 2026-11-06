@@ -417,12 +417,6 @@ function ymc_captain_dash_classify_ticket($ticket) {
  $where = 'Adult';
  $ticket = is_array($ticket) ? $ticket : [];
 
- /* Staff rehearse on the real tickets too, so a clean title is not enough. Those
-    runs are always bought under a name or address saying so, which is the only
-    thing distinguishing them. Whole word only: it must not swallow a Testa. */
- $who = trim((string) ($ticket['first_name'] ?? '') . ' ' . (string) ($ticket['last_name'] ?? '')
-  . ' ' . (string) ($ticket['email'] ?? ''));
- if (preg_match('/\b(test|testing|sample|dummy)\b/i', $who)) return null;
 
  /* What they said they are playing on. On a captain ticket the colour is in the
     title; on a player ticket it is the only place the colour appears at all. */
@@ -465,8 +459,21 @@ function ymc_captain_dash_registrations() {
   $tickets = call_user_func('YMC\\CaptainInvitations\\collection', 'tickets?campaign_id=' . YMC_CAPTAIN_CAMPAIGN_ID);
   $teams   = call_user_func('YMC\\CaptainInvitations\\collection', 'campaigns/' . YMC_CAPTAIN_CAMPAIGN_ID . '/teams');
   $members = call_user_func('YMC\\CaptainInvitations\\collection', 'campaigns/' . YMC_CAPTAIN_CAMPAIGN_ID . '/members');
+  $paidTx  = call_user_func('YMC\\CaptainInvitations\\collection', 'transactions?campaign_id=' . YMC_CAPTAIN_CAMPAIGN_ID);
  } catch (\Throwable $e) {
   return null;
+ }
+
+ /* What was actually paid, per transaction. Matching test registrations on the
+    name was always a guess, and it missed the ones bought under a real name.
+    Money is the fact: a rehearsal costs nothing, a registration costs $180.
+    A ticket's own price is the sticker price and stays 180 on a comped entry,
+    so the transaction is the only place the truth is. */
+ $paidFor = [];
+ foreach ($paidTx as $tx) {
+  $id = (string) ($tx['id'] ?? '');
+  if ('' === $id || 'succeeded' !== (string) ($tx['status'] ?? '')) continue;
+  $paidFor[$id] = (float) ($tx['amount'] ?? 0);
  }
 
  $onTeam = [];
@@ -488,6 +495,10 @@ function ymc_captain_dash_registrations() {
  foreach ($tickets as $t) {
   $what = ymc_captain_dash_classify_ticket($t);
   if (null === $what) continue;
+  /* Nothing paid, nobody coming. This is what keeps rehearsals out, and it also
+     drops a registration staff have since cancelled, which no amount of reading
+     the ticket could have told us. */
+  if (0 >= ($paidFor[(string) ($t['transaction_id'] ?? '')] ?? 0)) continue;
   $email = strtolower(trim((string) ($t['email'] ?? '')));
   $name  = trim((string) ($t['first_name'] ?? '') . ' ' . (string) ($t['last_name'] ?? '')) ?: (string) ($t['name'] ?? '');
   $team  = '' !== $what['colour'] ? ($teamForColour[$what['colour']] ?? '') : '';
@@ -562,24 +573,31 @@ function ymc_captain_dash_registration_board() {
  }
 
 
- /* No tally above the table. It restated what the rows underneath already show,
-    and put a line of counting between the heading and the thing being counted. */
- echo '<div class="panel">';
+ /* Two views of the same people, so they share the space rather than making one
+    scroll past the other. Without JavaScript both panels simply show. */
+ echo '<div class="reg-tabs" role="tablist" aria-label="Registrations" hidden>'
+  . '<button type="button" role="tab" data-reg-tab="teams" aria-selected="true">Teams</button>'
+  . '<button type="button" role="tab" data-reg-tab="players" aria-selected="false">Players breakdown</button>'
+  . '</div>';
 
- echo '<table><thead><tr><th>Team</th><th>Players</th><th>Anything to do</th><th>Raised</th></tr></thead><tbody>';
+ echo '<div class="panel" data-reg-panel="teams">';
+ echo '<table><thead><tr><th>Team</th><th>Players</th><th>Raised</th></tr></thead><tbody>';
  foreach ($data['teams'] as $team) {
   $dot = $team['colour'] ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($team['colour'])) . '"></span>' : '';
-  printf('<tr><td>%s%s</td><td>%s</td><td>%s</td><td class="muted">$%s</td></tr>',
+  printf('<tr><td>%s%s</td><td>%s</td><td class="muted">$%s</td></tr>',
    $dot,
    $team['url'] ? '<a href="' . esc_url($team['url']) . '" target="_blank" rel="noopener">' . esc_html($team['name']) . '</a>' : esc_html($team['name']),
    /* Nobody at all is the thing worth noticing, so it says so in words. */
    0 === $team['signed_up'] ? '<span class="muted">Nobody yet</span>' : esc_html($team['signed_up'] . (1 === $team['signed_up'] ? ' player' : ' players')),
-   ymc_captain_dash_team_note($team),
    esc_html(number_format($team['raised'])));
  }
  echo '</tbody></table></div>';
 
- echo '<div class="panel" style="margin-top:18px"><table><thead><tr><th>Registered</th><th>Name</th><th>Bought</th><th>Playing for</th><th>Notes</th></tr></thead><tbody>';
+ echo '<div class="panel-heading" data-reg-panel="players"><h3>Players breakdown</h3>'
+  . '<p class="sub">Every person in those teams &mdash; what they bought, which color they play for, '
+  . 'and anything that still needs doing.</p></div>';
+
+ echo '<div class="panel" data-reg-panel="players"><table><thead><tr><th>Registered</th><th>Name</th><th>Bought</th><th>Playing for</th><th>Notes</th></tr></thead><tbody>';
  if (!$data['people']) {
   echo '<tr><td colspan="5"><p class="empty">Nobody has registered yet. Test tickets are not counted here.</p></td></tr>';
  }
@@ -599,55 +617,27 @@ function ymc_captain_dash_registration_board() {
  echo '</tbody></table></div></section>';
 }
 
-/**
- * What a team still needs, in words.
- *
- * This used to be two numbers side by side and a paragraph underneath saying
- * what the difference between them meant. Nobody reads the paragraph. The two
- * counts are what the site knows; what staff want is whether that leaves them
- * anything to do, so the row says that instead.
- */
-function ymc_captain_dash_team_note($team) {
- $owed = $team['signed_up'] - $team['members'];
- if (0 === $team['signed_up'] && 0 === $team['members']) {
-  return '<span class="muted">No players registered yet</span>';
- }
- if (0 < $owed) {
-  return '<span class="tag reserved">' . esc_html($owed . ($owed > 1 ? ' players' : ' player') . ' to add') . '</span>'
-   . '<span class="sub">Registered on the form but not on the Givebutter team</span>';
- }
- if (0 > $owed) {
-  /* The other way round happens when staff add someone before they register,
-     which is fine, but it is not nothing: that person has not paid yet. */
-  return '<span class="tag reserved">' . esc_html(abs($owed) . ' not registered') . '</span>'
-   . '<span class="sub">On the Givebutter team but has not bought a ticket</span>';
- }
- return '<span class="muted">All set</span>';
-}
-
 /** The one thing worth saying about a registration, or nothing. */
 function ymc_captain_dash_person_note($p) {
  /* Ordered by what staff would act on first. Only one shows: a row with three
     warnings on it is a row nobody reads. Each says what to do with it, because
     a note at the foot of the table explaining the tags goes unread. */
+ /* Each is the instruction itself, not an explanation of one. A paragraph here
+    is a paragraph nobody reads on a screen they are skimming. */
  if ($p['mislabelled']) {
-  /* Names the control they are being sent to, word for word. "Mark it taken"
-     sent staff looking for a setting called Taken that no longer exists. */
   return '<span class="tag taken">Captain on a player ticket</span>'
-   . '<span class="sub">' . esc_html('The ' . $p['colour'] . ' captain ticket was never bought, so the form still offers it. '
-    . 'Set ' . $p['colour'] . ' to Unavailable under Team colors.') . '</span>';
+   . '<span class="sub">' . esc_html('Set ' . $p['colour'] . ' to Unavailable') . '</span>';
  }
  if ('' === $p['colour']) {
-  return '<span class="tag reserved">No team given</span>'
-   . '<span class="sub">Ask them which color they are playing for</span>';
+  return '<span class="tag reserved">No color</span><span class="sub">Ask which team</span>';
  }
  if ($p['noteam']) {
   return '<span class="tag reserved">' . esc_html('No ' . $p['colour'] . ' team') . '</span>'
-   . '<span class="sub">They registered for a color nobody captains. Create the team or move them.</span>';
+   . '<span class="sub">Create it or move them</span>';
  }
  if ($p['adrift']) {
-  return '<span class="tag reserved">Not added yet</span>'
-   . '<span class="sub">' . esc_html('Add them to ' . $p['team'] . ' in Givebutter') . '</span>';
+  return '<span class="tag reserved">Not added</span>'
+   . '<span class="sub">' . esc_html('Add to ' . $p['colour']) . '</span>';
  }
  return '<span class="muted">&mdash;</span>';
 }

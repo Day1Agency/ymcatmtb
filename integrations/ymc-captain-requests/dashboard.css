@@ -42,3 +42,11 @@ details.why p.muted{color:var(--mute)}
 .panel-note strong{color:var(--ink)}
 .dash-sidebar nav .nav-part.current{color:#fff;background:#ffffff16;font-weight:600}
 .wrap section+section{margin-top:36px}
+.panel-heading{margin:30px 0 14px}
+.panel-heading h3{font-size:16px;letter-spacing:-.015em;margin:0 0 4px;color:var(--ink)}
+.panel-heading .sub{margin:0;max-width:62ch}
+.reg-tabs{display:flex;gap:6px;margin-bottom:14px}
+.reg-tabs button{font:inherit;font-size:11px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:9px 15px;border:1px solid var(--line);background:#fff;color:var(--mute);border-radius:8px;cursor:pointer}
+.reg-tabs button:hover{color:var(--ink)}
+.reg-tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.panel-heading[data-reg-panel]{margin-top:0}
