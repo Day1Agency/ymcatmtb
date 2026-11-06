@@ -539,15 +539,12 @@ function ymc_captain_dash_registration_board() {
   return;
  }
 
- $players  = array_filter($data['people'], function ($p) { return 'player' === $p['kind']; });
- $captains = array_filter($data['people'], function ($p) { return 'captain' === $p['kind']; });
- $adrift   = array_filter($data['people'], function ($p) { return $p['adrift']; });
- $mixedUp  = array_filter($data['people'], function ($p) { return $p['mislabelled']; });
+ $adrift  = array_filter($data['people'], function ($p) { return $p['adrift']; });
+ $mixedUp = array_filter($data['people'], function ($p) { return $p['mislabelled']; });
 
- $count = function ($n, $word) { return $n . ' ' . $word . (1 === $n ? '' : 's'); };
- printf('<div class="panel"><p class="panel-note top">%d registered &mdash; %s and %s.%s</p>',
-  count($data['people']), $count(count($captains), 'captain'), $count(count($players), 'player'),
-  $mixedUp ? ' <strong>' . esc_html($count(count($mixedUp), 'person')) . ' bought the wrong ticket.</strong>' : '');
+ /* No tally above the table. It restated what the rows underneath already show,
+    and put a line of counting between the heading and the thing being counted. */
+ echo '<div class="panel">';
 
  echo '<table><thead><tr><th>Team</th><th>Registered for this team</th><th>On the Givebutter team</th><th>Raised</th></tr></thead><tbody>';
  foreach ($data['teams'] as $team) {
