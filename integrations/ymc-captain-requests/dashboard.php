@@ -650,7 +650,7 @@ function ymc_captain_dash_person_note($p) {
     is a paragraph nobody reads on a screen they are skimming. */
  if ($p['mislabelled']) {
   return '<span class="tag taken">Captain on a player ticket</span>'
-   . '<span class="sub">' . esc_html('Set ' . $p['colour'] . ' to Unavailable') . '</span>';
+   . '<span class="sub">' . esc_html('Set ' . $p['colour'] . ' to Taken') . '</span>';
  }
  if ('' === $p['colour']) {
   return '<span class="tag reserved">No color</span><span class="sub">Ask which team</span>';
@@ -736,17 +736,17 @@ function ymc_captain_dash_colour_board() {
     $dot, esc_html($colour));
    continue;
   }
-  $staff = ymc_captain_colour_tag($colour);
+  $staff  = ymc_captain_colour_tag($colour);
+  $bucket = $states[$colour];
   if ('taken' === $states[$colour]) {
-   /* Says which of the two it is, in the chip as well as beside it. "Paid"
-      against a colour nobody paid for sends staff hunting through Givebutter
-      for a transaction that is not there. */
-   $tag = !empty($paid[$colour])
-    ? '<span class="tag taken">Taken</span>'
-    : '<span class="tag taken">Unavailable</span>';
+   /* One chip for both. A color is Taken, Reserved or Available and nothing
+      else; whether that came from a sale or from staff is what the detail
+      beside it is for. "Paid" against a colour nobody paid for would send staff
+      hunting through Givebutter for a transaction that is not there. */
+   $tag    = '<span class="tag taken">Taken</span>';
    $detail = !empty($paid[$colour])
     ? 'Captain ticket paid &mdash; ' . esc_html($paid[$colour])
-    : 'Marked unavailable by staff';
+    : 'Marked taken by staff';
   } elseif ('reserved' === $states[$colour]) {
    $holder = ymc_captain_colour_holder($colour);
    $tag    = '<span class="tag reserved">Reserved</span>';
@@ -760,7 +760,7 @@ function ymc_captain_dash_colour_board() {
    $detail = '';
   }
   printf('<tr data-colour data-bucket="%s"><td>%s%s</td><td>%s</td><td class="muted">%s</td></tr>',
-   esc_attr($states[$colour]), $dot, esc_html($colour), $tag, $detail);
+   esc_attr($bucket), $dot, esc_html($colour), $tag, $detail);
  }
  echo '</tbody></table></div><p class="filter-empty empty" hidden>No colors match.</p></div>';
  if (null === $tickets) {

@@ -803,7 +803,7 @@ add_action('admin_menu', function () {
     $status = '<strong style="color:#1d6f42">Taken</strong>';
     $detail = $sold
      ? 'Captain ticket purchased' . (!empty($paid[$colour]) ? ' by ' . esc_html($paid[$colour]) : '')
-     : 'Marked unavailable by staff';
+     : 'Marked taken by staff';
    } elseif ('reserved' === $states[$colour]) {
     $holder = ymc_captain_colour_holder($colour);
     $status = '<strong style="color:#8a6d1f">Reserved</strong>';
@@ -824,7 +824,7 @@ add_action('admin_menu', function () {
     $control = '<span class="description">Paid &mdash; locked</span>';
    } else {
     $options = '';
-    foreach (['' => 'Auto', 'reserved' => 'Reserved', 'taken' => 'Unavailable'] as $value => $label) {
+    foreach (['' => 'Auto', 'reserved' => 'Reserved', 'taken' => 'Taken'] as $value => $label) {
      $options .= sprintf('<option value="%s"%s>%s</option>', esc_attr($value), selected($tag, $value, false), esc_html($label));
     }
     $control = '<form method="post" style="display:flex;gap:6px;align-items:center">'
