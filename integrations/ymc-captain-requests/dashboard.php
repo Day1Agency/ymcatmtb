@@ -475,21 +475,43 @@ function ymc_captain_dash_registrations() {
   if ('' !== $email) $onTeam[$email] = true;
  }
 
+ /* Which colours have a team at all. A player naming a colour nobody captains
+    is a different problem from one waiting to be added, and saying the wrong
+    one of the two sends staff looking for a team that was never created. */
+ $teamForColour = [];
+ foreach ($teams as $t) {
+  $colour = ymc_captain_colour_in_team($t['name'] ?? '');
+  if ('' !== $colour && !isset($teamForColour[$colour])) $teamForColour[$colour] = (string) ($t['name'] ?? '');
+ }
+
  $people = [];
  foreach ($tickets as $t) {
   $what = ymc_captain_dash_classify_ticket($t);
   if (null === $what) continue;
   $email = strtolower(trim((string) ($t['email'] ?? '')));
+  $name  = trim((string) ($t['first_name'] ?? '') . ' ' . (string) ($t['last_name'] ?? '')) ?: (string) ($t['name'] ?? '');
+  $team  = '' !== $what['colour'] ? ($teamForColour[$what['colour']] ?? '') : '';
+
+  /* Being the captain counts as being on the team even without a fundraiser
+     page: the team carries their name. Avi Yudkowsky captains "Avi Yudkowsky -
+     Gray" while Dany Donaty holds the page, and reporting him as adrift was
+     plainly wrong. */
+  $placed = ('' !== $email && !empty($onTeam[$email]))
+   || ('' !== $team && '' !== $name && ymc_captain_name_in_team($name, $team));
+
   $people[] = [
-   'name'        => trim((string) ($t['first_name'] ?? '') . ' ' . (string) ($t['last_name'] ?? '')) ?: (string) ($t['name'] ?? ''),
+   'name'        => $name,
    'email'       => $email,
    'title'       => (string) ($t['title'] ?? ''),
    'where'       => $what['where'],
    'kind'        => $what['kind'],
    'colour'      => $what['colour'],
+   'team'        => $team,
    'mislabelled' => $what['mislabelled'],
    'date'        => (string) ($t['created_at'] ?? ''),
-   'adrift'      => '' !== $email && empty($onTeam[$email]),
+   /* No team for that colour is not the same as not being on one. */
+   'noteam'      => '' !== $what['colour'] && '' === $team,
+   'adrift'      => '' !== $team && !$placed,
   ];
  }
  usort($people, function ($a, $b) { return strcmp($b['date'], $a['date']); });
@@ -539,28 +561,23 @@ function ymc_captain_dash_registration_board() {
   return;
  }
 
- $adrift  = array_filter($data['people'], function ($p) { return $p['adrift']; });
- $mixedUp = array_filter($data['people'], function ($p) { return $p['mislabelled']; });
 
  /* No tally above the table. It restated what the rows underneath already show,
     and put a line of counting between the heading and the thing being counted. */
  echo '<div class="panel">';
 
- echo '<table><thead><tr><th>Team</th><th>Registered for this team</th><th>On the Givebutter team</th><th>Raised</th></tr></thead><tbody>';
+ echo '<table><thead><tr><th>Team</th><th>Players</th><th>Anything to do</th><th>Raised</th></tr></thead><tbody>';
  foreach ($data['teams'] as $team) {
   $dot = $team['colour'] ? '<span class="dot" style="background:' . esc_attr(ymc_captain_colour_hex($team['colour'])) . '"></span>' : '';
-  printf('<tr><td>%s%s</td><td>%s</td><td class="muted">%d</td><td class="muted">$%s</td></tr>',
+  printf('<tr><td>%s%s</td><td>%s</td><td>%s</td><td class="muted">$%s</td></tr>',
    $dot,
    $team['url'] ? '<a href="' . esc_url($team['url']) . '" target="_blank" rel="noopener">' . esc_html($team['name']) . '</a>' : esc_html($team['name']),
    /* Nobody at all is the thing worth noticing, so it says so in words. */
-   0 === $team['signed_up'] ? '<span class="muted">Nobody yet</span>' : esc_html($team['signed_up'] . (1 === $team['signed_up'] ? ' person' : ' people')),
-   $team['members'],
+   0 === $team['signed_up'] ? '<span class="muted">Nobody yet</span>' : esc_html($team['signed_up'] . (1 === $team['signed_up'] ? ' player' : ' players')),
+   ymc_captain_dash_team_note($team),
    esc_html(number_format($team['raised'])));
  }
- echo '</tbody></table>'
-  . '<p class="panel-note foot">&ldquo;Registered for this team&rdquo; counts everyone, captain included, who named this color on their registration form. '
-  . '&ldquo;On the Givebutter team&rdquo; counts who has actually been added there. '
-  . 'When the two differ, somebody has paid but still needs adding to their team.</p></div>';
+ echo '</tbody></table></div>';
 
  echo '<div class="panel" style="margin-top:18px"><table><thead><tr><th>Registered</th><th>Name</th><th>Bought</th><th>Playing for</th><th>Notes</th></tr></thead><tbody>';
  if (!$data['people']) {
@@ -579,29 +596,56 @@ function ymc_captain_dash_registration_board() {
     : '<span class="muted">Not given</span>',
    ymc_captain_dash_person_note($p));
  }
- echo '</tbody></table>';
- /* Said once under the table rather than on every flagged row. The Gray team is
-    the standing example: Avi paid for it and Dany Donaty holds the page, so
-    both are accounted for and the flag still fires. */
- if ($adrift) {
-  echo '<p class="panel-note foot">&ldquo;Not on a team&rdquo; means Givebutter has no fundraiser page under that email. '
-   . 'Usually it means they still need adding to a team. It can also mean someone else set the team up for them, '
-   . 'so check the team before chasing anyone.</p>';
+ echo '</tbody></table></div></section>';
+}
+
+/**
+ * What a team still needs, in words.
+ *
+ * This used to be two numbers side by side and a paragraph underneath saying
+ * what the difference between them meant. Nobody reads the paragraph. The two
+ * counts are what the site knows; what staff want is whether that leaves them
+ * anything to do, so the row says that instead.
+ */
+function ymc_captain_dash_team_note($team) {
+ $owed = $team['signed_up'] - $team['members'];
+ if (0 === $team['signed_up'] && 0 === $team['members']) {
+  return '<span class="muted">No players registered yet</span>';
  }
- if ($mixedUp) {
-  echo '<p class="panel-note foot">&ldquo;Captain on a player ticket&rdquo; means they said they are the captain but bought the plain player ticket, '
-   . 'so their color never sold and the website still thinks it is free. Tag that color by hand under Team colors.</p>';
+ if (0 < $owed) {
+  return '<span class="tag reserved">' . esc_html($owed . ($owed > 1 ? ' players' : ' player') . ' to add') . '</span>'
+   . '<span class="sub">Registered on the form but not on the Givebutter team</span>';
  }
- echo '</div></section>';
+ if (0 > $owed) {
+  /* The other way round happens when staff add someone before they register,
+     which is fine, but it is not nothing: that person has not paid yet. */
+  return '<span class="tag reserved">' . esc_html(abs($owed) . ' not registered') . '</span>'
+   . '<span class="sub">On the Givebutter team but has not bought a ticket</span>';
+ }
+ return '<span class="muted">All set</span>';
 }
 
 /** The one thing worth saying about a registration, or nothing. */
 function ymc_captain_dash_person_note($p) {
  /* Ordered by what staff would act on first. Only one shows: a row with three
-    warnings on it is a row nobody reads. */
- if ($p['mislabelled']) return '<span class="tag taken">Captain on a player ticket</span>';
- if ('' === $p['colour']) return '<span class="tag reserved">No team given</span>';
- if ($p['adrift'])       return '<span class="tag reserved">Not on a team</span>';
+    warnings on it is a row nobody reads. Each says what to do with it, because
+    a note at the foot of the table explaining the tags goes unread. */
+ if ($p['mislabelled']) {
+  return '<span class="tag taken">Captain on a player ticket</span>'
+   . '<span class="sub">Their color never sold &mdash; mark it taken under Team colors</span>';
+ }
+ if ('' === $p['colour']) {
+  return '<span class="tag reserved">No team given</span>'
+   . '<span class="sub">Ask them which color they are playing for</span>';
+ }
+ if ($p['noteam']) {
+  return '<span class="tag reserved">' . esc_html('No ' . $p['colour'] . ' team') . '</span>'
+   . '<span class="sub">They registered for a color nobody captains. Create the team or move them.</span>';
+ }
+ if ($p['adrift']) {
+  return '<span class="tag reserved">Not added yet</span>'
+   . '<span class="sub">' . esc_html('Add them to ' . $p['team'] . ' in Givebutter') . '</span>';
+ }
  return '<span class="muted">&mdash;</span>';
 }
 
