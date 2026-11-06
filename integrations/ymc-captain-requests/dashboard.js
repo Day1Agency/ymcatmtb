@@ -1,17 +1,21 @@
 (() => {
- const toolbar=document.querySelector('.request-toolbar');
+ const toolbar=document.querySelector('.request-toolbar:not([data-toolbar])');
  if(!toolbar)return;
  toolbar.hidden=false;
- const rows=[...document.querySelectorAll('tr[data-request]')];
+ const section=toolbar.closest('section');
+ const rows=[...section.querySelectorAll('tr[data-request]')];
  const search=document.querySelector('#request-search');
- const buttons=[...document.querySelectorAll('[data-filter]')];
+ /* Scoped to this toolbar. Page-wide, it also grabbed the filters belonging to
+    the other tables and drove them from here, so pressing Teams unpressed All
+    requests and every other first tab with it. */
+ const buttons=[...toolbar.querySelectorAll('[data-filter]')];
  let selected='all';
  function filter(){
   const query=search.value.trim().toLowerCase();let count=0;
   rows.forEach(row=>{row.hidden=!(selected==='all'||row.dataset.bucket.split(' ').includes(selected))||!row.textContent.toLowerCase().includes(query);if(!row.hidden)count++;});
   buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===selected)));
-  document.querySelector('#request-count').textContent=count+' of '+rows.length+' requests';
-  document.querySelector('.filter-empty').hidden=count!==0||rows.length===0;
+  section.querySelector('#request-count').textContent=count+' of '+rows.length+' requests';
+  section.querySelector('.filter-empty').hidden=count!==0||rows.length===0;
  }
  buttons.forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.filter;filter();}));
  document.querySelectorAll('[data-filter-shortcut]').forEach(a=>a.addEventListener('click',()=>{selected=a.dataset.filterShortcut;search.value='';filter();}));
