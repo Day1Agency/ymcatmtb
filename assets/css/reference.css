@@ -1784,3 +1784,82 @@ a:hover { color: rgb(230, 198, 90); }
  .ymc-reference .ymc-ref-header-logo { height:64px !important; }
  .ymc-reference .ymc-ref-badge { width:104px !important; height:104px !important; }
 }
+
+/* Balanced sponsor tiers with a calm background and descending logo scale. */
+#sponsor{background:radial-gradient(ellipse at 50% 12%,#30204a 0%,#241046 44%,#180e2b 100%)!important}
+#sponsor>[data-dc-tpl="175"]{display:none}
+#sponsor section.ymc-sponsor-recognition{display:flex!important;flex-direction:column;align-items:center;max-width:1060px;margin-inline:auto;padding:0}
+#sponsor section.ymc-sponsor-recognition #ymc-sponsor-thanks{text-align:center!important;font-size:clamp(44px,5vw,64px)!important;margin:0 0 46px!important;padding:0;border:0}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:100%!important;min-height:0!important;margin:0 0 20px!important;padding:0!important;border:0!important;background:none!important;box-shadow:none;text-align:center}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner:before,#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner:after{display:none!important}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner>span{font-family:var(--font-body);font-size:20px!important;font-weight:700;letter-spacing:.16em;line-height:1.2;color:#d4af37;white-space:nowrap}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner>small{font-family:var(--font-body);font-size:12px!important;font-weight:400;letter-spacing:.08em;color:#c1b3d0;line-height:1.4;border:0!important;padding:0!important}
+#sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors,#sponsor section.ymc-sponsor-recognition>.ymc-sponsor-logos{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));align-items:center;justify-items:center;gap:48px;width:100%;margin:0;padding:0 60px 36px;border:0;background:none;box-shadow:none}
+#sponsor section.ymc-sponsor-recognition .ymc-mvp-logo{width:100%;max-width:380px;min-height:260px}
+#sponsor section.ymc-sponsor-recognition .ymc-mvp-logo img{width:100%;max-width:330px;height:250px;object-fit:contain}
+#sponsor section.ymc-sponsor-recognition>h4.ymc-tier-pro{border-top:1px solid #d4af372b!important;padding-top:30px!important}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-pro>span{font-size:17px!important}
+#sponsor section.ymc-sponsor-recognition>.ymc-sponsor-logos .ymc-sponsor-logo{width:100%;max-width:260px;min-height:170px}
+#sponsor section.ymc-sponsor-recognition>.ymc-sponsor-logos img{width:100%;max-width:250px;height:150px;object-fit:contain}
+#sponsor section.ymc-sponsor-recognition .ymc-supporting-tiers{display:flex!important;flex-direction:column;align-items:stretch;gap:0;width:100%;margin:0;padding:0;border:0}
+#sponsor section.ymc-sponsor-recognition .ymc-supporting-tier{display:flex!important;flex-direction:column;align-items:center;width:100%!important;max-width:none!important;padding:30px 0 36px;border-top:1px solid #d4af372b}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-touchdown>span{font-size:15px!important}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-first>span{font-size:12px!important}
+#sponsor section.ymc-sponsor-recognition .ymc-supporting-tier .ymc-additional-sponsors{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px!important;align-items:center!important;justify-items:center;width:100%;margin:0;padding:0 60px}
+#sponsor section.ymc-sponsor-recognition .ymc-supporting-tier .ymc-additional-sponsors>.ymc-sponsor-logo{width:100%!important;max-width:230px!important;min-width:0!important;min-height:110px!important}
+#sponsor section.ymc-sponsor-recognition .ymc-supporting-tier .ymc-additional-sponsors img{width:100%!important;height:85px!important;max-height:85px!important;max-width:205px!important;object-fit:contain!important}
+#sponsor section.ymc-sponsor-recognition .ymc-supporting-tier:last-child .ymc-additional-sponsors img{height:58px!important;max-height:58px!important;max-width:145px!important}
+#sponsor section.ymc-sponsor-recognition .ymc-supporting-tier .ymc-sponsor-wordmark{font-size:17px!important}
+#sponsor section.ymc-sponsor-recognition .ymc-sponsor-wordmark small{font-size:9px!important;letter-spacing:.18em!important}
+@media(max-width:600px){
+ #sponsor section.ymc-sponsor-recognition #ymc-sponsor-thanks{margin-bottom:32px!important}
+ #sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors{grid-template-columns:1fr;gap:12px;padding:0 20px 28px}
+ #sponsor section.ymc-sponsor-recognition .ymc-mvp-logo{max-width:290px;min-height:190px}
+ #sponsor section.ymc-sponsor-recognition .ymc-mvp-logo img{height:200px;max-width:270px}
+ #sponsor section.ymc-sponsor-recognition>.ymc-sponsor-logos{gap:24px;padding:0 0 28px}
+ #sponsor section.ymc-sponsor-recognition>.ymc-sponsor-logos .ymc-sponsor-logo{min-height:120px}
+ #sponsor section.ymc-sponsor-recognition>.ymc-sponsor-logos img{height:110px}
+ #sponsor section.ymc-sponsor-recognition .ymc-supporting-tier{padding:26px 0}
+ #sponsor section.ymc-sponsor-recognition .ymc-supporting-tier .ymc-additional-sponsors{gap:24px!important;padding:0}
+ #sponsor section.ymc-sponsor-recognition .ymc-supporting-tier .ymc-additional-sponsors img{height:68px!important;max-height:68px!important;max-width:160px!important}
+ #sponsor section.ymc-sponsor-recognition .ymc-supporting-tier:last-child .ymc-additional-sponsors img{height:46px!important;max-height:46px!important;max-width:120px!important}
+ #sponsor section.ymc-sponsor-recognition .ymc-supporting-tier .ymc-sponsor-wordmark{font-size:14px!important}
+}
+
+/* Stadium-light atmosphere and restrained movement within the balanced tier grid. */
+#sponsor section.ymc-sponsor-recognition #ymc-sponsor-thanks{margin-bottom:32px!important}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner{margin-bottom:16px!important}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner>span{display:inline-flex;align-items:center;justify-content:center;gap:14px}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner>span::before,#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner>span::after{content:"";display:block;width:22px;height:3px;background:#d4af37;transform:skewX(-24deg);opacity:.7}
+#sponsor section.ymc-sponsor-recognition h4.ymc-tier-mvp>span::before,#sponsor section.ymc-sponsor-recognition h4.ymc-tier-mvp>span::after{width:30px;box-shadow:0 0 14px #d4af3740}
+#sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors{position:relative;isolation:isolate;padding-bottom:24px;background:radial-gradient(ellipse at 27% 45%,#d4af3714,transparent 39%),radial-gradient(ellipse at 73% 45%,#ffffff0b,transparent 39%)}
+#sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(118deg,transparent 14%,#ffffff04 27%,transparent 41%),linear-gradient(62deg,transparent 59%,#ffffff04 73%,transparent 86%);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+#sponsor section.ymc-sponsor-recognition>.ymc-sponsor-logos{padding-bottom:24px}
+#sponsor section.ymc-sponsor-recognition>h4.ymc-tier-pro{padding-top:24px!important}
+#sponsor section.ymc-sponsor-recognition .ymc-supporting-tier{padding-top:24px;padding-bottom:24px}
+#sponsor section.ymc-sponsor-recognition .ymc-sponsor-logo img,#sponsor section.ymc-sponsor-recognition .ymc-sponsor-wordmark>span{transition:transform 220ms ease;transform-origin:center}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ #sponsor section.ymc-sponsor-recognition .ymc-sponsor-logo:hover img,#sponsor section.ymc-sponsor-recognition .ymc-sponsor-wordmark:hover>span{transform:translateY(-4px) scale(1.025)}
+}
+#sponsor section.ymc-sponsor-recognition a.ymc-sponsor-logo:focus-visible{outline:2px solid #d4af37;outline-offset:6px;border-radius:4px}
+@media(max-width:600px){
+ #sponsor section.ymc-sponsor-recognition #ymc-sponsor-thanks{margin-bottom:28px!important}
+ #sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors{background:radial-gradient(ellipse at 50% 25%,#d4af3712,transparent 42%),radial-gradient(ellipse at 50% 75%,#ffffff09,transparent 42%);padding-bottom:22px}
+ #sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner>span{gap:10px}
+ #sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner>span::before,#sponsor section.ymc-sponsor-recognition h4.ymc-tier-banner>span::after{width:18px;height:2px}
+}
+@media(prefers-reduced-motion:reduce){#sponsor section.ymc-sponsor-recognition .ymc-sponsor-logo img,#sponsor section.ymc-sponsor-recognition .ymc-sponsor-wordmark>span{transition:none;transform:none}}
+
+/* Stadium details: quiet field lines, premium MVP lighting, and interactive highlights. */
+#sponsor section.ymc-sponsor-recognition{position:relative}
+#sponsor section.ymc-sponsor-recognition::before{content:"";position:absolute;inset:90px 0 0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(20% - 1px),#ffffff04 calc(20% - 1px),#ffffff04 20%);mask-image:linear-gradient(transparent,#000 12%,#000 82%,transparent)}
+#sponsor section.ymc-sponsor-recognition #ymc-sponsor-thanks{position:relative;padding-bottom:22px;text-shadow:0 0 40px #ffffff12}
+#sponsor section.ymc-sponsor-recognition #ymc-sponsor-thanks::after{content:"";position:absolute;bottom:0;left:50%;width:68px;height:3px;transform:translateX(-50%) skewX(-25deg);background:linear-gradient(90deg,#d4af3730,#d4af37,#d4af3730);box-shadow:0 0 18px #d4af3730}
+#sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors{background:radial-gradient(ellipse at 27% 44%,#d4af3720,transparent 40%),radial-gradient(ellipse at 73% 44%,#ffffff12,transparent 40%)}
+#sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors::after{content:"";position:absolute;inset:12px 10px 22px;pointer-events:none;background:linear-gradient(#d4af3766,#d4af3766) left top/28px 1px no-repeat,linear-gradient(#d4af3766,#d4af3766) left top/1px 28px no-repeat,linear-gradient(#d4af3766,#d4af3766) right top/28px 1px no-repeat,linear-gradient(#d4af3766,#d4af3766) right top/1px 28px no-repeat,linear-gradient(#d4af3733,#d4af3733) left bottom/28px 1px no-repeat,linear-gradient(#d4af3733,#d4af3733) right bottom/28px 1px no-repeat}
+#sponsor section.ymc-sponsor-recognition .ymc-sponsor-logo{position:relative;border-radius:8px}
+#sponsor section.ymc-sponsor-recognition .ymc-sponsor-logo::after{content:"";position:absolute;left:30%;right:30%;bottom:0;height:2px;background:linear-gradient(90deg,transparent,#d4af37,transparent);opacity:0;transform:scaleX(.5);transition:opacity 220ms ease,transform 220ms ease;pointer-events:none}
+@media(hover:hover){#sponsor section.ymc-sponsor-recognition .ymc-sponsor-logo:hover::after{opacity:.8;transform:scaleX(1)}}
+#sponsor section.ymc-sponsor-recognition a.ymc-sponsor-logo:focus-visible::after{opacity:.8;transform:scaleX(1)}
+@media(max-width:600px){#sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors{background:radial-gradient(ellipse at 50% 25%,#d4af371b,transparent 42%),radial-gradient(ellipse at 50% 75%,#ffffff10,transparent 42%)}#sponsor section.ymc-sponsor-recognition .ymc-mvp-sponsors::after{inset:8px 0 20px}}
+@media(prefers-reduced-motion:reduce){#sponsor section.ymc-sponsor-recognition .ymc-sponsor-logo::after{transition:none}}
