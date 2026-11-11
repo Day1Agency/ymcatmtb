@@ -1,0 +1,9 @@
+Live WordPress page 6 was updated on October 26, 2026.
+
+Changes: Play. For YMC. headline; flag football and stadium context; three direct choices for playing, watching, and corporate sponsorship. Tunnel animation, countdown, scroll cue, registration fees and all other sections preserved. Scoped button styles are included in the saved section so they publish atomically with the content.
+
+Source of truth: content/homepage-oct26.html is the current saved WordPress content. Theme deployment does not update this database content. Do not replace it with older snapshots.
+
+Rollback: replace only the Stadium scroll intro section using content/homepage-before-oct26.html, save page 6 and purge SG cache. Avoid overwriting later unrelated content edits.
+
+Checked: WordPress Page updated confirmation; live heading and all three CTA destinations; desktop visual. Browser viewport override failed to resize the live tab, so mobile visual verification remains outstanding.
