@@ -17,8 +17,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Three attempts, because the runner reaches out to Ubuntu's mirrors on
+      # every deploy and a single DNS blip there has already cost one run five
+      # minutes and a red cross. The outages last seconds, so a second attempt
+      # almost always lands.
       - name: Install lftp
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+        run: |
+          for attempt in 1 2 3; do
+            sudo apt-get update -qq && sudo apt-get install -y -qq lftp && break
+            echo "apt failed on attempt $attempt; waiting 15s"
+            sleep 15
+          done
+          # Fail here rather than let the upload step report something unrelated.
+          command -v lftp
 
       - name: Write deploy key
         run: |
