@@ -23,6 +23,14 @@ const YMC_CAPTAIN_DASH_LIFETIME = 12 * HOUR_IN_SECONDS;
 const YMC_CAPTAIN_DASH_TRIES = 8;
 
 /**
+ * Wrong passwords allowed from everyone together inside a quarter hour.
+ *
+ * Set well above anything a few staff could reach by mistyping, so it only
+ * trips when someone is guessing from more than one address.
+ */
+const YMC_CAPTAIN_DASH_TRIES_ALL = 25;
+
+/**
  * The key every session cookie and CSRF token is signed with.
  *
  * Generated once and kept in options rather than derived from the WordPress
@@ -130,13 +138,66 @@ function ymc_captain_dash_throttle_key() {
  return 'ymc_dash_tries_' . md5($ip);
 }
 
-function ymc_captain_dash_locked_out() {
- return YMC_CAPTAIN_DASH_TRIES <= (int) get_transient(ymc_captain_dash_throttle_key());
+/**
+ * The address a failure is recorded against.
+ *
+ * REMOTE_ADDR only. A forwarded-for header is written by whoever sent the
+ * request, so trusting it would let one attacker claim a fresh address on
+ * every try and never be counted at all.
+ */
+function ymc_captain_dash_ip() {
+ return (string) ($_SERVER['REMOTE_ADDR'] ?? '');
 }
 
+/**
+ * True while this address is shut out.
+ *
+ * Per-address alone is not enough: eight tries then a new address repeats
+ * forever, and nothing in the count ever notices. The site-wide tally below is
+ * what sees that pattern, so either ceiling closes the form.
+ */
+function ymc_captain_dash_locked_out() {
+ if (YMC_CAPTAIN_DASH_TRIES <= (int) get_transient(ymc_captain_dash_throttle_key())) return true;
+ return YMC_CAPTAIN_DASH_TRIES_ALL <= (int) get_transient('ymc_dash_tries_all');
+}
+
+/**
+ * Records a wrong password against this address and against the site.
+ *
+ * The two counters have deliberately different windows. An address that fails
+ * is held for an hour, because a real person who mistypes eight times will
+ * ask someone rather than keep going. The site-wide window is short, so a
+ * burst closes the door but normal work resumes on its own.
+ */
 function ymc_captain_dash_count_failure() {
  $key = ymc_captain_dash_throttle_key();
- set_transient($key, (int) get_transient($key) + 1, 15 * MINUTE_IN_SECONDS);
+ set_transient($key, (int) get_transient($key) + 1, HOUR_IN_SECONDS);
+ set_transient('ymc_dash_tries_all', (int) get_transient('ymc_dash_tries_all') + 1, 15 * MINUTE_IN_SECONDS);
+ ymc_captain_dash_log_failure();
+}
+
+/**
+ * Keeps the last 50 wrong passwords, newest first.
+ *
+ * Stored rather than only counted, because a lockout that leaves no trace tells
+ * nobody afterwards whether it was one person fumbling or someone working
+ * through a list.
+ */
+function ymc_captain_dash_log_failure() {
+ $log = get_option('ymc_captain_dash_failures', []);
+ if (!is_array($log)) $log = [];
+ array_unshift($log, ['at' => time(), 'ip' => ymc_captain_dash_ip()]);
+ update_option('ymc_captain_dash_failures', array_slice($log, 0, 50), false);
+}
+
+/** Failures inside the last day, for the line shown on the dashboard. */
+function ymc_captain_dash_recent_failures() {
+ $log = get_option('ymc_captain_dash_failures', []);
+ if (!is_array($log)) return [];
+ $since = time() - DAY_IN_SECONDS;
+ return array_values(array_filter($log, function ($row) use ($since) {
+  return is_array($row) && (int) ($row['at'] ?? 0) >= $since;
+ }));
 }
 
 /* ------------------------------------------------------------------ actions */
@@ -209,7 +270,7 @@ function ymc_captain_dash_notice($key) {
   'badid'      => ['bad', 'That request could not be found.'],
   'expired'    => ['bad', 'That form had expired. Please try again.'],
   'wrongpass'  => ['bad', 'That password was not right.'],
-  'lockedout'  => ['bad', 'Too many attempts. Please wait fifteen minutes.'],
+  'lockedout'  => ['bad', 'Too many wrong passwords. Please wait, then try again.'],
  ];
  return $notices[$key] ?? null;
 }
@@ -954,6 +1015,18 @@ function ymc_captain_dash_screen() {
  }
 
  ymc_captain_dash_head('Team dashboard');
+
+ /* Shown to whoever opens the screen, not buried in a log nobody reads. A few
+    failures a day is someone mistyping; a hundred is not. */
+ $failures = ymc_captain_dash_recent_failures();
+ if (10 <= count($failures)) {
+  printf('<p class="note bad" role="status">%s</p>', esc_html(sprintf(
+   '%d wrong passwords were tried in the last 24 hours, from %d different addresses. If that was not staff, tell Nikka.',
+   count($failures),
+   count(array_unique(wp_list_pluck($failures, 'ip')))
+  )));
+ }
+
  printf('<header class="bar" id="overview"><div><p class="eyebrow">TOURNAMENT OPERATIONS</p><h1>Team registrations</h1>'
   . '<p>Your teams, captain requests, and next steps in one place.</p></div><div class="bar-actions"><a class="refresh-link" href="' . esc_url(ymc_captain_dash_url()) . '">Refresh overview</a>%s</div></header>',
   current_user_can('manage_options')
@@ -1025,6 +1098,8 @@ function ymc_captain_dash_route() {
   $stored = (string) get_option('ymc_captain_dash_password', '');
   if ($stored && wp_check_password(wp_unslash((string) $_POST['password']), $stored)) {
    ymc_captain_dash_start_session();
+   /* Only this address is forgiven. The site-wide tally stands, or one correct
+      sign-in in the middle of an attack would clear the evidence of it. */
    delete_transient(ymc_captain_dash_throttle_key());
    wp_safe_redirect(ymc_captain_dash_url());
    exit;

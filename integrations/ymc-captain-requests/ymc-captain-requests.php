@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YMC Captain Team Requests
  * Description: Captains request a team here; staff create it in Givebutter and send the link back.
- * Version: 1.7.0
+ * Version: 1.8.0
  */
 if (!defined('ABSPATH')) exit;
 
@@ -36,10 +36,7 @@ function ymc_captain_colour_map() {
  $raw = trim((string) get_option('ymc_captain_colour_list', ''));
  if ('' === $raw) { return ymc_captain_default_colours(); }
  $map = [];
- foreach (preg_split('/
-|
-|
-/', $raw) as $line) {
+ foreach (preg_split('/\R/', $raw) as $line) {
   $line = trim($line);
   if ('' === $line) { continue; }
   /* "Teal #1c8f8f", or just "Teal" to fall back to a known or neutral swatch. */
